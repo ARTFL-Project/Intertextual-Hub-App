@@ -13,7 +13,7 @@ export default new Router({
             name: 'home',
         },
         {
-            path: '/textNavigation',
+            path: '/navigate',
             name: "TextNavigation",
             component: TextNavigation
         },
