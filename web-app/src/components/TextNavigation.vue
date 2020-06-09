@@ -13,52 +13,7 @@
             title="Intertextual Links"
         >
             <div v-if="intertextualLinks.length == 1">
-                <div class="row">
-                    <div class="col mt-2">
-                        <h6 class="text-center pb-2">Earlier Use</h6>
-                        <p class="pt-3 px-3">
-                            {{ intertextualLinks[0].source_author }}
-                            <span class="separator">&#9679;</span>
-                            <i>{{ intertextualLinks[0].source_title }}</i>
-                            <span class="separator">&#9679;</span>
-                            <span
-                                v-if="intertextualLinks[0].source_year"
-                            >{{ intertextualLinks[0].source_year }}</span>
-                        </p>
-                    </div>
-                    <div class="col mt-2 border border-top-0 border-right-0 border-bottom-0">
-                        <h6 class="text-center pb-2">Later use</h6>
-                        <p class="pt-3 px-3">
-                            {{ intertextualLinks[0].target_author }}
-                            <span class="separator">&#9679;</span>
-                            <i>{{ intertextualLinks[0].target_title }}</i>
-                            <span class="separator">&#9679;</span>
-                            <span
-                                v-if="intertextualLinks[0].target_year"
-                            >{{ intertextualLinks[0].target_year }}</span>
-                        </p>
-                    </div>
-                </div>
-                <div class="row passages">
-                    <div class="col mb-2">
-                        <p class="card-text text-justify px-3 pt-2 pb-4 mb-4">
-                            {{ intertextualLinks[0].source_context_before }}
-                            <span
-                                class="source-passage"
-                            >{{ intertextualLinks[0].source_passage }}</span>
-                            {{ intertextualLinks[0].source_context_after }}
-                        </p>
-                    </div>
-                    <div class="col mb-2 border border-top-0 border-right-0 border-bottom-0">
-                        <p class="card-text text-justify px-3 pt-2 pb-4 mb-4">
-                            {{ intertextualLinks[0].target_context_before }}
-                            <span
-                                class="target-passage"
-                            >{{ intertextualLinks[0].target_passage }}</span>
-                            {{ intertextualLinks[0].target_context_after }}
-                        </p>
-                    </div>
-                </div>
+                <passage-pair :passage="intertextualLinks[0]"></passage-pair>
             </div>
             <div v-if="intertextualLinks.length > 1">
                 <h6>The following passage is found in the texts cited below:</h6>
@@ -95,6 +50,7 @@
 </template>
 <script>
 import RenderString from "./RenderString.vue";
+import PassagePair from "./PassagePair.vue";
 import { EventBus } from "../main.js";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
@@ -103,7 +59,8 @@ import "tippy.js/themes/light.css";
 export default {
     name: "TextNavigation",
     components: {
-        RenderString
+        RenderString,
+        PassagePair
     },
     data() {
         return {
@@ -142,13 +99,27 @@ export default {
                     )
                     .then(response => {
                         this.intertextualLinks = response.data.alignments;
-                        this.currentIntertextualMetadata = this.intertextualLinks.map(
-                            alignment => ({
-                                author: alignment.source_author,
-                                title: alignment.source_title,
-                                year: alignment.source_year
-                            })
-                        );
+                        if (this.$route.query.direction == "target") {
+                            this.currentIntertextualMetadata = this.intertextualLinks.map(
+                                alignment => ({
+                                    author: alignment.source_author,
+                                    title: alignment.source_title,
+                                    year: alignment.source_year
+                                })
+                            );
+                        } else {
+                            this.currentIntertextualMetadata = this.intertextualLinks.map(
+                                alignment => ({
+                                    author: alignment.target_author,
+                                    title: alignment.target_title,
+                                    year: alignment.target_year
+                                })
+                            );
+                            console.log(
+                                this.intertextualLinks,
+                                this.currentIntertextualMetadata
+                            );
+                        }
 
                         let link = document.createElement("span");
                         let text = document.createTextNode(" See reuses");
@@ -203,16 +174,6 @@ export default {
 };
 </script>
 <style scoped>
-.separator {
-    display: inline-block;
-    padding: 0 0.5rem;
-    font-size: 0.5rem;
-    vertical-align: middle;
-}
-.source-passage,
-.target-passage {
-    color: dodgerblue;
-}
 #intertextual-metadata {
     background-color: white;
 }
