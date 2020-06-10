@@ -6,31 +6,31 @@
             v-for="(documentPair, resultIndex) in results"
             :key="resultIndex"
         >
-            {{ documentPair.length}} common passages between:
+            {{ documentPair.alignment_count}} common passages between:
             <br />
             <p>
-                <span v-if="documentPair[0].source_author">
-                    {{ documentPair[0].source_author }}
+                <span v-if="documentPair.source_author">
+                    {{ documentPair.source_author }}
                     <span class="separator">&#9679;</span>
                 </span>
-                <i>{{ documentPair[0].source_title }}</i>
+                <i>{{ documentPair.source_title }}</i>
                 <span class="separator">&#9679;</span>
-                <span v-if="documentPair[0].source_year">{{ documentPair[0].source_year }}</span>
+                <span v-if="documentPair.source_year">{{ documentPair.source_year }}</span>
                 &nbsp;
                 <a
-                    :href="`/navigate?source_philo_id=${documentPair[0].source_philo_id}&target_philo_id=${documentPair[0].target_philo_id}&direction=source`"
+                    :href="`/navigate?source_philo_id=${documentPair.source_philo_id}&target_philo_id=${documentPair.target_philo_id}&direction=source`"
                 >See passages in document</a>
                 <br />
-                <span v-if="documentPair[0].target_author">
-                    {{ documentPair[0].target_author }}
+                <span v-if="documentPair.target_author">
+                    {{ documentPair.target_author }}
                     <span class="separator">&#9679;</span>
                 </span>
-                <i>{{ documentPair[0].target_title }}</i>
+                <i>{{ documentPair.target_title }}</i>
                 <span class="separator">&#9679;</span>
-                <span v-if="documentPair[0].target_year">{{ documentPair[0].target_year }}</span>
+                <span v-if="documentPair.target_year">{{ documentPair.target_year }}</span>
                 &nbsp;
                 <a
-                    :href="`/navigate?source_philo_id=${documentPair[0].source_philo_id}&target_philo_id=${documentPair[0].target_philo_id}&direction=target`"
+                    :href="`/navigate?source_philo_id=${documentPair.source_philo_id}&target_philo_id=${documentPair.target_philo_id}&direction=target`"
                 >See passages in document</a>
             </p>
         </b-card>
@@ -59,7 +59,7 @@ export default {
                     )}`
                 )
                 .then(response => {
-                    this.results = response.data.results;
+                    this.results = response.data;
                 });
         }
     }

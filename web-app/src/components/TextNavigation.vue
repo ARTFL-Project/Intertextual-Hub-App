@@ -1,7 +1,7 @@
 <template>
     <b-card class="shadow">
         <b-card-text>
-            <RenderString v-if="text" :string="text"></RenderString>
+            <div id="main-text" v-html="text"></div>
         </b-card-text>
         <b-modal
             id="text-reuse"
@@ -49,7 +49,7 @@
     </b-card>
 </template>
 <script>
-import RenderString from "./RenderString.vue";
+// import RenderString from "./RenderString.vue";
 import PassagePair from "./PassagePair.vue";
 import { EventBus } from "../main.js";
 import tippy from "tippy.js";
@@ -59,7 +59,7 @@ import "tippy.js/themes/light.css";
 export default {
     name: "TextNavigation",
     components: {
-        RenderString,
+        // RenderString,
         PassagePair
     },
     data() {
@@ -80,6 +80,21 @@ export default {
             )
             .then(response => {
                 this.text = response.data.text;
+                this.$nextTick(() => {
+                    document
+                        .getElementsByClassName("passage-marker")
+                        .forEach(el =>
+                            el.addEventListener("click", () => {
+                                let passageNumber = el.getAttribute("n");
+                                let offsets = el.dataset.offsets.split("-");
+                                EventBus.$emit("showPassage", {
+                                    offsets: offsets,
+                                    passageNumber: passageNumber,
+                                    element: el
+                                });
+                            })
+                        );
+                });
             });
         EventBus.$on("showPassage", data => {
             if (
@@ -176,6 +191,17 @@ export default {
 <style scoped>
 #intertextual-metadata {
     background-color: white;
+}
+::v-deep .passage-marker {
+    color: dodgerblue;
+    font-weight: 700;
+    padding: 0.1rem 0.25rem;
+    border-radius: 50%;
+}
+::v-deep .passage-marker:hover {
+    background-color: dodgerblue;
+    color: #fff;
+    cursor: pointer;
 }
 ::v-deep .intertextual-link {
     display: inline-block;

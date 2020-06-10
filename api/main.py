@@ -3,7 +3,6 @@ from starlette.middleware.cors import CORSMiddleware
 from collections import defaultdict
 import json
 import requests
-from urllib.parse import quote
 
 app = FastAPI()
 
@@ -20,6 +19,30 @@ ALIGNMENT_DB = "frantext18thc_vs_frc"
 
 @app.get("/navigate")
 def navigate(request: Request):
+    passages = get_passages(request)
+    if request.query_params["direction"] == "source":
+        philologic_response = requests.post(
+            f"{HUB_URL}/{SOURCE_DB}/reports/navigation.py",
+            params={"philo_id": request.query_params["source_philo_id"]},
+            json={"passages": passages},
+        )
+    else:
+        philologic_response = requests.post(
+            f"{HUB_URL}/{TARGET_DB}/reports/navigation.py",
+            params={"philo_id": request.query_params["target_philo_id"]},
+            json={"passages": passages},
+        )
+    return philologic_response.json()
+
+
+@app.get("/search")
+def search(request: Request):
+    grouped_alignments = get_all_passages(request)
+    return grouped_alignments
+
+
+def get_passages(request):
+    """Get passages from TextPAIR"""
     response = requests.get(
         f"{TEXT_PAIR_API}/retrieve_all_passage_pairs/",
         params={
@@ -28,42 +51,30 @@ def navigate(request: Request):
             "target_philo_id": request.query_params["target_philo_id"],
         },
     )
-    print("RESPONSE", response.url)
-    print(
-        "STRING",
-        f"""{TEXT_PAIR_API}/retrieve_all_passage_pairs/?db_table={ALIGNMENT_DB}&source_philo_id={quote(request.query_params["source_philo_id"])}&target_philo_id={quote(request.query_params["target_philo_id"])}""",
-    )
+    direction = request.query_params["direction"]
+
     passages = []
-    if request.query_params["direction"] == "source":
-        link = f"{HUB_URL}/{SOURCE_DB}/reports/navigation.py?philo_id={quote(request.query_params['source_philo_id'])}"
-        for alignment in response.json():
-            passages.append(
-                {
-                    "start_byte": alignment["source_start_byte"],
-                    "end_byte": alignment["source_end_byte"],
-                    "rowid": alignment["rowid"],
-                }
-            )
-    else:
-        link = f"{HUB_URL}/{TARGET_DB}/reports/navigation.py?philo_id={quote(request.query_params['target_philo_id'])}"
-        for alignment in response.json():
-            passages.append(
-                {
-                    "start_byte": alignment["target_start_byte"],
-                    "end_byte": alignment["target_end_byte"],
-                    "rowid": alignment["rowid"],
-                }
-            )
-    philologic_response = requests.post(link, json={"passages": passages})
-    return philologic_response.json()
+    for alignment in response.json():
+        passages.append(
+            {
+                "start_byte": alignment[f"{direction}_start_byte"],
+                "end_byte": alignment[f"{direction}_end_byte"],
+                "rowid": alignment["rowid"],
+            }
+        )
+    return passages
 
 
-@app.get("/search")
-def search(request: Request):
+def get_all_passages(request):
+    """Retrieve all passages based on query and group by doc pairs"""
     query_params = {"db_table": ALIGNMENT_DB, **request.query_params}
     response = requests.get(f"{TEXT_PAIR_API}/retrieve_all_passage_pairs/", params=query_params)
-    grouped_alignments = defaultdict(list)
+    grouped_alignments = {}
     for alignment in response.json():
-        combined_id = f"""{alignment["source_philo_id"]}-{alignment ["target_philo_id"] }"""
-        grouped_alignments[combined_id].append(alignment)
-    return {"results": list(grouped_alignments.values())}
+        combined_id = f"""{alignment["source_philo_doc_id"]}-{alignment ["target_philo_doc_id"] }"""
+        print(combined_id)
+        if combined_id not in grouped_alignments:
+            grouped_alignments[combined_id] = {"alignment_count": 1, **alignment}
+        else:
+            grouped_alignments[combined_id]["alignment_count"] += 1
+    return grouped_alignments
