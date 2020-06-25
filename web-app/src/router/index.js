@@ -13,7 +13,7 @@ export default new Router({
             name: 'home',
         },
         {
-            path: '/navigate',
+            path: '/navigate/:philoDb/:doc([\\d/]+)',
             name: "TextNavigation",
             component: TextNavigation
         },

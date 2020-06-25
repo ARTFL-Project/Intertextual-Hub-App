@@ -49,7 +49,6 @@
     </b-card>
 </template>
 <script>
-// import RenderString from "./RenderString.vue";
 import PassagePair from "./PassagePair.vue";
 import { EventBus } from "../main.js";
 import tippy from "tippy.js";
@@ -59,7 +58,6 @@ import "tippy.js/themes/light.css";
 export default {
     name: "TextNavigation",
     components: {
-        // RenderString,
         PassagePair
     },
     data() {
@@ -73,9 +71,11 @@ export default {
     created() {
         this.$http
             .get(
-                "https://anomander.uchicago.edu/intertextual-hub-api/navigate?",
+                `https://anomander.uchicago.edu/intertextual-hub-api/navigate/${this.$route.params.philoDb}/${this.$route.query.pairid}/${this.$route.query.direction}`,
                 {
-                    params: this.$route.query
+                    params: {
+                        philo_id: this.$route.params.doc
+                    }
                 }
             )
             .then(response => {

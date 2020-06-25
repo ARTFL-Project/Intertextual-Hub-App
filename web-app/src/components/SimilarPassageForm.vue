@@ -1,10 +1,10 @@
 <template>
-    <b-card class="shadow mb-4">
+    <b-card class="shadow-sm mb-4 border-top-0">
         <b-row>
             <b-col cols="6">
                 <h6 class="text-center pb-2">Source</h6>
             </b-col>
-            <b-col cols="6" class="col border border-top-0 border-right-0 border-bottom-0">
+            <b-col cols="6" class="border border-top-0 border-right-0 border-bottom-0">
                 <h6 class="text-center pb-2">Target</h6>
             </b-col>
             <b-col cols="6">
@@ -28,7 +28,7 @@
                     />
                 </div>
             </b-col>
-            <b-col cols="6">
+            <b-col cols="6" class="border border-top-0 border-right-0 border-bottom-0">
                 <div
                     class="input-group pb-3"
                     v-for="field in metadataFields.target"
@@ -56,7 +56,7 @@
 </template>
 <script>
 export default {
-    name: "SearchForm",
+    name: "SimilarPassageForm",
     data() {
         return {
             metadataFields: this.$appConfig.searchFormFields,

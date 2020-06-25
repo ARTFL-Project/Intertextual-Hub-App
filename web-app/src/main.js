@@ -2,6 +2,7 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from "./router"
 import appConfig from "./appConfig.json"
+import hubConfig from "../../../config/intertextual_hub_config.json"
 
 import {
     BootstrapVue,
@@ -17,6 +18,7 @@ Vue.use(BootstrapVue)
 Vue.use(BootstrapVueIcons)
 Vue.prototype.$http = axios
 Vue.prototype.$appConfig = appConfig
+Vue.prototype.$hubConfig = hubConfig
 export const EventBus = new Vue() // To pass messages between components
 
 Vue.mixin({

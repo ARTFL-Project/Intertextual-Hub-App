@@ -22,9 +22,21 @@
                 "value": "target_title"
             },
             {
-                "label": "Year",
-                "value": "target_year"
+                "label": "Date",
+                "value": "target_date"
             }
         ]
+    },
+    "styles": {
+        "author": {
+            "font-variant": "small-caps"
+        },
+        "title": {
+            "font-style": "italic"
+        },
+        "head": {
+            "font-variant": "small-caps"
+        },
+        "date": {}
     }
 }
