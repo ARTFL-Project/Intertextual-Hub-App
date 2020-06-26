@@ -1,23 +1,19 @@
 <template>
     <b-row>
-        <b-col cols="6" class="mt-2">
+        <b-col cols="6" class="mt-2" v-if="passage.metadata">
             <h6 class="text-center pb-2">Earlier Use</h6>
             <p class="pt-3 px-3">
-                {{ passage.source_author }}
-                <span class="separator">&#9679;</span>
-                <i>{{ passage.source_title }}</i>
-                <span class="separator">&#9679;</span>
-                <span v-if="passage.source_year">{{ passage.source_year }}</span>
+                <citations :docPair="passage.metadata" direction="source"></citations>
             </p>
         </b-col>
-        <b-col cols="6" class="mt-2 border border-top-0 border-right-0 border-bottom-0">
+        <b-col
+            cols="6"
+            class="mt-2 border border-top-0 border-right-0 border-bottom-0"
+            v-if="passage.metadata"
+        >
             <h6 class="text-center pb-2">Later use</h6>
             <p class="pt-3 px-3">
-                {{ passage.target_author }}
-                <span class="separator">&#9679;</span>
-                <i>{{ passage.target_title }}</i>
-                <span class="separator">&#9679;</span>
-                <span v-if="passage.target_year">{{ passage.target_year }}</span>
+                <citations :docPair="passage.metadata" direction="target"></citations>
             </p>
         </b-col>
         <b-col cols="6" class="mb-2">
@@ -42,8 +38,10 @@
 </template>
 
 <script>
+import Citations from "./Citations";
 export default {
     name: "PassagePair",
+    components: { Citations },
     props: ["passage"]
 };
 </script>

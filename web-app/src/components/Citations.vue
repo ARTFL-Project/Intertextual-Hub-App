@@ -1,10 +1,6 @@
 <template>
     <div class="d-inline-block">
-        <span
-            v-for="(citation, citeIndex) in citations"
-            :key="citation.field"
-            :style="citation.style"
-        >
+        <span v-for="(citation, citeIndex) in citations" :key="citeIndex" :style="citation.style">
             <router-link v-if="citation.link" :to="docLink()">
                 {{
                 citation.field || "Unnamed section"
@@ -24,9 +20,7 @@ export default {
     props: ["philoDb", "docPair", "direction"],
     data() {
         return {
-            fields: ["author", "title", "head", "date"],
-            filteredToKeep: this.$hubConfig.philoDBs[this.philoDb]
-                .citation_fields
+            fields: ["author", "title", "head", "date"]
         };
     },
     computed: {

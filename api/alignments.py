@@ -12,7 +12,9 @@ with open("./db_config.json") as db_config_file:
         user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
     )
 CURSOR = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-TABLE = db_config["alignments_table"]
+ALIGNMENTS_TABLE = db_config["alignments_table"]
+PASSAGES_TABLE = db_config["passages_table"]
+
 
 FIELD_TYPES = {
     "source_author": "TEXT",
@@ -34,6 +36,7 @@ FIELD_TYPES = {
 }
 
 BOOLEAN_ARGS = re.compile(r"""(NOT \w+)|(OR \w+)|(\w+)|("")""")
+DATE_RANGE = re.compile(r"<=>")
 
 
 def query_builder(query_args):
@@ -90,6 +93,20 @@ def query_builder(query_args):
                 query = "{} = %s".format(field)
                 sql_values.append(value)
             sql_fields.append(query)
+        elif field_type == "DATE":
+            if "<=>" in value:
+                low, high = DATE_RANGE.split(value)
+                if low.isdigit():
+                    low = f"{low}-01-01"
+                if high.isdigit():
+                    high = f"{high}-12-31"
+                sql_fields.append(f"{field} BETWEEN %s AND %s")
+                sql_values.extend((low, high))
+            else:
+                if value.isdigit():
+                    value = f"{value}-01-01"
+                sql_fields.append(f"{field} = %s")
+                sql_values.append(value)
         else:
             continue
     # if other_args.banality != "":
@@ -101,7 +118,7 @@ def query_builder(query_args):
 def search_alignments(**query_params):
     print(query_params)
     sql_fields, sql_values = query_builder(query_params)
-    query = f"SELECT * FROM {TABLE} WHERE {sql_fields}"
+    query = f"SELECT * FROM {ALIGNMENTS_TABLE} WHERE {sql_fields}"
     CURSOR.execute(query, sql_values)
     results = []
     for row in CURSOR:
@@ -112,23 +129,24 @@ def search_alignments(**query_params):
 
 
 def get_passages(pairid):
-    CURSOR.execute(f"SELECT passages FROM {TABLE} WHERE pairid=%s", (pairid,))
-    passages_info = [passage for passage in CURSOR]
+    CURSOR.execute(f"SELECT passages FROM {PASSAGES_TABLE} WHERE pairid=%s", (pairid,))
+    passages = CURSOR.fetchone()[0]
     return [
         {
-            "source_context_before": "PLACEHOLDER CONTEXT BEFORE",
-            "source_passage": "PLACEHOLDER passage",
-            "source_passage_after": "PLACEHOLDER CONTEXT AFTER",
-            "target_context_before": "PLACEHOLDER CONTEXT BEFORE",
-            "target_passage": "PLACEHOLDER passage",
-            "target_passage_after": "PLACEHOLDER CONTEXT AFTER",
+            "passageid": passage["passageid"],
+            "source_context_before": passage["source_context_before"],
+            "source_passage": passage["source_passage"],
+            "source_passage_after": passage["source_context_after"],
+            "target_context_before": passage["target_context_before"],
+            "target_passage": passage["target_passage"],
+            "target_passage_after": passage["target_context_after"],
         }
-        for _ in enumerate(passages_info)
+        for passage in passages
     ]
 
 
 def get_passage_byte_offsets(pairid, direction):
-    CURSOR.execute(f"SELECT passages FROM {TABLE} WHERE pairid=%s", (pairid,))
+    CURSOR.execute(f"SELECT passages FROM {ALIGNMENTS_TABLE} WHERE pairid=%s", (pairid,))
     passages = CURSOR.fetchone()[0]
     byte_offsets = []
     return [

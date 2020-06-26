@@ -34,10 +34,10 @@ async def navigate(philo_db: str, pairid: str, direction: str, philo_id: str):
 @app.get("/search")
 async def search(request: Request):
     results = search_alignments(**request.query_params)
-    return results
+    return results[:50]
 
 
 @app.get("/retrieve_passages/{pairid}")
 async def retrieve_passages(pairid: str):
     passages = get_passages(pairid)
-    print(passages)
+    return passages

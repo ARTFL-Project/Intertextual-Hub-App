@@ -1,10 +1,11 @@
 <template>
     <div class="mt-4">
+        <h5 v-if="results">Showing results 1-{{results.length}}</h5>
         <b-card
             class="p-3 mb-4 shadow-sm"
             no-body
             v-for="(documentPair, resultsIndex) in results"
-            :key="resultsIndex"
+            :key="documentPair.pairid"
         >
             {{ documentPair.passage_number}} common passages between:
             <br />
@@ -36,17 +37,23 @@
                 >See passage(s) in document</b-button>
             </p>
             <div>
-                <b-button @click="getPassages(documentPair.pairid, resultsIndex)">Show passages</b-button>
+                <b-button
+                    @click="getPassages(documentPair, documentPair.pairid, resultsIndex)"
+                >Show passages</b-button>
             </div>
-            <!-- <div v-if="passages[resultsIndex].length > 0"></div> -->
+            <div v-for="(passage, passageIndex) in passages[resultsIndex]" :key="passage.passageid">
+                <hr v-if="passageIndex != 0 && passageIndex != passages[resultsIndex].length" />
+                <passage-pair :passage="passage"></passage-pair>
+            </div>
         </b-card>
     </div>
 </template>
 <script>
 import Citations from "./Citations";
+import PassagePair from "./PassagePair";
 export default {
     name: "ResultSummary",
-    components: { Citations },
+    components: { Citations, PassagePair },
     data() {
         return {
             results: null,
@@ -86,16 +93,28 @@ export default {
                 )
                 .then(response => {
                     this.results = response.data;
-                    this.passages = new Array(this.results.length);
+                    this.passages = new Array(this.results.length).fill(
+                        [],
+                        0,
+                        this.results.length
+                    );
                 });
         },
-        getPassages(pairID, index) {
+        getPassages(documentPair, pairID, index) {
             this.$http
                 .get(
                     `https://anomander.uchicago.edu//intertextual-hub-api/retrieve_passages/${pairID}`
                 )
                 .then(response => {
-                    this.passages[index] = response.data;
+                    response.data[0].metadata = {
+                        source_author: documentPair.source_author,
+                        source_title: documentPair.source_title,
+                        source_date: documentPair.source_date,
+                        target_author: documentPair.target_author,
+                        target_title: documentPair.target_title,
+                        target_date: documentPair.target_date
+                    };
+                    this.$set(this.passages, index, response.data);
                 });
         }
     }

@@ -1,32 +1,4 @@
 {
-    "searchFormFields": {
-        "source": [{
-                "label": "Author",
-                "value": "source_author"
-            },
-            {
-                "label": "Title",
-                "value": "source_title"
-            },
-            {
-                "label": "Year",
-                "value": "source_year"
-            }
-        ],
-        "target": [{
-                "label": "Author",
-                "value": "target_author"
-            },
-            {
-                "label": "Title",
-                "value": "target_title"
-            },
-            {
-                "label": "Date",
-                "value": "target_date"
-            }
-        ]
-    },
     "styles": {
         "author": {
             "font-variant": "small-caps"
