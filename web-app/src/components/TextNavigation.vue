@@ -9,26 +9,10 @@
             centered
             scrollable
             hide-footer
-            v-if="intertextualLinks"
-            title="Intertextual Links"
+            v-if="intertextualLink"
+            title="Intertextual Link"
         >
-            <div v-if="intertextualLinks.length == 1">
-                <passage-pair :passage="intertextualLinks[0]"></passage-pair>
-            </div>
-            <div v-if="intertextualLinks.length > 1">
-                <h6>The following passage is found in the texts cited below:</h6>
-                <p class="my-2">{{ intertextualLinks[0].target_passage }}</p>
-                <ul>
-                    <li v-for="(passagePair, pairIndex) in intertextualLinks" :key="pairIndex">
-                        {{ passagePair.source_author }}
-                        <span class="separator">&#9679;</span>
-                        <i>{{ passagePair.source_title }}</i>
-                        <span class="separator">&#9679;</span>
-                        <span v-if="passagePair.source_year">{{ passagePair.source_year }}</span>
-                        <a href @click="togglePassage()">See passage</a>
-                    </li>
-                </ul>
-            </div>
+            <passage-pair :passage="intertextualLink"></passage-pair>
         </b-modal>
         <div id="intertextual-metadata" class="shadow p-2">
             <div v-if="currentIntertextualMetadata">
@@ -58,124 +42,28 @@ import "tippy.js/themes/light.css";
 export default {
     name: "TextNavigation",
     components: {
-        PassagePair
+        PassagePair,
     },
     data() {
         return {
             text: null,
-            intertextualLinks: null,
+            intertextualLink: null,
             highlighted: {},
-            currentIntertextualMetadata: null
+            currentIntertextualMetadata: null,
         };
     },
     created() {
-        this.$http
-            .get(
-                `https://anomander.uchicago.edu/intertextual-hub-api/navigate/${this.$route.params.philoDb}/${this.$route.query.pairid}/${this.$route.query.direction}`,
-                {
-                    params: {
-                        philo_id: this.$route.params.doc
-                    }
-                }
-            )
-            .then(response => {
-                this.text = response.data.text;
-                this.$nextTick(() => {
-                    document
-                        .getElementsByClassName("passage-marker")
-                        .forEach(el =>
-                            el.addEventListener("click", () => {
-                                let passageNumber = el.getAttribute("n");
-                                let offsets = el.dataset.offsets.split("-");
-                                EventBus.$emit("showPassage", {
-                                    offsets: offsets,
-                                    passageNumber: passageNumber,
-                                    element: el
-                                });
-                            })
-                        );
-                });
-            });
-        EventBus.$on("showPassage", data => {
+        this.fetchPassage();
+        EventBus.$on("showPassage", (data) => {
             if (
                 typeof this.highlighted[data.passageNumber] == "undefined" ||
                 !this.highlighted[data.passageNumber]
             ) {
-                this.$http
-                    .get(
-                        "https://anomander.uchicago.edu/text-pair-api/search_alignments",
-                        {
-                            params: {
-                                db_table: "frantext18thc_vs_frc",
-                                target_start_byte: data.offsets[0],
-                                target_end_byte: data.offsets[1]
-                            }
-                        }
-                    )
-                    .then(response => {
-                        this.intertextualLinks = response.data.alignments;
-                        if (this.$route.query.direction == "target") {
-                            this.currentIntertextualMetadata = this.intertextualLinks.map(
-                                alignment => ({
-                                    author: alignment.source_author,
-                                    title: alignment.source_title,
-                                    year: alignment.source_year
-                                })
-                            );
-                        } else {
-                            this.currentIntertextualMetadata = this.intertextualLinks.map(
-                                alignment => ({
-                                    author: alignment.target_author,
-                                    title: alignment.target_title,
-                                    year: alignment.target_year
-                                })
-                            );
-                            console.log(
-                                this.intertextualLinks,
-                                this.currentIntertextualMetadata
-                            );
-                        }
-
-                        let link = document.createElement("span");
-                        let text = document.createTextNode(" See reuses");
-                        link.append(text);
-                        link.title = "Intertextual links";
-                        link.id = `passage-click-${data.passageNumber}`;
-                        link.classList.add("intertextual-link");
-                        document
-                            .getElementById(`end-passage-${data.passageNumber}`)
-                            .after(link);
-                        document
-                            .getElementById(
-                                `passage-click-${data.passageNumber}`
-                            )
-                            .addEventListener("click", () => {
-                                this.$bvModal.show("text-reuse");
-                            });
-                        this.$nextTick(() => {
-                            tippy(data.element, {
-                                content() {
-                                    let popup = document.getElementById(
-                                        "intertextual-metadata"
-                                    );
-                                    return popup.innerHTML;
-                                },
-                                allowHTML: true,
-                                theme: "light"
-                            });
-                        });
-                    });
-                document
-                    .getElementsByClassName(`passage-${data.passageNumber}`)
-                    .forEach(el => {
-                        el.style.color = "indianred";
-                    });
-
-                this.highlighted[data.passageNumber] = true;
+                this.getAlignments(data);
             } else {
                 document
                     .getElementsByClassName(`passage-${data.passageNumber}`)
-                    .forEach(el => {
+                    .forEach((el) => {
                         el.style.color = "initial";
                     });
                 this.highlighted[data.passageNumber] = false;
@@ -185,7 +73,96 @@ export default {
                 link.parentNode.removeChild(link);
             }
         });
-    }
+    },
+    updated() {
+        this.$nextTick(() => {
+            this.$scrollTo(
+                document.getElementsByClassName("passage-marker")[0],
+                1000,
+                { easing: "ease-out", offset: -150 }
+            );
+            document.getElementsByClassName("passage-marker").forEach((el) =>
+                el.addEventListener("click", () => {
+                    let passageNumber = el.getAttribute("n");
+                    let offsets = el.dataset.offsets.split("-");
+                    EventBus.$emit("showPassage", {
+                        offsets: offsets,
+                        passageNumber: passageNumber,
+                        element: el,
+                    });
+                })
+            );
+        });
+    },
+    destroyed() {
+        document
+            .getElementsByClassName("passage-marker")
+            .forEach((el) => el.removeEventListener("click"));
+    },
+    methods: {
+        fetchPassage() {
+            this.$http
+                .get(
+                    `https://anomander.uchicago.edu/intertextual-hub-api/navigate/${this.$route.params.philoDb}/${this.$route.query.pairid}/${this.$route.query.direction}`,
+                    {
+                        params: {
+                            philo_id: this.$route.params.doc,
+                        },
+                    }
+                )
+                .then((response) => {
+                    this.text = response.data.text;
+                });
+        },
+        getAlignments(data) {
+            this.$http
+                .get(
+                    `https://anomander.uchicago.edu/intertextual-hub-api/retrieve_passage/${this.$route.query.pairid}/${data.passageNumber}`,
+                    {
+                        params: {
+                            direction: this.$route.query.direction,
+                        },
+                    }
+                )
+                .then((response) => {
+                    this.intertextualLink = response.data;
+
+                    let link = document.createElement("span");
+                    let text = document.createTextNode(" See reuses");
+                    link.append(text);
+                    link.title = "Intertextual links";
+                    link.id = `passage-click-${data.passageNumber}`;
+                    link.classList.add("intertextual-link");
+                    document
+                        .getElementById(`end-passage-${data.passageNumber}`)
+                        .after(link);
+                    document
+                        .getElementById(`passage-click-${data.passageNumber}`)
+                        .addEventListener("click", () => {
+                            this.$bvModal.show("text-reuse");
+                        });
+                    this.$nextTick(() => {
+                        tippy(data.element, {
+                            content() {
+                                let popup = document.getElementById(
+                                    "intertextual-metadata"
+                                );
+                                return popup.innerHTML;
+                            },
+                            allowHTML: true,
+                            theme: "light",
+                        });
+                    });
+                });
+            document
+                .getElementsByClassName(`passage-${data.passageNumber}`)
+                .forEach((el) => {
+                    el.style.color = "indianred";
+                });
+
+            this.highlighted[data.passageNumber] = true;
+        },
+    },
 };
 </script>
 <style scoped>
@@ -193,13 +170,17 @@ export default {
     background-color: white;
 }
 ::v-deep .passage-marker {
-    color: dodgerblue;
+    display: inline-block;
+    margin: 0 0.15rem;
+    color: indianred;
+    background-color: #fff;
+    border: #ccc solid 0.05rem;
     font-weight: 700;
-    padding: 0.1rem 0.25rem;
+    padding: 0.05rem 0.4rem;
     border-radius: 50%;
 }
 ::v-deep .passage-marker:hover {
-    background-color: dodgerblue;
+    background-color: lightcoral;
     color: #fff;
     cursor: pointer;
 }

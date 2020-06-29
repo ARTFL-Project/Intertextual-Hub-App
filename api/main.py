@@ -6,7 +6,7 @@ import requests
 from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 
-from alignments import search_alignments, get_passages, get_passage_byte_offsets
+from alignments import search_alignments, get_passages, get_passage_byte_offsets, get_passage
 
 app = FastAPI()
 
@@ -41,3 +41,9 @@ async def search(request: Request):
 async def retrieve_passages(pairid: str):
     passages = get_passages(pairid)
     return passages
+
+
+@app.get("/retrieve_passage/{pairid}/{passage_number}")
+async def retrieve_passage(pairid: str, passage_number: int, direction: str):
+    passage = get_passage(pairid, passage_number, direction)
+    return passage

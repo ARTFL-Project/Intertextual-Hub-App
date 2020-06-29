@@ -112,6 +112,7 @@ def query_builder(query_args):
     # if other_args.banality != "":
     #     sql_fields.append("banality=%s")
     #     sql_values.append(other_args.banality)
+    print(sql_fields, sql_values)
     return " AND ".join(sql_fields), sql_values
 
 
@@ -153,3 +154,19 @@ def get_passage_byte_offsets(pairid, direction):
         {"start_byte": int(passage[f"{direction}_start_byte"]), "end_byte": int(passage[f"{direction}_end_byte"])}
         for passage in passages
     ]
+
+
+def get_passage(pairid, passage_number, direction):
+    CURSOR.execute(f"SELECT passages FROM {PASSAGES_TABLE} WHERE pairid=%s", (pairid,))
+    passages = CURSOR.fetchone()[0]
+    passageid = f"{pairid}:{passage_number}"
+    passage = {}
+    for passage_object in passages:
+        if passage_object["passageid"] == passageid:
+            passage = passage_object
+            break
+    CURSOR.execute(f"SELECT * FROM {ALIGNMENTS_TABLE} WHERE pairid=%s", (pairid,))
+    results = CURSOR.fetchone()
+    passage["metadata"] = {field: results[field] for field in FIELD_TYPES}
+    return passage
+
