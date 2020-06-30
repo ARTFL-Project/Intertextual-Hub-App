@@ -34,7 +34,6 @@
 </template>
 <script>
 import PassagePair from "./PassagePair.vue";
-import { EventBus } from "../main.js";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light.css";
@@ -42,37 +41,18 @@ import "tippy.js/themes/light.css";
 export default {
     name: "TextNavigation",
     components: {
-        PassagePair,
+        PassagePair
     },
     data() {
         return {
             text: null,
             intertextualLink: null,
             highlighted: {},
-            currentIntertextualMetadata: null,
+            currentIntertextualMetadata: null
         };
     },
     created() {
         this.fetchPassage();
-        EventBus.$on("showPassage", (data) => {
-            if (
-                typeof this.highlighted[data.passageNumber] == "undefined" ||
-                !this.highlighted[data.passageNumber]
-            ) {
-                this.getAlignments(data);
-            } else {
-                document
-                    .getElementsByClassName(`passage-${data.passageNumber}`)
-                    .forEach((el) => {
-                        el.style.color = "initial";
-                    });
-                this.highlighted[data.passageNumber] = false;
-                let link = document.getElementById(
-                    `passage-click-${data.passageNumber}`
-                );
-                link.parentNode.removeChild(link);
-            }
-        });
     },
     updated() {
         this.$nextTick(() => {
@@ -81,23 +61,17 @@ export default {
                 1000,
                 { easing: "ease-out", offset: -150 }
             );
-            document.getElementsByClassName("passage-marker").forEach((el) =>
-                el.addEventListener("click", () => {
-                    let passageNumber = el.getAttribute("n");
-                    let offsets = el.dataset.offsets.split("-");
-                    EventBus.$emit("showPassage", {
-                        offsets: offsets,
-                        passageNumber: passageNumber,
-                        element: el,
-                    });
-                })
+            Array.from(
+                document.getElementsByClassName("passage-marker")
+            ).forEach(el =>
+                el.addEventListener("click", this.showPassage, false)
             );
         });
     },
     destroyed() {
         document
             .getElementsByClassName("passage-marker")
-            .forEach((el) => el.removeEventListener("click"));
+            .forEach(el => el.removeEventListener("click"));
     },
     methods: {
         fetchPassage() {
@@ -106,11 +80,11 @@ export default {
                     `https://anomander.uchicago.edu/intertextual-hub-api/navigate/${this.$route.params.philoDb}/${this.$route.query.pairid}/${this.$route.query.direction}`,
                     {
                         params: {
-                            philo_id: this.$route.params.doc,
-                        },
+                            philo_id: this.$route.params.doc
+                        }
                     }
                 )
-                .then((response) => {
+                .then(response => {
                     this.text = response.data.text;
                 });
         },
@@ -120,11 +94,11 @@ export default {
                     `https://anomander.uchicago.edu/intertextual-hub-api/retrieve_passage/${this.$route.query.pairid}/${data.passageNumber}`,
                     {
                         params: {
-                            direction: this.$route.query.direction,
-                        },
+                            direction: this.$route.query.direction
+                        }
                     }
                 )
-                .then((response) => {
+                .then(response => {
                     this.intertextualLink = response.data;
 
                     let link = document.createElement("span");
@@ -150,19 +124,45 @@ export default {
                                 return popup.innerHTML;
                             },
                             allowHTML: true,
-                            theme: "light",
+                            theme: "light"
                         });
                     });
                 });
             document
                 .getElementsByClassName(`passage-${data.passageNumber}`)
-                .forEach((el) => {
+                .forEach(el => {
                     el.style.color = "indianred";
                 });
 
             this.highlighted[data.passageNumber] = true;
         },
-    },
+        showPassage(event) {
+            let element = event.srcElement;
+            let passageNumber = element.getAttribute("n");
+            let offsets = element.dataset.offsets.split("-");
+            if (
+                typeof this.highlighted[passageNumber] == "undefined" ||
+                !this.highlighted[passageNumber]
+            ) {
+                this.getAlignments({
+                    offsets: offsets,
+                    passageNumber: passageNumber,
+                    element: element
+                });
+            } else {
+                document
+                    .getElementsByClassName(`passage-${passageNumber}`)
+                    .forEach(el => {
+                        el.style.color = "initial";
+                    });
+                this.highlighted[passageNumber] = false;
+                let link = document.getElementById(
+                    `passage-click-${passageNumber}`
+                );
+                link.parentNode.removeChild(link);
+            }
+        }
+    }
 };
 </script>
 <style scoped>
