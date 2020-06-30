@@ -9,7 +9,6 @@
             centered
             scrollable
             hide-footer
-            v-if="intertextualLink"
             title="Intertextual Link"
         >
             <passage-pair :passage="intertextualLink"></passage-pair>
@@ -69,9 +68,16 @@ export default {
         });
     },
     destroyed() {
-        document
-            .getElementsByClassName("passage-marker")
-            .forEach(el => el.removeEventListener("click"));
+        let passageMarkers = document.getElementsByClassName("passage-marker");
+        passageMarkers.forEach(el => el.removeEventListener("click"));
+        for (let i = 0; i < passageMarkers.length; i += 1) {
+            let passageNumber = i + 1;
+            document
+                .getElementsByClassName(`passage-${passageNumber}`)
+                .forEach(el => {
+                    el.removeEventListener("click");
+                });
+        }
     },
     methods: {
         fetchPassage() {
@@ -88,6 +94,45 @@ export default {
                     this.text = response.data.text;
                 });
         },
+        showPassage(event) {
+            let element = event.srcElement;
+            let passageNumber = element.getAttribute("n");
+            let offsets = element.dataset.offsets.split("-");
+            if (
+                typeof this.highlighted[passageNumber] == "undefined" ||
+                !this.highlighted[passageNumber]
+            ) {
+                document
+                    .getElementsByClassName(`passage-${passageNumber}`)
+                    .forEach(el => {
+                        el.classList.add("passage-highlight");
+                        el.addEventListener(
+                            "click",
+                            () => {
+                                this.getAlignments({
+                                    offsets: offsets,
+                                    passageNumber: passageNumber,
+                                    element: element
+                                });
+                            },
+                            false
+                        );
+                    });
+
+                this.highlighted[passageNumber] = true;
+            } else {
+                document
+                    .getElementsByClassName(`passage-${passageNumber}`)
+                    .forEach(el => {
+                        el.style.color = "initial";
+                    });
+                this.highlighted[passageNumber] = false;
+                let link = document.getElementById(
+                    `passage-click-${passageNumber}`
+                );
+                link.parentNode.removeChild(link);
+            }
+        },
         getAlignments(data) {
             this.$http
                 .get(
@@ -100,21 +145,7 @@ export default {
                 )
                 .then(response => {
                     this.intertextualLink = response.data;
-
-                    let link = document.createElement("span");
-                    let text = document.createTextNode(" See reuses");
-                    link.append(text);
-                    link.title = "Intertextual links";
-                    link.id = `passage-click-${data.passageNumber}`;
-                    link.classList.add("intertextual-link");
-                    document
-                        .getElementById(`end-passage-${data.passageNumber}`)
-                        .after(link);
-                    document
-                        .getElementById(`passage-click-${data.passageNumber}`)
-                        .addEventListener("click", () => {
-                            this.$bvModal.show("text-reuse");
-                        });
+                    this.$bvModal.show("text-reuse");
                     this.$nextTick(() => {
                         tippy(data.element, {
                             content() {
@@ -128,39 +159,6 @@ export default {
                         });
                     });
                 });
-            document
-                .getElementsByClassName(`passage-${data.passageNumber}`)
-                .forEach(el => {
-                    el.style.color = "indianred";
-                });
-
-            this.highlighted[data.passageNumber] = true;
-        },
-        showPassage(event) {
-            let element = event.srcElement;
-            let passageNumber = element.getAttribute("n");
-            let offsets = element.dataset.offsets.split("-");
-            if (
-                typeof this.highlighted[passageNumber] == "undefined" ||
-                !this.highlighted[passageNumber]
-            ) {
-                this.getAlignments({
-                    offsets: offsets,
-                    passageNumber: passageNumber,
-                    element: element
-                });
-            } else {
-                document
-                    .getElementsByClassName(`passage-${passageNumber}`)
-                    .forEach(el => {
-                        el.style.color = "initial";
-                    });
-                this.highlighted[passageNumber] = false;
-                let link = document.getElementById(
-                    `passage-click-${passageNumber}`
-                );
-                link.parentNode.removeChild(link);
-            }
         }
     }
 };
@@ -168,6 +166,12 @@ export default {
 <style scoped>
 #intertextual-metadata {
     background-color: white;
+}
+::v-deep .passage-highlight {
+    color: indianred;
+}
+::v-deep .passage-highlight:hover {
+    cursor: pointer;
 }
 ::v-deep .passage-marker {
     display: inline-block;
