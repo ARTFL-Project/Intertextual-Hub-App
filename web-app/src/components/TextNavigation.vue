@@ -98,6 +98,13 @@ export default {
             let element = event.srcElement;
             let passageNumber = element.getAttribute("n");
             let offsets = element.dataset.offsets.split("-");
+            var getAlignments = () => {
+                this.getAlignments({
+                    offsets: offsets,
+                    passageNumber: passageNumber,
+                    element: element
+                });
+            };
             if (
                 typeof this.highlighted[passageNumber] == "undefined" ||
                 !this.highlighted[passageNumber]
@@ -106,17 +113,7 @@ export default {
                     .getElementsByClassName(`passage-${passageNumber}`)
                     .forEach(el => {
                         el.classList.add("passage-highlight");
-                        el.addEventListener(
-                            "click",
-                            () => {
-                                this.getAlignments({
-                                    offsets: offsets,
-                                    passageNumber: passageNumber,
-                                    element: element
-                                });
-                            },
-                            false
-                        );
+                        el.addEventListener("click", getAlignments, false);
                     });
 
                 this.highlighted[passageNumber] = true;
@@ -124,13 +121,10 @@ export default {
                 document
                     .getElementsByClassName(`passage-${passageNumber}`)
                     .forEach(el => {
-                        el.style.color = "initial";
+                        el.removeEventListener("click", getAlignments);
+                        el.classList.remove("passage-highlight");
                     });
                 this.highlighted[passageNumber] = false;
-                let link = document.getElementById(
-                    `passage-click-${passageNumber}`
-                );
-                link.parentNode.removeChild(link);
             }
         },
         getAlignments(data) {
@@ -169,8 +163,11 @@ export default {
 }
 ::v-deep .passage-highlight {
     color: indianred;
+    transition: all 500ms;
 }
 ::v-deep .passage-highlight:hover {
+    color: white;
+    background-color: indianred;
     cursor: pointer;
 }
 ::v-deep .passage-marker {
