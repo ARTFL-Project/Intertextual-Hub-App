@@ -7,13 +7,17 @@
         </b-navbar>
         <b-container fluid class="mt-4">
             <b-tabs>
-                <b-tab title="Explore similar passages" active>
+                <b-tab
+                    title="Explore similar passages"
+                    active
+                    @click="selectModule('similarPassages')"
+                >
                     <similar-passage-form></similar-passage-form>
                 </b-tab>
-                <b-tab title="Explore Topics">
+                <b-tab title="Explore Topics" @click="selectModule('topics')">
                     <topic-distributions></topic-distributions>
                 </b-tab>
-                <b-tab title="Search and Retrieval">
+                <b-tab title="Search and Retrieval" @click="selectModule('search')">
                     <b-card-text>Charlie's form</b-card-text>
                 </b-tab>
             </b-tabs>
@@ -31,6 +35,16 @@ export default {
     components: {
         SimilarPassageForm,
         TopicDistributions
+    },
+    data() {
+        return {
+            module: "similarPassages"
+        };
+    },
+    methods: {
+        selectModule(module) {
+            this.module = module;
+        }
     }
 };
 </script>

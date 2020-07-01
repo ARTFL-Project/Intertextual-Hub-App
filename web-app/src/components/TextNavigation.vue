@@ -1,5 +1,12 @@
 <template>
     <b-card class="shadow">
+        <h5 class="text-center mb-4">
+            <citations
+                :docPair="currentIntertextualMetadata"
+                :direction="direction"
+                v-if="currentIntertextualMetadata"
+            ></citations>
+        </h5>
         <b-card-text>
             <div id="main-text" v-html="text"></div>
         </b-card-text>
@@ -68,9 +75,7 @@ export default {
                 );
                 Array.from(
                     document.getElementsByClassName("passage-marker")
-                ).forEach(el =>
-                    el.addEventListener("click", this.showPassage, false)
-                );
+                ).forEach(el => this.showPassage(el));
                 tippy(".passage-marker", {
                     content() {
                         let popup = document.getElementById(
@@ -87,7 +92,6 @@ export default {
     },
     destroyed() {
         let passageMarkers = document.getElementsByClassName("passage-marker");
-        passageMarkers.forEach(el => el.removeEventListener("click"));
         for (let i = 0; i < passageMarkers.length; i += 1) {
             let passageNumber = i + 1;
             document
@@ -111,40 +115,27 @@ export default {
                 .then(response => {
                     this.text = response.data.text;
                     this.currentIntertextualMetadata = response.data.metadata;
-                    this.$nextTick(() => {});
                 });
         },
-        showPassage(event) {
-            let element = event.srcElement;
-            let passageNumber = element.getAttribute("n");
-            let offsets = element.dataset.offsets.split("-");
-            var getAlignments = () => {
-                this.getAlignments({
-                    offsets: offsets,
-                    passageNumber: passageNumber,
-                    element: element
-                });
-            };
-            if (
-                typeof this.highlighted[passageNumber] == "undefined" ||
-                !this.highlighted[passageNumber]
-            ) {
+        showPassage(element) {
+            if (!element.id.startsWith("end-passage")) {
+                let passageNumber = element.getAttribute("n");
+                let offsets = element.dataset.offsets.split("-");
+                var getAlignments = () => {
+                    this.getAlignments({
+                        offsets: offsets,
+                        passageNumber: passageNumber,
+                        element: element
+                    });
+                };
+
                 document
                     .getElementsByClassName(`passage-${passageNumber}`)
                     .forEach(el => {
-                        el.classList.add("passage-highlight");
                         el.addEventListener("click", getAlignments, false);
                     });
 
                 this.highlighted[passageNumber] = true;
-            } else {
-                document
-                    .getElementsByClassName(`passage-${passageNumber}`)
-                    .forEach(el => {
-                        el.removeEventListener("click", getAlignments);
-                        el.classList.remove("passage-highlight");
-                    });
-                this.highlighted[passageNumber] = false;
             }
         },
         getAlignments(data) {
@@ -170,10 +161,10 @@ export default {
 #intertextual-metadata {
     background-color: white;
 }
-::v-deep .passage-highlight {
+::v-deep [class*="passage-"] {
     color: indianred;
 }
-::v-deep .passage-highlight:hover {
+::v-deep [class*="passage-"]:hover {
     cursor: pointer;
 }
 ::v-deep .passage-marker {
@@ -186,6 +177,7 @@ export default {
     font-weight: 700;
     padding: 0.05rem 0.4rem;
     border-radius: 50%;
+    font-style: initial;
 }
 ::v-deep .passage-marker:hover {
     background-color: #a74b4b;
