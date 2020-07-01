@@ -132,6 +132,7 @@ def search_alignments(**query_params):
 def get_passages(pairid):
     CURSOR.execute(f"SELECT passages FROM {PASSAGES_TABLE} WHERE pairid=%s", (pairid,))
     passages = CURSOR.fetchone()[0]
+    # TODO: have a way to sort the passages by source_start_byte
     return [
         {
             "passageid": passage["passageid"],
@@ -147,19 +148,25 @@ def get_passages(pairid):
 
 
 def get_passage_byte_offsets(pairid, direction):
-    CURSOR.execute(f"SELECT passages FROM {ALIGNMENTS_TABLE} WHERE pairid=%s", (pairid,))
-    passages = CURSOR.fetchone()[0]
-    byte_offsets = []
-    return [
-        {"start_byte": int(passage[f"{direction}_start_byte"]), "end_byte": int(passage[f"{direction}_end_byte"])}
+    CURSOR.execute(f"SELECT * FROM {ALIGNMENTS_TABLE} WHERE pairid=%s", (pairid,))
+    results = CURSOR.fetchone()
+    passages = results["passages"]
+    offsets = [
+        {"start_byte": int(passage[f"{direction}_start_byte"]), "end_byte": int(passage[f"{direction}_end_byte"]),}
         for passage in passages
     ]
+    return {"passages": offsets, "metadata": {field: results[field] for field in FIELD_TYPES}}
 
 
-def get_passage(pairid, passage_number, direction):
+def get_passage(pairid, start_byte, direction):
+    CURSOR.execute(f"SELECT passages FROM {ALIGNMENTS_TABLE} WHERE pairid=%s", (pairid,))
+    row = CURSOR.fetchone()[0]
+    passageid = None
+    for passage in row:
+        if int(passage[f"{direction}_start_byte"]) == start_byte:
+            passageid = passage["passageid"]
     CURSOR.execute(f"SELECT passages FROM {PASSAGES_TABLE} WHERE pairid=%s", (pairid,))
     passages = CURSOR.fetchone()[0]
-    passageid = f"{pairid}:{passage_number}"
     passage = {}
     for passage_object in passages:
         if passage_object["passageid"] == passageid:

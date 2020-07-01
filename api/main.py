@@ -19,16 +19,20 @@ HUB_URL = "https://anomander.uchicago.edu/intertextual_hub/"
 
 @app.get("/navigate/{philo_db}/{pairid}/{direction}")
 async def navigate(philo_db: str, pairid: str, direction: str, philo_id: str):
-    passages = get_passage_byte_offsets(pairid, direction)
+    passage_data = get_passage_byte_offsets(pairid, direction)
     text_object_id = philo_id.split("/")
     while text_object_id[-1] == "0":
         text_object_id.pop()
     philologic_response = requests.post(
         f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py",
         params={"philo_id": " ".join(text_object_id)},
-        json={"passages": passages},
+        json={"passages": passage_data["passages"]},
     )
-    return philologic_response.json()
+    philo_text_object = philologic_response.json()
+    return {
+        "text": philo_text_object["text"],
+        "metadata": passage_data["metadata"],
+    }
 
 
 @app.get("/search")
@@ -43,7 +47,7 @@ async def retrieve_passages(pairid: str):
     return passages
 
 
-@app.get("/retrieve_passage/{pairid}/{passage_number}")
-async def retrieve_passage(pairid: str, passage_number: int, direction: str):
-    passage = get_passage(pairid, passage_number, direction)
+@app.get("/retrieve_passage/{pairid}")
+async def retrieve_passage(pairid: str, start_byte: int, direction: str):
+    passage = get_passage(pairid, start_byte, direction)
     return passage

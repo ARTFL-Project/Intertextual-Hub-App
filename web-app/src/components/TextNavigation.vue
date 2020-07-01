@@ -13,26 +13,28 @@
         >
             <passage-pair :passage="intertextualLink"></passage-pair>
         </b-modal>
-        <div id="intertextual-metadata" class="shadow p-2">
+        <div id="intertextual-metadata" class="shadow p-2 d-none">
             <div v-if="currentIntertextualMetadata">
                 <h6>Passage found in:</h6>
-                <p
-                    v-for="(metadata,
-                    metadataIndex) in currentIntertextualMetadata"
-                    :key="metadataIndex"
-                >
-                    {{ metadata.author }}
-                    <span class="separator">&#9679;</span>
-                    {{ metadata.title }}
-                    <span class="separator">&#9679;</span>
-                    {{ metadata.year }}
-                </p>
+                <citations
+                    :docPair="currentIntertextualMetadata"
+                    direction="source"
+                    philo-db
+                    v-if="direction == 'target'"
+                ></citations>
+                <citations
+                    :docPair="currentIntertextualMetadata"
+                    direction="target"
+                    philo-db
+                    v-else
+                ></citations>
             </div>
         </div>
     </b-card>
 </template>
 <script>
 import PassagePair from "./PassagePair.vue";
+import Citations from "./Citations.vue";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light.css";
@@ -40,32 +42,48 @@ import "tippy.js/themes/light.css";
 export default {
     name: "TextNavigation",
     components: {
-        PassagePair
+        PassagePair,
+        Citations
     },
     data() {
         return {
             text: null,
             intertextualLink: null,
             highlighted: {},
-            currentIntertextualMetadata: null
+            currentIntertextualMetadata: null,
+            direction: this.$route.query.direction,
+            alreadyScrolled: false
         };
     },
     created() {
         this.fetchPassage();
     },
     updated() {
-        this.$nextTick(() => {
-            this.$scrollTo(
-                document.getElementsByClassName("passage-marker")[0],
-                1000,
-                { easing: "ease-out", offset: -150 }
-            );
-            Array.from(
-                document.getElementsByClassName("passage-marker")
-            ).forEach(el =>
-                el.addEventListener("click", this.showPassage, false)
-            );
-        });
+        if (!this.alreadyScrolled) {
+            this.$nextTick(() => {
+                this.$scrollTo(
+                    document.getElementsByClassName("passage-marker")[0],
+                    1000,
+                    { easing: "ease-out", offset: -150 }
+                );
+                Array.from(
+                    document.getElementsByClassName("passage-marker")
+                ).forEach(el =>
+                    el.addEventListener("click", this.showPassage, false)
+                );
+                tippy(".passage-marker", {
+                    content() {
+                        let popup = document.getElementById(
+                            "intertextual-metadata"
+                        );
+                        return popup.innerHTML;
+                    },
+                    allowHTML: true,
+                    theme: "light"
+                });
+            });
+            this.alreadyScrolled = true;
+        }
     },
     destroyed() {
         let passageMarkers = document.getElementsByClassName("passage-marker");
@@ -92,6 +110,8 @@ export default {
                 )
                 .then(response => {
                     this.text = response.data.text;
+                    this.currentIntertextualMetadata = response.data.metadata;
+                    this.$nextTick(() => {});
                 });
         },
         showPassage(event) {
@@ -130,9 +150,10 @@ export default {
         getAlignments(data) {
             this.$http
                 .get(
-                    `https://anomander.uchicago.edu/intertextual-hub-api/retrieve_passage/${this.$route.query.pairid}/${data.passageNumber}`,
+                    `https://anomander.uchicago.edu/intertextual-hub-api/retrieve_passage/${this.$route.query.pairid}`,
                     {
                         params: {
+                            start_byte: data.offsets[0],
                             direction: this.$route.query.direction
                         }
                     }
@@ -140,18 +161,6 @@ export default {
                 .then(response => {
                     this.intertextualLink = response.data;
                     this.$bvModal.show("text-reuse");
-                    this.$nextTick(() => {
-                        tippy(data.element, {
-                            content() {
-                                let popup = document.getElementById(
-                                    "intertextual-metadata"
-                                );
-                                return popup.innerHTML;
-                            },
-                            allowHTML: true,
-                            theme: "light"
-                        });
-                    });
                 });
         }
     }
@@ -163,26 +172,25 @@ export default {
 }
 ::v-deep .passage-highlight {
     color: indianred;
-    transition: all 500ms;
 }
 ::v-deep .passage-highlight:hover {
-    color: white;
-    background-color: indianred;
     cursor: pointer;
 }
 ::v-deep .passage-marker {
     display: inline-block;
     margin: 0 0.15rem;
-    color: indianred;
-    background-color: #fff;
+    color: #fff;
+    background-color: indianred;
+    opacity: 0.9;
     border: #ccc solid 0.05rem;
     font-weight: 700;
     padding: 0.05rem 0.4rem;
     border-radius: 50%;
 }
 ::v-deep .passage-marker:hover {
-    background-color: lightcoral;
-    color: #fff;
+    background-color: #a74b4b;
+    opacity: initial;
+
     cursor: pointer;
 }
 ::v-deep .intertextual-link {
