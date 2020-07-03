@@ -38,6 +38,40 @@ FIELD_TYPES = {
 BOOLEAN_ARGS = re.compile(r"""(NOT \w+)|(OR \w+)|(\w+)|("")""")
 DATE_RANGE = re.compile(r"<=>")
 
+FILTERED_QUERY_WORDS = {
+    "a",
+    "à",
+    "au",
+    "aux",
+    "avec",
+    "ce",
+    "ces",
+    "cette",
+    "comme",
+    "d",
+    "dans",
+    "de",
+    "du",
+    "en",
+    "il",
+    "ils",
+    "la",
+    "le",
+    "les",
+    "mais",
+    "ne",
+    "ou",
+    "par",
+    "pas",
+    "plus",
+    "pour",
+    "que",
+    "qui",
+    "sur",
+    "un",
+    "une",
+}
+
 
 def query_builder(query_args):
     """Takes query arguments and returns an SQL WHERE clause"""
@@ -67,13 +101,15 @@ def query_builder(query_args):
                 elif value.startswith("NOT "):
                     split_value = " ".join(value.split()[1:]).strip()
                     query = "{} !~* %s".format(field)
-                    sql_values.append("\m{}\M".format(split_value))
+                    sql_values.append(r"\m{}\M".format(split_value))
                 # elif value.startswith("OR "):  ## TODO: add support to OR queries by changing the join logic at the end of the function
                 #     split_value = " ".join(value.split()[1:]).strip()
                 #     query = "{} !~* %s".format(field)
                 #     sql_values.append('\m{}\M'.format(split_value))
                 else:
                     query = "{} ~* %s".format(field)
+                    if value in FILTERED_QUERY_WORDS:
+                        continue
                     sql_values.append("\m{}\M".format(value))
                 sql_fields.append(query)
         elif field_type == "INTEGER" or field_type == "FLOAT":
@@ -112,7 +148,6 @@ def query_builder(query_args):
     # if other_args.banality != "":
     #     sql_fields.append("banality=%s")
     #     sql_values.append(other_args.banality)
-    print(sql_fields, sql_values)
     return " AND ".join(sql_fields), sql_values
 
 

@@ -21,8 +21,7 @@
                     size="sm"
                     variant="outline-secondary"
                     @click="goToDocument(documentPair, 'source')"
-                    >See passage(s) in document</b-button
-                >
+                >See passage(s) in document</b-button>
                 <br />
                 <citations
                     :philo-db="documentPair.target_philo_db"
@@ -35,25 +34,20 @@
                     size="sm"
                     variant="outline-secondary"
                     @click="goToDocument(documentPair, 'target')"
-                    >See passage(s) in document</b-button
-                >
+                >See passage(s) in document</b-button>
             </p>
             <div>
                 <b-button
                     @click="
-                        getPassages(
+                        togglePassages(
                             documentPair,
                             documentPair.pairid,
                             resultsIndex
                         )
                     "
-                    >Show passages</b-button
-                >
+                >{{passageTogglerMessages[resultsIndex]}}</b-button>
             </div>
-            <div
-                v-for="(passage, passageIndex) in passages[resultsIndex]"
-                :key="passage.passageid"
-            >
+            <div v-for="(passage, passageIndex) in passages[resultsIndex]" :key="passage.passageid">
                 <hr
                     v-if="
                         passageIndex != 0 &&
@@ -75,10 +69,11 @@ export default {
         return {
             results: null,
             passages: [],
+            passageTogglerMessages: null
         };
     },
     watch: {
-        $route: "fetchResults",
+        $route: "fetchResults"
     },
     created() {
         this.fetchResults();
@@ -108,7 +103,10 @@ export default {
                         this.$route.query
                     )}`
                 )
-                .then((response) => {
+                .then(response => {
+                    this.passageTogglerMessages = response.data.map(
+                        () => "Show passages"
+                    );
                     this.results = response.data;
                     this.passages = new Array(this.results.length).fill(
                         [],
@@ -117,24 +115,32 @@ export default {
                     );
                 });
         },
-        getPassages(documentPair, pairID, index) {
-            this.$http
-                .get(
-                    `https://anomander.uchicago.edu//intertextual-hub-api/retrieve_passages/${pairID}`
-                )
-                .then((response) => {
-                    response.data[0].metadata = {
-                        source_author: documentPair.source_author,
-                        source_title: documentPair.source_title,
-                        source_date: documentPair.source_date,
-                        target_author: documentPair.target_author,
-                        target_title: documentPair.target_title,
-                        target_date: documentPair.target_date,
-                    };
-                    this.$set(this.passages, index, response.data);
-                });
-        },
-    },
+        togglePassages(documentPair, pairID, index) {
+            if (this.passageTogglerMessages[index] == "Show passages") {
+                this.$http
+                    .get(
+                        `https://anomander.uchicago.edu//intertextual-hub-api/retrieve_passages/${pairID}`
+                    )
+                    .then(response => {
+                        response.data[0].metadata = {
+                            source_author: documentPair.source_author,
+                            source_title: documentPair.source_title,
+                            source_head: documentPair.source_head,
+                            source_date: documentPair.source_date,
+                            target_author: documentPair.target_author,
+                            target_title: documentPair.target_title,
+                            target_head: documentPair.target_head,
+                            target_date: documentPair.target_date
+                        };
+                        this.$set(this.passages, index, response.data);
+                    });
+                this.passageTogglerMessages[index] = "Hide passages";
+            } else {
+                this.passageTogglerMessages[index] = "Show passages";
+                this.$set(this.passages, index, {});
+            }
+        }
+    }
 };
 </script>
 <style scoped>

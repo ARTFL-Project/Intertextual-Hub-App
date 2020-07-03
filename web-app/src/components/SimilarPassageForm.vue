@@ -19,24 +19,24 @@
                 <b-input-group class="pb-3">
                     <template v-slot:prepend>
                         <b-input-group-text>Date</b-input-group-text>
-                        <b-dropdown :text="sourceDateType" variant="outline-secondary">
+                        <b-dropdown :text="dateType.source" variant="outline-secondary">
                             <b-dropdown-item @click="dropSelect('exact', 'source')">exact</b-dropdown-item>
                             <b-dropdown-item @click="dropSelect('range', 'source')">range</b-dropdown-item>
                         </b-dropdown>
                     </template>
                     <b-form-input
                         v-model="formValues['source_date']"
-                        v-if="sourceDateType == 'exact'"
+                        v-if="dateType.source == 'exact'"
                     ></b-form-input>
                     <b-form-input
-                        v-model="sourceDateRange.from"
-                        v-if="sourceDateType == 'range'"
+                        v-model="dateRange.source.from"
+                        v-if="dateType.source == 'range'"
                         placeholder="from"
                         class="ml-3"
                     ></b-form-input>
                     <b-form-input
-                        v-model="sourceDateRange.to"
-                        v-if="sourceDateType == 'range'"
+                        v-model="dateRange.source.to"
+                        v-if="dateType.source == 'range'"
                         placeholder="to"
                         class="ml-3"
                     ></b-form-input>
@@ -54,24 +54,24 @@
                 <b-input-group class="pb-3">
                     <template v-slot:prepend>
                         <b-input-group-text>Date</b-input-group-text>
-                        <b-dropdown :text="targetDateType" variant="outline-secondary">
+                        <b-dropdown :text="dateType.target" variant="outline-secondary">
                             <b-dropdown-item @click="dropSelect('exact', 'target')">exact</b-dropdown-item>
                             <b-dropdown-item @click="dropSelect('range', 'target')">range</b-dropdown-item>
                         </b-dropdown>
                     </template>
                     <b-form-input
                         v-model="formValues['target_date']"
-                        v-if="targetDateType == 'exact'"
+                        v-if="dateType.target == 'exact'"
                     ></b-form-input>
                     <b-form-input
-                        v-model="targetDateRange.from"
-                        v-if="targetDateType == 'range'"
+                        v-model="dateRange.target.from"
+                        v-if="dateType.target == 'range'"
                         placeholder="from"
                         class="ml-3"
                     ></b-form-input>
                     <b-form-input
-                        v-model="targetDateRange.to"
-                        v-if="targetDateType == 'range'"
+                        v-model="dateRange.target.to"
+                        v-if="dateType.target == 'range'"
                         placeholder="to"
                         class="ml-3"
                     ></b-form-input>
@@ -110,31 +110,48 @@ export default {
                 ]
             },
             formValues: {},
-            sourceDateType: "exact",
-            targetDateType: "exact",
-            sourceDateRange: { to: null, from: null },
-            targetDateRange: { to: null, from: null }
+            dateType: {
+                source: "exact",
+                target: "exact"
+            },
+            dateRange: {
+                source: { to: null, from: null },
+                target: { to: null, from: null }
+            }
         };
     },
     created() {
-        // if (this.$route.query || Object.keys(this.$route.query).length > 0) {
-        //     this.formValues = this.copyObject(this.$route.query);
-        // }
+        if (this.$route.query || Object.keys(this.$route.query).length > 0) {
+            this.formValues = this.copyObject(this.$route.query);
+            for (let direction of ["source", "target"]) {
+                if (
+                    `${direction}_date` in this.$route.query &&
+                    this.$route.query[`${direction}_date`].match("<=>")
+                ) {
+                    this.dateType[direction] = "range";
+                    let splitDates = this.$route.query[
+                        `${direction}_date`
+                    ].split("<=>");
+                    this.dateRange[direction].from = splitDates[0];
+                    this.dateRange[direction].to = splitDates[1];
+                }
+            }
+        }
     },
     methods: {
         search() {
             let formValues = { ...this.formValues };
             if (
-                this.sourceDateType == "range" &&
-                this.sourceDateRange.from.length > 0
+                this.dateType.source == "range" &&
+                this.dateRange.source.from.length > 0
             ) {
-                formValues.source_date = `${this.sourceDateRange.from}<=>${this.sourceDateRange.to}`;
+                formValues.source_date = `${this.dateRange.source.from}<=>${this.dateRange.source.to}`;
             }
             if (
-                this.targetDateType == "range" &&
-                this.targetDateRange.from.length > 0
+                this.dateType.target == "range" &&
+                this.dateRange.target.from.length > 0
             ) {
-                formValues.target_date = `${this.targetDateRange.from}<=>${this.targetDateRange.to}`;
+                formValues.target_date = `${this.dateRange.target.from}<=>${this.dateRange.target.to}`;
             }
             let route = this.paramsToRoute(formValues);
             this.$router.push(route);
@@ -144,9 +161,10 @@ export default {
         },
         dropSelect(selection, direction) {
             if (direction == "source") {
-                this.sourceDateType = selection;
+                this.dateType.source = selection;
             } else {
-                this.targetDateType = selection;
+                this.dateType.target = selection;
+                187;
             }
         }
     }
