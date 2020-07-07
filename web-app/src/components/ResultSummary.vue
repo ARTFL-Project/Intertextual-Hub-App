@@ -21,7 +21,8 @@
                     size="sm"
                     variant="outline-secondary"
                     @click="goToDocument(documentPair, 'source')"
-                >See passage(s) in document</b-button>
+                    >See passage(s) in document</b-button
+                >
                 <br />
                 <citations
                     :philo-db="documentPair.target_philo_db"
@@ -34,7 +35,8 @@
                     size="sm"
                     variant="outline-secondary"
                     @click="goToDocument(documentPair, 'target')"
-                >See passage(s) in document</b-button>
+                    >See passage(s) in document</b-button
+                >
             </p>
             <div>
                 <b-button
@@ -45,9 +47,13 @@
                             resultsIndex
                         )
                     "
-                >{{passageTogglerMessages[resultsIndex]}}</b-button>
+                    >{{ passageTogglerMessages[resultsIndex] }}</b-button
+                >
             </div>
-            <div v-for="(passage, passageIndex) in passages[resultsIndex]" :key="passage.passageid">
+            <div
+                v-for="(passage, passageIndex) in passages[resultsIndex]"
+                :key="passage.passageid"
+            >
                 <hr
                     v-if="
                         passageIndex != 0 &&
@@ -69,11 +75,11 @@ export default {
         return {
             results: null,
             passages: [],
-            passageTogglerMessages: null
+            passageTogglerMessages: null,
         };
     },
     watch: {
-        $route: "fetchResults"
+        $route: "fetchResults",
     },
     created() {
         this.fetchResults();
@@ -82,17 +88,25 @@ export default {
         goToDocument(documentPair, direction) {
             let link;
             if (direction == "source") {
-                link = `/navigate/${
-                    documentPair.source_philo_db
-                }/${documentPair.source_philo_id.split(" ").join("/")}?pairid=${
-                    documentPair.pairid
-                }&direction=${direction}`;
+                link = this.paramsToRoute(
+                    {
+                        pairid: documentPair.pairid,
+                        direction: direction,
+                    },
+                    `/navigate/${
+                        documentPair.source_philo_db
+                    }/${documentPair.source_philo_id.split(" ").join("/")}`
+                );
             } else {
-                link = `/navigate/${
-                    documentPair.target_philo_db
-                }/${documentPair.target_philo_id.split(" ").join("/")}?pairid=${
-                    documentPair.pairid
-                }&direction=${direction}`;
+                link = this.paramsToRoute(
+                    {
+                        pairid: documentPair.pairid,
+                        direction: direction,
+                    },
+                    `/navigate/${
+                        documentPair.target_philo_db
+                    }/${documentPair.target_philo_id.split(" ").join("/")}`
+                );
             }
             this.$router.push(link);
         },
@@ -103,7 +117,7 @@ export default {
                         this.$route.query
                     )}`
                 )
-                .then(response => {
+                .then((response) => {
                     this.passageTogglerMessages = response.data.map(
                         () => "Show passages"
                     );
@@ -121,7 +135,7 @@ export default {
                     .get(
                         `https://anomander.uchicago.edu//intertextual-hub-api/retrieve_passages/${pairID}`
                     )
-                    .then(response => {
+                    .then((response) => {
                         response.data[0].metadata = {
                             source_author: documentPair.source_author,
                             source_title: documentPair.source_title,
@@ -130,7 +144,7 @@ export default {
                             target_author: documentPair.target_author,
                             target_title: documentPair.target_title,
                             target_head: documentPair.target_head,
-                            target_date: documentPair.target_date
+                            target_date: documentPair.target_date,
                         };
                         this.$set(this.passages, index, response.data);
                     });
@@ -139,8 +153,8 @@ export default {
                 this.passageTogglerMessages[index] = "Show passages";
                 this.$set(this.passages, index, {});
             }
-        }
-    }
+        },
+    },
 };
 </script>
 <style scoped>

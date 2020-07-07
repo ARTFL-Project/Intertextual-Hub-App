@@ -20,22 +20,25 @@
         >
             <passage-pair :passage="intertextualLink"></passage-pair>
         </b-modal>
-        <div id="intertextual-metadata" class="shadow p-2 d-none">
+        <div id="intertextual-metadata" class="shadow px-2 pt-2 d-none">
             <div v-if="currentIntertextualMetadata">
                 <h6>Passage found in:</h6>
-                <citations
-                    :docPair="currentIntertextualMetadata"
-                    direction="source"
-                    philo-db
-                    v-if="direction == 'target'"
-                ></citations>
-                <citations
-                    :docPair="currentIntertextualMetadata"
-                    direction="target"
-                    philo-db
-                    v-else
-                ></citations>
+                <b>
+                    <citations
+                        :docPair="currentIntertextualMetadata"
+                        direction="source"
+                        philo-db
+                        v-if="direction == 'target'"
+                    ></citations>
+                    <citations
+                        :docPair="currentIntertextualMetadata"
+                        direction="target"
+                        philo-db
+                        v-else
+                    ></citations>
+                </b>
             </div>
+            <p class="mt-2 mb-0">Click on passage to see reuse.</p>
         </div>
     </b-card>
 </template>
@@ -44,7 +47,7 @@ import PassagePair from "./PassagePair.vue";
 import Citations from "./Citations.vue";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
-import "tippy.js/themes/light.css";
+import "tippy.js/themes/light-border.css";
 
 export default {
     name: "TextNavigation",
@@ -76,7 +79,7 @@ export default {
                 Array.from(
                     document.getElementsByClassName("passage-marker")
                 ).forEach(el => this.showPassage(el));
-                tippy(".passage-marker", {
+                tippy("[class^=passage-]", {
                     content() {
                         let popup = document.getElementById(
                             "intertextual-metadata"
@@ -84,7 +87,7 @@ export default {
                         return popup.innerHTML;
                     },
                     allowHTML: true,
-                    theme: "light"
+                    theme: "light-border"
                 });
             });
             this.alreadyScrolled = true;
@@ -170,14 +173,7 @@ export default {
 ::v-deep .passage-marker {
     display: inline-block;
     margin: 0 0.15rem;
-    color: #fff;
-    background-color: indianred;
-    opacity: 0.9;
-    border: #ccc solid 0.05rem;
     font-weight: 700;
-    padding: 0.05rem 0.4rem;
-    border-radius: 50%;
-    font-style: initial;
 }
 ::v-deep .passage-marker:hover {
     background-color: #a74b4b;

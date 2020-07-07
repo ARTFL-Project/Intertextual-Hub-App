@@ -2,6 +2,7 @@ import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
 import vueScrollTo from "vue-scrollto";
+import VueApexCharts from "vue-apexcharts";
 import appConfig from "./appConfig.json";
 import hubConfig from "../../../config/intertextual_hub_config.json";
 
@@ -14,15 +15,19 @@ Vue.config.productionTip = false;
 
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);
+Vue.use(VueApexCharts);
+Vue.component("apexchart", VueApexCharts);
+
 Vue.prototype.$http = axios;
 Vue.prototype.$scrollTo = vueScrollTo.scrollTo;
 Vue.prototype.$appConfig = appConfig;
 Vue.prototype.$hubConfig = hubConfig;
+Vue.prototype.$report = "";
 export const EventBus = new Vue(); // To pass messages between components
 
 Vue.mixin({
     methods: {
-        paramsToRoute: function(formValues) {
+        paramsToRoute: function(formValues, path) {
             let filteredFormValues = Object.keys(formValues)
                 .filter((field) => formValues[field])
                 .reduce((a, fieldName) => {
@@ -30,7 +35,7 @@ Vue.mixin({
                     return a;
                 }, {});
             let routeObject = {
-                path: `/search`,
+                path: path,
                 query: filteredFormValues,
             };
             return routeObject;

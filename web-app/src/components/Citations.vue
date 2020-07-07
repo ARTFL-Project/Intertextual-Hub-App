@@ -1,13 +1,18 @@
 <template>
     <div class="d-inline-block">
         <span v-for="(citation, citeIndex) in citations" :key="citeIndex" :style="citation.style">
-            <router-link v-if="citation.link" :to="docLink()">
-                {{
-                citation.field || "Unnamed section"
-                }}
-            </router-link>
+            <router-link
+                v-if="citation.link"
+                :to="docLink()"
+            >{{ citation.field || "Unnamed section" }}</router-link>
             <span v-else>{{ citation.field }}</span>
-            <span class="separator" v-if="citeIndex != citations.length - 1">&#9679;</span>
+            <span
+                class="separator"
+                v-if="
+                    citation.field.length > 0 &&
+                        citeIndex != citations.length - 1
+                "
+            >&#9679;</span>
         </span>
 
         <br />
@@ -24,17 +29,36 @@ export default {
         };
     },
     computed: {
+        fieldPrefix() {
+            if (this.direction) {
+                return `${this.direction}_`;
+            }
+            return "";
+        },
         citations() {
             let citations = [];
+            let noDate = true;
             for (let field of this.fields) {
                 let style = this.$appConfig.styles[field];
-                let fieldValue = this.docPair[`${this.direction}_${field}`];
-                if (field === "date" && fieldValue.endsWith("-01-01")) {
-                    fieldValue = fieldValue.replace(/-01-01/, "");
+                let fieldValue = this.docPair[`${this.fieldPrefix}${field}`];
+                if (typeof fieldValue != "undefined") {
+                    if (field === "date" && fieldValue.endsWith("-01-01")) {
+                        fieldValue = fieldValue.replace(/-01-01/, "");
+                    }
+                    if (field == "date") {
+                        noDate = false;
+                    }
+                    citations.push({
+                        field: fieldValue,
+                        style: style,
+                        link: ""
+                    });
                 }
+            }
+            if (noDate) {
                 citations.push({
-                    field: fieldValue,
-                    style: style,
+                    field: this.docPair.year,
+                    style: this.$appConfig.styles.date,
                     link: ""
                 });
             }

@@ -8,46 +8,89 @@
         <b-container fluid class="mt-4">
             <b-tabs>
                 <b-tab
+                    :active="activeTab.SeqPairResultsSummary"
                     title="Explore similar passages"
-                    active
-                    @click="selectModule('similarPassages')"
+                    @click="selectModule('SeqPairResultsSummary')"
                 >
                     <similar-passage-form></similar-passage-form>
                 </b-tab>
-                <b-tab title="Explore Topics" @click="selectModule('topics')">
-                    <topic-distributions></topic-distributions>
+                <b-tab
+                    :active="activeTab.topicModeling"
+                    title="Explore Topics"
+                    @click="selectModule('topicModeling')"
+                >
+                    <div class="mt-2 p-2">
+                        Click on any topic to explore its usage across the
+                        corpus
+                    </div>
                 </b-tab>
-                <b-tab title="Search and Retrieval" @click="selectModule('search')">
-                    <b-card-text>Charlie's form</b-card-text>
+                <b-tab
+                    :active="activeTab.search"
+                    title="Search and Retrieval"
+                    @click="selectModule('search')"
+                >
+                    <iframe
+                        class="mt-2"
+                        src="https://anomander.uchicago.edu/intertextual_hub/sqlite/multipledb.sqlite.html"
+                        v-if="report == 'search'"
+                    ></iframe>
                 </b-tab>
             </b-tabs>
-            <router-view></router-view>
+            <router-view name="SeqPairResultsSummary"></router-view>
+            <router-view name="topicModeling"></router-view>
+            <router-view name="TextNavigation"></router-view>
+            <router-view name="document"></router-view>
         </b-container>
     </div>
 </template>
 
 <script>
 import SimilarPassageForm from "./components/SimilarPassageForm.vue";
-import TopicDistributions from "/var/www/html/topologic/combo/src/components/TopicDistributions.vue";
 
 export default {
     name: "App",
     components: {
-        SimilarPassageForm,
-        TopicDistributions
+        SimilarPassageForm
     },
     data() {
         return {
-            module: "similarPassages"
+            activeTab: {
+                SeqPairResultsSummary: false,
+                topicModeling: false,
+                search: false
+            },
+            report: this.$route.name
         };
     },
+    created() {
+        for (let key in this.activeTab) {
+            if (key == this.report) {
+                this.activeTab[key] = true;
+            } else {
+                this.activeTab[key] = false;
+            }
+        }
+    },
     methods: {
-        selectModule(module) {
-            this.module = module;
+        selectModule(report) {
+            this.report = report;
+            if (report == "SeqPairResultsSummary") {
+                this.$router.push("/");
+            }
+            if (report == "topicModeling") {
+                this.$router.push("/topic-modeling");
+            }
         }
     }
 };
 </script>
 
 <style scoped>
+iframe {
+    width: 100%;
+    height: 4096px;
+}
+iframe > html > body > nav {
+    display: none;
+}
 </style>

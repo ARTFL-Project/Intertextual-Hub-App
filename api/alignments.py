@@ -73,7 +73,7 @@ FILTERED_QUERY_WORDS = {
 }
 
 
-def query_builder(query_args):
+def query_builder(query_args: dict):
     """Takes query arguments and returns an SQL WHERE clause"""
     sql_fields = []
     sql_values = []
@@ -110,7 +110,7 @@ def query_builder(query_args):
                     query = "{} ~* %s".format(field)
                     if value in FILTERED_QUERY_WORDS:
                         continue
-                    sql_values.append("\m{}\M".format(value))
+                    sql_values.append(r"\m{}\M".format(value))
                 sql_fields.append(query)
         elif field_type == "INTEGER" or field_type == "FLOAT":
             value = value.replace('"', "")
