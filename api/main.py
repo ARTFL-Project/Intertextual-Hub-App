@@ -55,6 +55,7 @@ def retrieve_passage(pairid: str, start_byte: int, direction: str):
 
 @app.get("/search_texts")
 def search_texts(request: Request):
-    results = search.word_search(**request.query_params)
-    return results
+    if "words" in request.query_params:
+        results, doc_count = search.word_search(**request.query_params)
+    return {"results": results, "doc_count": doc_count[0]}
 
