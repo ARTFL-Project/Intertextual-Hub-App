@@ -1,7 +1,11 @@
 <template>
     <b-container fluid class="mt-4">
         <h5 class="pl-4 pr-4" style="text-align: center">
-            <citations :doc="mainDoc" :philo-db="`${mainDoc.metadata.philo_db}`" v-if="mainDoc"></citations>
+            <citations
+                :docPair="mainDoc.metadata"
+                :philo-db="`${mainDoc.metadata.philo_db}`"
+                v-if="mainDoc"
+            ></citations>
         </h5>
 
         <b-row class="mb-4 mt-4">
@@ -15,17 +19,19 @@
                             @row-clicked="goToTopic"
                         >
                             <template slot="[name]" slot-scope="data">
-                                <span class="frequency-parent">Topic {{ data.value }}</span>
+                                <span class="frequency-parent"
+                                    >Topic {{ data.value }}</span
+                                >
                             </template>
                             <template slot="[description]" slot-scope="data">
                                 <span class="frequency-parent">
-                                    {{
-                                    data.value
-                                    }}
+                                    {{ data.value }}
                                 </span>
                             </template>
                             <template slot="[frequency]" slot-scope="data">
-                                <span class="frequency-value pl-2">{{ data.value }}%</span>
+                                <span class="frequency-value pl-2"
+                                    >{{ data.value }}%</span
+                                >
                             </template>
                         </b-table>
                     </div>
@@ -42,16 +48,20 @@
                         class="card-text"
                     >
                         <div>
-                            <span v-for="weightedWord in words" :key="weightedWord[2]">
+                            <span
+                                v-for="weightedWord in words"
+                                :key="weightedWord[2]"
+                            >
                                 <a
                                     :id="`${weightedWord[2]}`"
                                     :style="
-                                    `display:inline-block; padding: 5px; cursor: pointer; font-size: ${1 +
-                                        weightedWord[1]}rem; color: ${
-                                        weightedWord[3]
-                                    }`
-                                "
-                                >{{ weightedWord[0] }}</a>
+                                        `display:inline-block; padding: 5px; cursor: pointer; font-size: ${1 +
+                                            weightedWord[1]}rem; color: ${
+                                            weightedWord[3]
+                                        }`
+                                    "
+                                    >{{ weightedWord[0] }}</a
+                                >
                                 <word-link
                                     :target="weightedWord[2]"
                                     :metadata="mainDoc.metadata"
@@ -79,15 +89,15 @@
                             style="border-radius: 0px; border-width: 1px 0px"
                         >
                             <citations
-                                :doc="doc"
-                                :id="`${doc.doc_id}`"
+                                :docPair="doc.metadata"
                                 :philo-db="`${doc.metadata.philo_db}`"
                             ></citations>
                             <b-badge
                                 variant="secondary"
                                 pill
                                 class="float-right"
-                            >{{ (doc.score * 100).toFixed(2) }}%</b-badge>
+                                >{{ (doc.score * 100).toFixed(2) }}%</b-badge
+                            >
                         </b-list-group-item>
                     </b-list-group>
                 </b-card>
@@ -107,15 +117,15 @@
                             style="border-radius: 0px; border-width: 1px 0px"
                         >
                             <citations
-                                :doc="doc"
-                                :id="`${doc.doc_id}`"
+                                :docPair="doc.metadata"
                                 :philo-db="`${doc.metadata.philo_db}`"
                             ></citations>
                             <b-badge
                                 variant="secondary"
                                 pill
                                 class="float-right"
-                            >{{ (doc.score * 100).toFixed(0) }}%</b-badge>
+                                >{{ (doc.score * 100).toFixed(0) }}%</b-badge
+                            >
                         </b-list-group-item>
                     </b-list-group>
                 </b-card>
@@ -132,7 +142,7 @@ export default {
     name: "Document",
     components: {
         Citations,
-        WordLink
+        WordLink,
     },
     data() {
         return {
@@ -145,13 +155,13 @@ export default {
                 {
                     key: "frequency",
                     label: "Topic weight",
-                    sortable: false
-                }
+                    sortable: false,
+                },
             ],
             vectorSimDocs: [],
             topicSimDocs: [],
             topicDistribution: [],
-            philoUrl: this.$globalConfig.philoLogicUrl
+            // philoUrl: this.$globalConfig.philoLogicUrl,
         };
     },
     mounted() {
@@ -159,7 +169,7 @@ export default {
     },
     watch: {
         // call again the method if the route changes
-        $route: "loadNewData"
+        $route: "loadNewData",
     },
     methods: {
         fetchData() {
@@ -167,9 +177,9 @@ export default {
             this.text = "";
             this.$http
                 .get(
-                    `${this.$globalConfig.apiServer}/get_doc_data/${this.$globalConfig.databaseName}/${this.$route.params.philoDb}?philo_id=${philo_id}`
+                    `https://anomander.uchicago.edu/topologic-api/get_doc_data/combo/${this.$route.params.philoDb}?philo_id=${philo_id}`
                 )
-                .then(response => {
+                .then((response) => {
                     this.words = response.data.words;
                     this.vectorSimDocs = response.data.vector_sim_docs;
                     this.topicSimDocs = response.data.topic_sim_docs;
@@ -177,7 +187,7 @@ export default {
                         metadata: response.data.metadata,
                         doc_id: "",
                         philo_id: response.data.metadata.philo_id,
-                        philo_type: response.data.metadata.philo_type
+                        philo_type: response.data.metadata.philo_type,
                     };
                     this.topicDistribution = this.buildTopicDistribution(
                         response.data.topic_distribution
@@ -186,7 +196,7 @@ export default {
         },
         buildTopicDistribution(topicDistribution) {
             let total = topicDistribution.data.reduce((a, b) => a + b, 0);
-            let data = topicDistribution.data.map(x => (x / total) * 100);
+            let data = topicDistribution.data.map((x) => (x / total) * 100);
             let modData = [];
             let modLabels = [];
             for (let label = 0; data.length > label; label += 1) {
@@ -203,7 +213,7 @@ export default {
                 sortedDistribution.push({
                     name: topic[0],
                     frequency: topic[1],
-                    description: topicData[topic[0]].description
+                    description: topicData[topic[0]].description,
                 });
                 count++;
                 if (count == 10) {
@@ -217,8 +227,8 @@ export default {
         },
         goToTopic(topic) {
             this.$router.push(`/topic/${topic.name}`);
-        }
-    }
+        },
+    },
 };
 </script>
 <style scoped>

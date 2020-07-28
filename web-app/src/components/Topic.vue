@@ -10,10 +10,9 @@
                 <b-card no-body class="shadow-sm" header="Top 50 Tokens">
                     <b-list-group flush>
                         <b-list-group-item>
-                            <a
-                                :href="philoTimeSeriesQueryLink"
-                                target="_blank"
-                            >Show frequency of top 10 tokens over time</a>
+                            <a :href="philoTimeSeriesQueryLink" target="_blank"
+                                >Show frequency of top 10 tokens over time</a
+                            >
                         </b-list-group-item>
                         <!-- <b-list-group-item>
                             <a :href="whooshSearchLink" target="_blank"
@@ -50,9 +49,11 @@
                                 ></apexchart>
                             </div>
                             <div class="pb-4 pl-4 pr-4">
-                                <a :href="philoTimeSeriesBiBlioLink" target="_blank">
-                                    See topic frequency over time in
-                                    PhiloLogic
+                                <a
+                                    :href="philoTimeSeriesBiBlioLink"
+                                    target="_blank"
+                                >
+                                    See topic frequency over time in PhiloLogic
                                 </a>
                             </div>
                         </b-card>
@@ -88,8 +89,8 @@
                                     ></span>
                                     Topic {{ localTopic.name }}:
                                     {{
-                                    topicData[parseInt(localTopic.name)]
-                                    .description
+                                        topicData[parseInt(localTopic.name)]
+                                            .description
                                     }}
                                 </span>
                             </div>
@@ -99,7 +100,7 @@
                         <b-card
                             no-body
                             :header="
-                                `Top ${documents.length} documents by weight for this topic (${year})`
+                                `Top ${documents.length} most representative documents for this topic (${year})`
                             "
                             class="mt-4 shadow-sm"
                         >
@@ -108,18 +109,30 @@
                                 style="left: 0; right: 0; top: 4rem; z-index: 1;"
                                 v-if="loading"
                             >
-                                <b-spinner style="width: 4rem; height: 4rem;" label="Large Spinner"></b-spinner>
+                                <b-spinner
+                                    style="width: 4rem; height: 4rem;"
+                                    label="Large Spinner"
+                                ></b-spinner>
                             </div>
                             <b-list-group flush>
-                                <b-list-group-item v-for="doc in documents" :key="doc.doc_id">
-                                    <citations
-                                        :docPair="doc.metadata"
-                                        :philo-db="`${doc.metadata.philo_db}`"
-                                    ></citations>
-                                    <b-badge variant="secondary" pill class="float-right">
-                                        {{
-                                        (doc.score * 100).toFixed(2)
-                                        }}%
+                                <b-list-group-item
+                                    v-for="doc in documents"
+                                    :key="doc.doc_id"
+                                >
+                                    <router-link :to="linker(doc.metadata)">
+                                        <citations
+                                            :docPair="doc.metadata"
+                                            :philo-db="
+                                                `${doc.metadata.philo_db}`
+                                            "
+                                        ></citations
+                                    ></router-link>
+                                    <b-badge
+                                        variant="secondary"
+                                        pill
+                                        class="float-right"
+                                    >
+                                        {{ (doc.score * 100).toFixed(2) }}%
                                     </b-badge>
                                 </b-list-group-item>
                             </b-list-group>
@@ -137,7 +150,7 @@ import Citations from "./Citations";
 export default {
     name: "Topic",
     components: {
-        Citations
+        Citations,
     },
     data() {
         return {
@@ -155,54 +168,54 @@ export default {
                 chart: {
                     id: "topic-evolution",
                     toolbar: {
-                        show: false
+                        show: false,
                     },
                     events: {
-                        click: this.goToYear
-                    }
+                        click: this.goToYear,
+                    },
                 },
                 xaxis: {
-                    categories: []
+                    categories: [],
                 },
                 grid: {
                     padding: {
                         left: 0,
                         right: 0,
                         top: 0,
-                        bottom: 0
-                    }
+                        bottom: 0,
+                    },
                 },
                 fill: {
-                    opacity: 0.9
+                    opacity: 0.9,
                 },
                 theme: { palette: "palette3" },
                 tooltip: {
                     x: {
-                        formatter: year => {
+                        formatter: (year) => {
                             return `${year}-${parseInt(year) +
                                 parseInt(this.year_interval) -
                                 1}`;
-                        }
-                    }
-                }
+                        },
+                    },
+                },
             },
             topicEvolutionSeries: [
                 {
                     name: "Topic Evolution",
-                    data: []
-                }
+                    data: [],
+                },
             ],
             wordDistributionChartOptions: {
                 chart: {
                     sparkline: {
-                        enabled: true
+                        enabled: true,
                     },
                     toolbar: {
-                        show: false
+                        show: false,
                     },
                     events: {
-                        click: this.goToWord
-                    }
+                        click: this.goToWord,
+                    },
                 },
                 plotOptions: {
                     bar: {
@@ -210,9 +223,9 @@ export default {
                         distributed: true,
                         horizontal: true,
                         dataLabels: {
-                            position: "bottom"
-                        }
-                    }
+                            position: "bottom",
+                        },
+                    },
                 },
                 colors: [
                     "#33b2df",
@@ -224,14 +237,14 @@ export default {
                     "#f9a3a4",
                     "#90ee7e",
                     "#f48024",
-                    "#69d2e7"
+                    "#69d2e7",
                 ],
                 dataLabels: {
                     enabled: true,
                     textAnchor: "start",
                     style: {
                         colors: ["#000"],
-                        fontSize: "14px"
+                        fontSize: "14px",
                     },
                     formatter: function(val, opt) {
                         return (
@@ -244,66 +257,66 @@ export default {
                     dropShadow: {
                         enabled: true,
                         color: "#fff",
-                        blur: 0.85
-                    }
+                        blur: 0.85,
+                    },
                 },
                 stroke: {
                     width: 0.5,
-                    colors: ["#fff"]
+                    colors: ["#fff"],
                 },
                 xaxis: {
-                    categories: []
+                    categories: [],
                 },
                 grid: {
-                    show: false
-                }
+                    show: false,
+                },
             },
             wordDistributionSeries: [
                 {
                     name: "Word weight within topic",
-                    data: []
-                }
+                    data: [],
+                },
             ],
             similarEvolutionOptions: {
                 chart: {
                     id: "similar-evolution",
                     toolbar: {
-                        show: false
-                    }
+                        show: false,
+                    },
                 },
                 yaxis: {
                     labels: {
-                        formatter: val => val.toFixed(3)
-                    }
+                        formatter: (val) => val.toFixed(3),
+                    },
                 },
                 colors: ["#33b2df", "#546E7A", "#d4526e", "#13d8aa", "#A5978B"],
                 stroke: {
                     curve: "smooth",
-                    width: 1.5
+                    width: 1.5,
                 },
                 grid: {
                     padding: {
                         left: 0,
                         // right: 0,
                         top: 0,
-                        bottom: 0
-                    }
+                        bottom: 0,
+                    },
                 },
                 tooltip: {
-                    enabled: false
+                    enabled: false,
                 },
                 legend: {
                     show: false,
                     formatter: function(seriesName) {
                         return `Topic ${seriesName}`;
-                    }
+                    },
                 },
                 plotOptions: {},
                 fill: {
-                    opacity: 0.5
-                }
+                    opacity: 0.5,
+                },
             },
-            similarEvolutionSeries: [{ name: 0, data: [] }]
+            similarEvolutionSeries: [{ name: 0, data: [] }],
         };
     },
     computed: {
@@ -321,7 +334,7 @@ export default {
             //     .join(" OR ");
             // return `${this.$globalConfig.philoLogicUrl}/query?report=time_series&year_interval=${this.$modelConfig.TOPICS_OVER_TIME.topics_over_time_interval}&start_date=${this.timeSeriesConfig.startDate}&end_date=${this.timeSeriesConfig.endDate}&q=${queryString}`;
             return "";
-        }
+        },
         // whooshSearchLink: function() {
         //     let queryString = []
         //     for (let wordIndex = 0; wordIndex < 10; wordIndex += 1) {
@@ -339,7 +352,7 @@ export default {
     },
     watch: {
         // call again the method if the route changes
-        $route: "fetchData"
+        $route: "fetchData",
     },
     methods: {
         fetchData() {
@@ -347,7 +360,7 @@ export default {
                 .get(
                     "https://anomander.uchicago.edu/topologic-api/get_config/combo?full_config=True"
                 )
-                .then(response => {
+                .then((response) => {
                     this.timeSeriesConfig =
                         response.data.appConfig.timeSeriesConfig;
                     this.year_interval =
@@ -356,7 +369,7 @@ export default {
                         .get(
                             `https://anomander.uchicago.edu/topologic-api/get_topic_data/combo/${this.$route.params.topic}`
                         )
-                        .then(response => {
+                        .then((response) => {
                             this.topic = this.$route.params.topic;
                             this.documents = response.data.documents;
                             this.frequency = (
@@ -402,13 +415,13 @@ export default {
                             this.similarEvolutionSeries = [
                                 ...response.data.similar_topics
                                     .slice(0, 5)
-                                    .map(topic => ({
+                                    .map((topic) => ({
                                         data: topic.topic_evolution.data.slice(
                                             startIndex,
                                             endIndex
                                         ),
                                         name: topic.topic.toString(),
-                                        type: "line"
+                                        type: "line",
                                     })),
                                 {
                                     name: this.topic,
@@ -416,8 +429,8 @@ export default {
                                         startIndex,
                                         endIndex
                                     ),
-                                    type: "area"
-                                }
+                                    type: "area",
+                                },
                             ];
                             this.similarEvolutionOptions = {
                                 ...this.similarEvolutionOptions,
@@ -426,15 +439,15 @@ export default {
                                         categories: response.data.similar_topics[0].topic_evolution.labels.slice(
                                             startIndex,
                                             endIndex
-                                        )
+                                        ),
                                     },
                                     fill: {
                                         opacity: [
                                             ...response.data.similar_topics,
-                                            this.topic
+                                            this.topic,
                                         ]
                                             .slice(startIndex, endIndex)
-                                            .map(topic => {
+                                            .map((topic) => {
                                                 if (
                                                     topic.topic !=
                                                     this.$route.params.topic
@@ -443,7 +456,7 @@ export default {
                                                 } else {
                                                     return 0.1;
                                                 }
-                                            })
+                                            }),
                                     },
                                     colors: [
                                         "#2E93fA",
@@ -451,9 +464,9 @@ export default {
                                         "#546E7A",
                                         "#E91E63",
                                         "#FF9800",
-                                        "rgba(51, 178, 223, 0.09)"
-                                    ]
-                                }
+                                        "rgba(51, 178, 223, 0.09)",
+                                    ],
+                                },
                             };
                             this.$nextTick(function() {
                                 let selectedYear = document.querySelector(
@@ -495,9 +508,9 @@ export default {
                 ...this.wordDistributionChartOptions,
                 ...{
                     xaxis: {
-                        categories: wordDistribution.labels
-                    }
-                }
+                        categories: wordDistribution.labels,
+                    },
+                },
             };
             this.wordDistributionSeries[0].data = this.formatWordDistribution(
                 wordDistribution.data
@@ -521,9 +534,9 @@ export default {
                 ...this.topicEvolutionChartOptions,
                 ...{
                     xaxis: {
-                        categories: topicEvolution.labels
-                    }
-                }
+                        categories: topicEvolution.labels,
+                    },
+                },
             };
         },
         goToWord(event) {
@@ -542,7 +555,7 @@ export default {
                 .get(
                     `https://anomander.uchicago.edu/topologic-api//get_docs_in_topic_by_year/combo/${this.$route.params.topic}/${year}`
                 )
-                .then(response => {
+                .then((response) => {
                     this.documents = response.data;
                     this.year = year;
                     this.loading = false;
@@ -550,8 +563,15 @@ export default {
         },
         goToTopic(topic) {
             this.$router.push(`/topic/${topic}`);
-        }
-    }
+        },
+        linker(metadata) {
+            let philoType = `philo_${metadata.philo_type}_id`;
+            let url = `/document/${metadata.philo_db}/${metadata[philoType]
+                .split(" ")
+                .join("/")}`;
+            return url;
+        },
+    },
 };
 </script>
 <style scoped>

@@ -1,12 +1,12 @@
-import json
-from collections import defaultdict
-from typing import List, Dict
-
 import requests
 from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
-
-from alignments import search_alignments, get_passages, get_passage_byte_offsets, get_passage
+import aligner
+import search
+from psycopg2.pool import ThreadedConnectionPool
+import json
+from typing import Optional
+import databases
 
 app = FastAPI()
 
@@ -18,8 +18,8 @@ HUB_URL = "https://anomander.uchicago.edu/intertextual_hub/"
 
 
 @app.get("/navigate/{philo_db}/{pairid}/{direction}")
-async def navigate(philo_db: str, pairid: str, direction: str, philo_id: str):
-    passage_data = get_passage_byte_offsets(pairid, direction)
+def navigate(philo_db: str, pairid: str, direction: str, philo_id: str):
+    passage_data = aligner.get_passage_byte_offsets(pairid, direction)
     text_object_id = philo_id.split("/")
     while text_object_id[-1] == "0":
         text_object_id.pop()
@@ -35,19 +35,26 @@ async def navigate(philo_db: str, pairid: str, direction: str, philo_id: str):
     }
 
 
-@app.get("/search")
-async def search(request: Request):
-    results = search_alignments(**request.query_params)
+@app.get("/search_alignments")
+def search_alignments(request: Request):
+    results = aligner.search_alignments(**request.query_params)
     return results[:50]
 
 
 @app.get("/retrieve_passages/{pairid}")
-async def retrieve_passages(pairid: str):
-    passages = get_passages(pairid)
+def retrieve_passages(pairid: str):
+    passages = aligner.get_passages(pairid)
     return passages
 
 
 @app.get("/retrieve_passage/{pairid}")
-async def retrieve_passage(pairid: str, start_byte: int, direction: str):
-    passage = get_passage(pairid, start_byte, direction)
+def retrieve_passage(pairid: str, start_byte: int, direction: str):
+    passage = aligner.get_passage(pairid, start_byte, direction)
     return passage
+
+
+@app.get("/search_texts")
+def search_texts(request: Request):
+    results = search.word_search(**request.query_params)
+    return results
+

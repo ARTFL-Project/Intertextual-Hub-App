@@ -1,7 +1,8 @@
 {
     "styles": {
         "author": {
-            "font-variant": "small-caps"
+            "font-variant": "small-caps",
+            "color": "#000"
         },
         "title": {
             "font-style": "italic"
@@ -9,6 +10,8 @@
         "head": {
             "font-variant": "small-caps"
         },
-        "date": {}
+        "date": {
+            "color": "#000"
+        }
     }
 }

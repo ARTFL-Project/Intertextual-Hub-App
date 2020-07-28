@@ -1,10 +1,13 @@
 <template>
     <div class="d-inline-block">
-        <span v-for="(citation, citeIndex) in citations" :key="citeIndex" :style="citation.style">
-            <router-link
-                v-if="citation.link"
-                :to="docLink()"
-            >{{ citation.field || "Unnamed section" }}</router-link>
+        <span
+            v-for="(citation, citeIndex) in citations"
+            :key="citeIndex"
+            :style="citation.style"
+        >
+            <router-link v-if="citation.link" :to="docLink()">{{
+                citation.field || "Unnamed section"
+            }}</router-link>
             <span v-else>{{ citation.field }}</span>
             <span
                 class="separator"
@@ -12,7 +15,8 @@
                     citation.field.length > 0 &&
                         citeIndex != citations.length - 1
                 "
-            >&#9679;</span>
+                >&#9679;</span
+            >
         </span>
 
         <br />
@@ -25,7 +29,7 @@ export default {
     props: ["philoDb", "docPair", "direction"],
     data() {
         return {
-            fields: ["author", "title", "head", "date"]
+            fields: ["author", "title", "head", "date"],
         };
     },
     computed: {
@@ -51,7 +55,7 @@ export default {
                     citations.push({
                         field: fieldValue,
                         style: style,
-                        link: ""
+                        link: "",
                     });
                 }
             }
@@ -59,11 +63,11 @@ export default {
                 citations.push({
                     field: this.docPair.year,
                     style: this.$appConfig.styles.date,
-                    link: ""
+                    link: "",
                 });
             }
             return citations;
-        }
+        },
     },
     methods: {
         docLink() {
@@ -85,8 +89,8 @@ export default {
             //     return `${this.philoUrl}/navigate/${objectId}/`;
             // }
             return "";
-        }
-    }
+        },
+    },
 };
 </script>
 <style scoped>

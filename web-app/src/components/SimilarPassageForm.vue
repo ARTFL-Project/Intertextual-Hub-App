@@ -8,11 +8,11 @@
                 <b-col cols="6" class="border border-top-0 border-right-0 border-bottom-0">
                     <h6 class="text-center pb-2">Target</h6>
                 </b-col>
-                <b-col cols="6">
+                <b-col cols="6" v-for="direction in ['source', 'target']" :key="direction">
                     <b-input-group
                         :prepend="field.label"
                         class="pb-3"
-                        v-for="field in metadataFields.source"
+                        v-for="field in metadataFields[direction]"
                         :key="field.label"
                     >
                         <b-form-input v-model="formValues[field.value]"></b-form-input>
@@ -20,62 +20,34 @@
                     <b-input-group class="pb-3">
                         <template v-slot:prepend>
                             <b-input-group-text>Date</b-input-group-text>
-                            <b-dropdown :text="dateType.source" variant="outline-secondary">
-                                <b-dropdown-item @click="dropSelect('exact', 'source')">exact</b-dropdown-item>
-                                <b-dropdown-item @click="dropSelect('range', 'source')">range</b-dropdown-item>
+                            <b-dropdown :text="dateType[direction]" variant="outline-secondary">
+                                <b-dropdown-item @click="dropSelect('exact', direction)">exact</b-dropdown-item>
+                                <b-dropdown-item @click="dropSelect('range', direction)">range</b-dropdown-item>
                             </b-dropdown>
                         </template>
                         <b-form-input
-                            v-model="formValues['source_date']"
-                            v-if="dateType.source == 'exact'"
+                            v-model="formValues[`${direction}_date`]"
+                            v-if="dateType[direction] == 'exact'"
                         ></b-form-input>
-                        <b-form-input
-                            v-model="dateRange.source.from"
-                            v-if="dateType.source == 'range'"
-                            placeholder="from"
-                            class="ml-3"
-                        ></b-form-input>
-                        <b-form-input
-                            v-model="dateRange.source.to"
-                            v-if="dateType.source == 'range'"
-                            placeholder="to"
-                            class="ml-3"
-                        ></b-form-input>
-                    </b-input-group>
-                </b-col>
-                <b-col cols="6" class="border border-top-0 border-right-0 border-bottom-0">
-                    <b-input-group
-                        :prepend="field.label"
-                        class="pb-3"
-                        v-for="field in metadataFields.target"
-                        :key="field.label"
-                    >
-                        <b-form-input v-model="formValues[field.value]"></b-form-input>
-                    </b-input-group>
-                    <b-input-group class="pb-3">
-                        <template v-slot:prepend>
-                            <b-input-group-text>Date</b-input-group-text>
-                            <b-dropdown :text="dateType.target" variant="outline-secondary">
-                                <b-dropdown-item @click="dropSelect('exact', 'target')">exact</b-dropdown-item>
-                                <b-dropdown-item @click="dropSelect('range', 'target')">range</b-dropdown-item>
-                            </b-dropdown>
-                        </template>
-                        <b-form-input
-                            v-model="formValues['target_date']"
-                            v-if="dateType.target == 'exact'"
-                        ></b-form-input>
-                        <b-form-input
-                            v-model="dateRange.target.from"
-                            v-if="dateType.target == 'range'"
-                            placeholder="from"
-                            class="ml-3"
-                        ></b-form-input>
-                        <b-form-input
-                            v-model="dateRange.target.to"
-                            v-if="dateType.target == 'range'"
-                            placeholder="to"
-                            class="ml-3"
-                        ></b-form-input>
+                        <b-input-group
+                            prepend="from"
+                            v-if="dateType[direction] == 'range'"
+                            class="d-inline-flex ml-3"
+                            style="width: auto"
+                        >
+                            <b-form-input
+                                v-model="dateRange[direction].from"
+                                placeholder="e.g. 1770"
+                            ></b-form-input>
+                        </b-input-group>
+                        <b-input-group
+                            prepend="to"
+                            v-if="dateType[direction] == 'range'"
+                            class="d-inline-flex ml-3"
+                            style="width: auto"
+                        >
+                            <b-form-input v-model="dateRange[direction].to" placeholder="e.g. 1799"></b-form-input>
+                        </b-input-group>
                     </b-input-group>
                 </b-col>
             </b-row>
@@ -93,33 +65,33 @@ export default {
                 source: [
                     {
                         label: "Author",
-                        value: "source_author"
+                        value: "source_author",
                     },
                     {
                         label: "Title",
-                        value: "source_title"
-                    }
+                        value: "source_title",
+                    },
                 ],
                 target: [
                     {
                         label: "Author",
-                        value: "target_author"
+                        value: "target_author",
                     },
                     {
                         label: "Title",
-                        value: "target_title"
-                    }
-                ]
+                        value: "target_title",
+                    },
+                ],
             },
             formValues: {},
             dateType: {
                 source: "exact",
-                target: "exact"
+                target: "exact",
             },
             dateRange: {
                 source: { to: null, from: null },
-                target: { to: null, from: null }
-            }
+                target: { to: null, from: null },
+            },
         };
     },
     created() {
@@ -142,7 +114,6 @@ export default {
     },
     methods: {
         search() {
-            console.log(this.formValues);
             delete this.formValues.direction;
             let formValues = { ...this.formValues };
             if (
@@ -168,9 +139,8 @@ export default {
                 this.dateType.source = selection;
             } else {
                 this.dateType.target = selection;
-                187;
             }
-        }
-    }
+        },
+    },
 };
 </script>

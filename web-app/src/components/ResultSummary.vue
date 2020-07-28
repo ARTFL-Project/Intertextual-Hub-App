@@ -113,7 +113,7 @@ export default {
         fetchResults() {
             this.$http
                 .get(
-                    `https://anomander.uchicago.edu//intertextual-hub-api/search?${this.paramsToUrlString(
+                    `https://anomander.uchicago.edu//intertextual-hub-api/search_alignments?${this.paramsToUrlString(
                         this.$route.query
                     )}`
                 )
