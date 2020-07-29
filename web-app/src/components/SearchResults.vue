@@ -27,17 +27,25 @@ export default {
         };
     },
     created() {
-        this.$http
-            .get(
-                `https://anomander.uchicago.edu//intertextual-hub-api/search_texts?${this.paramsToUrlString(
-                    this.$route.query
-                )}`
-            )
-            .then((response) => {
-                this.results = response.data.results;
-                this.doc_count = response.data.doc_count;
-                console.log(this.results);
-            });
+        this.fetchResults();
+    },
+    watch: {
+        $route: "fetchResults",
+    },
+    methods: {
+        fetchResults() {
+            this.results = null;
+            this.$http
+                .get(
+                    `https://anomander.uchicago.edu//intertextual-hub-api/search_texts?${this.paramsToUrlString(
+                        this.$route.query
+                    )}`
+                )
+                .then((response) => {
+                    this.results = response.data.results;
+                    this.doc_count = response.data.doc_count;
+                });
+        },
     },
 };
 </script>

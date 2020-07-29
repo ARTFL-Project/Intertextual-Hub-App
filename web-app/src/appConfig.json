@@ -13,5 +13,43 @@
         "date": {
             "color": "#000"
         }
-    }
+    },
+    "collections": [{
+            "text": "18th cent. French Literature",
+            "value": "hub18thcfrench"
+        },
+        {
+            "text": "18th cent. French Polical Economy",
+            "value": "Gldsmth18cfr"
+        },
+        {
+            "text": "18th cent. French ECCO",
+            "value": "hubeccofr"
+        },
+        {
+            "text": "French Revolutionary Pamphlets",
+            "value": "frc"
+        },
+        {
+            "text": "Archives Parlementaires",
+            "value": "ap"
+        },
+        {
+            "text": "French Revolutionary Laws",
+            "value": "revlawallhub"
+        },
+        {
+            "text": "Journaux de Marat",
+            "value": "marat"
+        }
+    ],
+    "periods": [{
+            "text": "Pre-1789",
+            "value": "pre"
+        },
+        {
+            "text": "1789-1799",
+            "value": "rev"
+        }
+    ]
 }

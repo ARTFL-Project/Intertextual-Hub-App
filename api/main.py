@@ -55,7 +55,29 @@ def retrieve_passage(pairid: str, start_byte: int, direction: str):
 
 @app.get("/search_texts")
 def search_texts(request: Request):
+    author = ""
+    title = ""
+    start_date = ""
+    end_date = ""
+    collections = ""
+    periods = ""
+    if "author" in request.query_params:
+        author = request.query_params["author"]
+    if "title" in request.query_params:
+        title = request.query_params["title"]
+    if "collections" in request.query_params:
+        collections = request.query_params["collections"]
+    if "periods" in request.query_params:
+        periods = request.query_params["periods"]
+    if "date" in request.query_params:
+        date = request.query_params["date"]
+        dates = date.split("<=>")
+        start_date = dates[0]
+        end_date = dates[1]
     if "words" in request.query_params:
-        results, doc_count = search.word_search(**request.query_params)
-    return {"results": results, "doc_count": doc_count[0]}
+        searchwords = request.query_params["words"]
+        results, doc_count = search.word_search(searchwords, author, title, start_date, end_date, collections, periods)
+    else:
+        results, doc_count = search.metadata_search(author, title, start_date, end_date, collections, periods)
+    return {"results": results, "doc_count": doc_count}
 
