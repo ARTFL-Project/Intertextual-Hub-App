@@ -1,79 +1,139 @@
 <template>
     <b-card class="shadow-sm mb-4 border-top-0">
-        <b-form @submit.stop.prevent="search" @reset="clearForm">
-            <b-input-group prepend="Words" id="words" class="pb-3">
-                <b-form-input
-                    v-model.lazy="formValues.words"
-                    placeholder="e.g. conspirateurs aristocrates ennemis royalistes"
-                ></b-form-input>
-                <template v-slot:append>
-                    <b-dropdown text="Select topic" right variant="outline-secondary">
-                        <b-dropdown-item
-                            v-for="topic in topics"
-                            :key="topic.name"
-                            @click="selectTopic(topic.description)"
-                        >Topic {{topic.name}}: {{topic.description}}</b-dropdown-item>
-                    </b-dropdown>
-                </template>
-            </b-input-group>
-            <b-input-group
-                :prepend="field.label"
-                class="pb-3"
-                v-for="field in metadataFields"
-                :key="field.label"
-            >
-                <b-form-input
-                    v-model="formValues[field.value]"
-                    :placeholder="`e.g. ${field.example}`"
-                ></b-form-input>
-            </b-input-group>
-            <b-input-group class="pb-3">
-                <template v-slot:prepend>
-                    <b-input-group-text>Date</b-input-group-text>
-                    <b-dropdown :text="dateType" variant="outline-secondary">
-                        <b-dropdown-item @click="dropSelect('exact')">exact</b-dropdown-item>
-                        <b-dropdown-item @click="dropSelect('range')">range</b-dropdown-item>
-                    </b-dropdown>
-                </template>
-                <b-form-input
-                    v-model="formValues['date']"
-                    v-if="dateType == 'exact'"
-                    placeholder="e.g. 1789"
-                ></b-form-input>
-                <b-input-group
-                    prepend="from"
-                    v-if="dateType == 'range'"
-                    class="d-inline-flex ml-3"
-                    style="width: auto"
-                >
-                    <b-form-input
-                        v-model="dateRange.from"
-                        placeholder="e.g. 1770"
-                        class="d-inline-flex"
-                    ></b-form-input>
-                </b-input-group>
-                <b-input-group
-                    prepend="to"
-                    v-if="dateType == 'range'"
-                    class="d-inline-flex ml-3"
-                    style="width: auto"
-                >
-                    <b-form-input
-                        v-model="dateRange.to"
-                        placeholder="e.g. 1799"
-                        class="d-inline-flex"
-                    ></b-form-input>
-                </b-input-group>
-            </b-input-group>
-            <b-input-group prepend="Collections" class="mb-3">
-                <b-form-select v-model="collectionSelected" :options="collections"></b-form-select>
-            </b-input-group>
-            <b-input-group prepend="Period" class="mb-3">
-                <b-form-select v-model="periodSelected" :options="periods"></b-form-select>
-            </b-input-group>
-            <button class="btn btn-primary rounded-0" type="submit">Search</button>
-            <button type="reset" class="btn btn-secondary rounded-0">Reset</button>
-        </b-form>
+        <b-row>
+            <b-col sm="12" lg="8" xl="6">
+                <b-form @submit.stop.prevent="search" @reset="clearForm">
+                    <b-input-group prepend="Words" id="words" class="pb-1">
+                        <b-form-input
+                            v-model.lazy="formValues.words"
+                            placeholder="e.g. conspirateurs aristocrates ennemis royalistes"
+                        ></b-form-input>
+                        <template v-slot:append>
+                            <b-dropdown
+                                text="Select topic"
+                                right
+                                variant="outline-secondary"
+                            >
+                                <b-dropdown-item
+                                    v-for="topic in topics"
+                                    :key="topic.name"
+                                    @click="selectTopic(topic.description)"
+                                    >Topic {{ topic.name }}:
+                                    {{ topic.description }}</b-dropdown-item
+                                >
+                            </b-dropdown>
+                        </template>
+                    </b-input-group>
+                    <b-form-checkbox
+                        v-model="formValues.binding"
+                        name="binding"
+                        value="OR"
+                        unchecked-value
+                        class="mb-3"
+                        >OR search</b-form-checkbox
+                    >
+                    <b-input-group
+                        :prepend="field.label"
+                        class="pb-3"
+                        v-for="field in metadataFields"
+                        :key="field.label"
+                    >
+                        <b-form-input
+                            v-model="formValues[field.value]"
+                            :placeholder="`e.g. ${field.example}`"
+                        ></b-form-input>
+                    </b-input-group>
+                    <b-input-group class="pb-3">
+                        <template v-slot:prepend>
+                            <b-input-group-text>Date</b-input-group-text>
+                            <b-dropdown
+                                :text="dateType"
+                                variant="outline-secondary"
+                            >
+                                <b-dropdown-item @click="dropSelect('exact')"
+                                    >exact</b-dropdown-item
+                                >
+                                <b-dropdown-item @click="dropSelect('range')"
+                                    >range</b-dropdown-item
+                                >
+                            </b-dropdown>
+                        </template>
+                        <b-form-input
+                            v-model="formValues['date']"
+                            v-if="dateType == 'exact'"
+                            placeholder="e.g. 1789"
+                        ></b-form-input>
+                        <b-input-group
+                            prepend="from"
+                            v-if="dateType == 'range'"
+                            class="d-inline-flex ml-3"
+                            style="width: auto"
+                        >
+                            <b-form-input
+                                v-model="dateRange.from"
+                                placeholder="e.g. 1770"
+                                class="d-inline-flex"
+                            ></b-form-input>
+                        </b-input-group>
+                        <b-input-group
+                            prepend="to"
+                            v-if="dateType == 'range'"
+                            class="d-inline-flex ml-3"
+                            style="width: auto"
+                        >
+                            <b-form-input
+                                v-model="dateRange.to"
+                                placeholder="e.g. 1799"
+                                class="d-inline-flex"
+                            ></b-form-input>
+                        </b-input-group>
+                    </b-input-group>
+                    <b-input-group prepend="Collections" class="mb-3">
+                        <b-form-select
+                            v-model="collectionSelected"
+                            :options="collections"
+                        ></b-form-select>
+                    </b-input-group>
+                    <b-input-group prepend="Period" class="mb-3">
+                        <b-form-select
+                            v-model="periodSelected"
+                            :options="periods"
+                        ></b-form-select>
+                    </b-input-group>
+                    <button class="btn btn-primary rounded-0" type="submit">
+                        Search
+                    </button>
+                    <button type="reset" class="btn btn-secondary rounded-0">
+                        Reset
+                    </button>
+                </b-form>
+            </b-col>
+            <b-col>
+                <p>
+                    Term queries run from this form return a list of ranked
+                    revelancy citations with links to all of the Philo4 powered
+                    versions of the Newberry French Revolution Collection
+                    (25,935 documents), the French Revolutionary Laws (56,035
+                    divs), the Journaux de Marat (932 documents), the Archives
+                    Parlementaires (4,650 divs), 18th Century French (31,313
+                    divs, 1,822 documents), Selected 18th century documents of
+                    the Goldsmith-Kress Collection (201,000 divs, 5,855
+                    documents), and ECCOFrench some duplicates removed (85,000
+                    divs, 3,621 documents).
+                </p>
+                <p>
+                    Queries can be executed just with search terms or can be
+                    delimited using bibliographic criteria. Simple bibliographic
+                    queries work, as well. Author and Title fields accept
+                    boolean ORs.
+                </p>
+                <p>
+                    Metadata permitting, queries can be delimited by date down
+                    to the day. The format for dates is "YYYY-MM-DD", "YYYY-MM",
+                    or just "YYYY". End dates support date-range searching.
+                </p>
+            </b-col>
+        </b-row>
     </b-card>
 </template>
 <script>

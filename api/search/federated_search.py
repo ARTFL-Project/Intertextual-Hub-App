@@ -70,8 +70,7 @@ def build_match(searchwords, author, title):
     return match_stmt_parts
 
 
-def word_search(searchwords, author, title, start_date, end_date, collections, periods):
-    opbind = ""
+def word_search(searchwords, author, title, start_date, end_date, collections, periods, opbind):
 
     got_metadata_OR = 0
     got_author_OR = 0
