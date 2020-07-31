@@ -4,6 +4,7 @@
             <citations
                 :docPair="currentIntertextualMetadata"
                 :direction="direction"
+                :philo-db="philoDb"
                 v-if="currentIntertextualMetadata"
             ></citations>
         </h5>
@@ -18,7 +19,14 @@
             hide-footer
             title="Intertextual Link"
         >
-            <passage-pair :passage="intertextualLink"></passage-pair>
+            <passage-pair
+                v-if="currentIntertextualMetadata"
+                :passage="intertextualLink"
+                :source-philo-id="currentIntertextualMetadata.source_philo_id"
+                :source-philo-db="currentIntertextualMetadata.source_philo_db"
+                :target-philo-id="currentIntertextualMetadata.target_philo_id"
+                :target-philo-db="currentIntertextualMetadata.target_philo_db"
+            ></passage-pair>
         </b-modal>
         <div id="intertextual-metadata" class="shadow px-2 pt-2 d-none">
             <div v-if="currentIntertextualMetadata">
@@ -27,13 +35,13 @@
                     <citations
                         :docPair="currentIntertextualMetadata"
                         direction="source"
-                        philo-db
+                        :philo-db="currentIntertextualMetadata.source_philo_db"
                         v-if="direction == 'target'"
                     ></citations>
                     <citations
                         :docPair="currentIntertextualMetadata"
                         direction="target"
-                        philo-db
+                        :philo-db="currentIntertextualMetadata.target_philo_db"
                         v-else
                     ></citations>
                 </b>
@@ -53,7 +61,7 @@ export default {
     name: "TextNavigation",
     components: {
         PassagePair,
-        Citations
+        Citations,
     },
     data() {
         return {
@@ -62,7 +70,8 @@ export default {
             highlighted: {},
             currentIntertextualMetadata: null,
             direction: this.$route.query.direction,
-            alreadyScrolled: false
+            alreadyScrolled: false,
+            philoDb: null,
         };
     },
     created() {
@@ -78,7 +87,7 @@ export default {
                 );
                 Array.from(
                     document.getElementsByClassName("passage-marker")
-                ).forEach(el => this.showPassage(el));
+                ).forEach((el) => this.showPassage(el));
                 tippy("[class^=passage-]", {
                     content() {
                         let popup = document.getElementById(
@@ -87,7 +96,7 @@ export default {
                         return popup.innerHTML;
                     },
                     allowHTML: true,
-                    theme: "light-border"
+                    theme: "light-border",
                 });
             });
             this.alreadyScrolled = true;
@@ -99,7 +108,7 @@ export default {
             let passageNumber = i + 1;
             document
                 .getElementsByClassName(`passage-${passageNumber}`)
-                .forEach(el => {
+                .forEach((el) => {
                     el.removeEventListener("click");
                 });
         }
@@ -108,16 +117,19 @@ export default {
         fetchPassage() {
             this.$http
                 .get(
-                    `https://anomander.uchicago.edu/intertextual-hub-api/navigate/${this.$route.params.philoDb}/${this.$route.query.pairid}/${this.$route.query.direction}`,
+                    `https://anomander.uchicago.edu/intertextual-hub-api/navigate/${this.$route.params.philoDb}/${this.$route.query.pairid}/${this.direction}`,
                     {
                         params: {
-                            philo_id: this.$route.params.doc
-                        }
+                            philo_id: this.$route.params.doc,
+                        },
                     }
                 )
-                .then(response => {
+                .then((response) => {
                     this.text = response.data.text;
+                    this.philoDb =
+                        response.data.metadata[`${this.direction}_philo_db`];
                     this.currentIntertextualMetadata = response.data.metadata;
+                    console.log(this.philoDb, this.currentIntertextualMetadata);
                 });
         },
         showPassage(element) {
@@ -128,13 +140,13 @@ export default {
                     this.getAlignments({
                         offsets: offsets,
                         passageNumber: passageNumber,
-                        element: element
+                        element: element,
                     });
                 };
 
                 document
                     .getElementsByClassName(`passage-${passageNumber}`)
-                    .forEach(el => {
+                    .forEach((el) => {
                         el.addEventListener("click", getAlignments, false);
                     });
 
@@ -148,16 +160,16 @@ export default {
                     {
                         params: {
                             start_byte: data.offsets[0],
-                            direction: this.$route.query.direction
-                        }
+                            direction: this.$route.query.direction,
+                        },
                     }
                 )
-                .then(response => {
+                .then((response) => {
                     this.intertextualLink = response.data;
                     this.$bvModal.show("text-reuse");
                 });
-        }
-    }
+        },
+    },
 };
 </script>
 <style scoped>
