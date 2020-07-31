@@ -34,7 +34,7 @@
 
 <script>
 export default {
-    name: "topicDistributions",
+    name: "TopicDistributions",
     data() {
         return {
             routeName: this.$route.name,

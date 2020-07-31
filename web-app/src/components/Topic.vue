@@ -10,15 +10,10 @@
                 <b-card no-body class="shadow-sm" header="Top 50 Tokens">
                     <b-list-group flush>
                         <b-list-group-item>
-                            <a :href="philoTimeSeriesQueryLink" target="_blank"
-                                >Show frequency of top 10 tokens over time</a
-                            >
+                            <router-link
+                                :to="federatedSearch"
+                            >Rank documents by occurrence of top 10 tokens</router-link>
                         </b-list-group-item>
-                        <!-- <b-list-group-item>
-                            <a :href="whooshSearchLink" target="_blank"
-                                >Rank documents by occurrence of top 10 tokens</a
-                            >
-                        </b-list-group-item>-->
                     </b-list-group>
                     <div class="pl-4 pt-4 pb-4">
                         <apexchart
@@ -47,14 +42,6 @@
                                     :options="topicEvolutionChartOptions"
                                     :series="topicEvolutionSeries"
                                 ></apexchart>
-                            </div>
-                            <div class="pb-4 pl-4 pr-4">
-                                <a
-                                    :href="philoTimeSeriesBiBlioLink"
-                                    target="_blank"
-                                >
-                                    See topic frequency over time in PhiloLogic
-                                </a>
                             </div>
                         </b-card>
                     </b-col>
@@ -89,8 +76,8 @@
                                     ></span>
                                     Topic {{ localTopic.name }}:
                                     {{
-                                        topicData[parseInt(localTopic.name)]
-                                            .description
+                                    topicData[parseInt(localTopic.name)]
+                                    .description
                                     }}
                                 </span>
                             </div>
@@ -109,31 +96,21 @@
                                 style="left: 0; right: 0; top: 4rem; z-index: 1;"
                                 v-if="loading"
                             >
-                                <b-spinner
-                                    style="width: 4rem; height: 4rem;"
-                                    label="Large Spinner"
-                                ></b-spinner>
+                                <b-spinner style="width: 4rem; height: 4rem;" label="Large Spinner"></b-spinner>
                             </div>
                             <b-list-group flush>
-                                <b-list-group-item
-                                    v-for="doc in documents"
-                                    :key="doc.doc_id"
-                                >
-                                    <router-link :to="linker(doc.metadata)">
-                                        <citations
-                                            :docPair="doc.metadata"
-                                            :philo-db="
+                                <b-list-group-item v-for="doc in documents" :key="doc.doc_id">
+                                    <citations
+                                        :docPair="doc.metadata"
+                                        :philo-db="
                                                 `${doc.metadata.philo_db}`
                                             "
-                                        ></citations
-                                    ></router-link>
+                                    ></citations>
                                     <b-badge
                                         variant="secondary"
                                         pill
                                         class="float-right"
-                                    >
-                                        {{ (doc.score * 100).toFixed(2) }}%
-                                    </b-badge>
+                                    >{{ (doc.score * 100).toFixed(2) }}%</b-badge>
                                 </b-list-group-item>
                             </b-list-group>
                         </b-card>
@@ -146,6 +123,7 @@
 <script>
 import topicData from "../../topic_words.json";
 import Citations from "./Citations";
+import { EventBus } from "../main.js";
 
 export default {
     name: "Topic",
@@ -192,9 +170,11 @@ export default {
                 tooltip: {
                     x: {
                         formatter: (year) => {
-                            return `${year}-${parseInt(year) +
+                            return `${year}-${
+                                parseInt(year) +
                                 parseInt(this.year_interval) -
-                                1}`;
+                                1
+                            }`;
                         },
                     },
                 },
@@ -246,7 +226,7 @@ export default {
                         colors: ["#000"],
                         fontSize: "14px",
                     },
-                    formatter: function(val, opt) {
+                    formatter: function (val, opt) {
                         return (
                             opt.w.globals.labels[opt.dataPointIndex] +
                             ":  " +
@@ -307,7 +287,7 @@ export default {
                 },
                 legend: {
                     show: false,
-                    formatter: function(seriesName) {
+                    formatter: function (seriesName) {
                         return `Topic ${seriesName}`;
                     },
                 },
@@ -320,32 +300,11 @@ export default {
         };
     },
     computed: {
-        philoTimeSeriesBiBlioLink: function() {
-            // if (this.topic.length == 1) {
-            //     return `${this.$globalConfig.philoLogicUrl}/query?report=time_series&topicmodel=0${this.topic}&year_interval=${this.$modelConfig.TOPICS_OVER_TIME.topics_over_time_interval}&start_date=${this.timeSeriesConfig.startDate}&end_date=${this.timeSeriesConfig.endDate}`;
-            // }
-            // return `${this.$globalConfig.philoLogicUrl}/query?report=time_series&topicmodel=${this.topic}&year_interval=${this.$modelConfig.TOPICS_OVER_TIME.topics_over_time_interval}&start_date=${this.timeSeriesConfig.startDate}&end_date=${this.timeSeriesConfig.endDate}`;
-            return "";
+        federatedSearch: function () {
+            return `/search?words=${this.wordDistributionLabels
+                .slice(0, 10)
+                .join(" ")}`;
         },
-        philoTimeSeriesQueryLink: function() {
-            // let queryString = topicData[parseInt(this.topic)].description
-            //     .split(", ")
-            //     .map(a => `${a}.?`)
-            //     .join(" OR ");
-            // return `${this.$globalConfig.philoLogicUrl}/query?report=time_series&year_interval=${this.$modelConfig.TOPICS_OVER_TIME.topics_over_time_interval}&start_date=${this.timeSeriesConfig.startDate}&end_date=${this.timeSeriesConfig.endDate}&q=${queryString}`;
-            return "";
-        },
-        // whooshSearchLink: function() {
-        //     let queryString = []
-        //     for (let wordIndex = 0; wordIndex < 10; wordIndex += 1) {
-        //         queryString.push(
-        //             `${this.wordDistributionLabels[wordIndex]}^${this.wordDistributionSeries[0].data[wordIndex]}`
-        //         )
-        //     }
-        //     return `http://anomander.uchicago.edu/cgi-bin/mark/frc1787-99.whoosh.py?binding=OR&reslimit=100&showsnippets=YES&words=${queryString.join(
-        //         " "
-        //     )}`
-        // }
     },
     mounted() {
         this.fetchData();
@@ -356,6 +315,7 @@ export default {
     },
     methods: {
         fetchData() {
+            EventBus.$emit("hideForms");
             this.$http
                 .get(
                     "https://anomander.uchicago.edu/topologic-api/get_config/combo?full_config=True"
@@ -468,7 +428,7 @@ export default {
                                     ],
                                 },
                             };
-                            this.$nextTick(function() {
+                            this.$nextTick(function () {
                                 let selectedYear = document.querySelector(
                                     "path[selected='true']"
                                 );
@@ -482,8 +442,8 @@ export default {
                         });
                 });
         },
-        sumArray: function(arr) {
-            return arr.reduce(function(a, b) {
+        sumArray: function (arr) {
+            return arr.reduce(function (a, b) {
                 return a + b;
             }, 0);
         },

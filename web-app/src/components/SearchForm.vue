@@ -1,7 +1,7 @@
 <template>
     <b-card class="shadow-sm mb-4 border-top-0">
         <b-row>
-            <b-col sm="12" lg="8" xl="6">
+            <b-col sm="12" lg="8" xl="7">
                 <b-form @submit.stop.prevent="search" @reset="clearForm">
                     <b-input-group prepend="Words" id="words" class="pb-1">
                         <b-form-input
@@ -12,13 +12,14 @@
                             <b-dropdown
                                 text="Select topic"
                                 right
+                                offset="10"
                                 variant="outline-secondary"
                             >
                                 <b-dropdown-item
                                     v-for="topic in topics"
                                     :key="topic.name"
                                     @click="selectTopic(topic.description)"
-                                    >Topic {{ topic.name }}:
+                                    ><b>Topic {{ topic.name }}:</b>
                                     {{ topic.description }}</b-dropdown-item
                                 >
                             </b-dropdown>
@@ -108,18 +109,47 @@
                     </button>
                 </b-form>
             </b-col>
-            <b-col>
+            <b-col class="d-xs-none d-md-none d-lg-block">
                 <p>
                     Term queries run from this form return a list of ranked
                     revelancy citations with links to all of the Philo4 powered
-                    versions of the Newberry French Revolution Collection
-                    (25,935 documents), the French Revolutionary Laws (56,035
-                    divs), the Journaux de Marat (932 documents), the Archives
-                    Parlementaires (4,650 divs), 18th Century French (31,313
-                    divs, 1,822 documents), Selected 18th century documents of
-                    the Goldsmith-Kress Collection (201,000 divs, 5,855
-                    documents), and ECCOFrench some duplicates removed (85,000
-                    divs, 3,621 documents).
+                    versions of the
+                    <a
+                        href="https://anomander.uchicago.edu/intertextual_hub/philologic/frc/"
+                        >Newberry French Revolution Collection</a
+                    >
+                    (25,935 documents), the
+                    <a
+                        href="https://anomander.uchicago.edu/intertextual_hub/philologic/revlawallhub/"
+                        >French Revolutionary Laws</a
+                    >
+                    (56,035 divs), the
+                    <a
+                        href="https://anomander.uchicago.edu/intertextual_hub/philologic/marat/"
+                        >Journaux de Marat</a
+                    >
+                    (932 documents), the
+                    <a
+                        href="https://anomander.uchicago.edu/intertextual_hub/philologic/ap/"
+                        >Archives Parlementaires</a
+                    >
+                    (4,650 divs),
+                    <a
+                        href="https://anomander.uchicago.edu/intertextual_hub/philologic/hub18thcfrench/"
+                        >18th Century French</a
+                    >
+                    (31,313 divs, 1,822 documents),
+                    <a
+                        href="https://anomander.uchicago.edu/intertextual_hub/philologic/Gldsmth18cfr/"
+                        >Selected 18th century documents of the Goldsmith-Kress
+                        Collection</a
+                    >
+                    (201,000 divs, 5,855 documents), and
+                    <a
+                        href="https://anomander.uchicago.edu/intertextual_hub/philologic/hubeccofr/"
+                        >ECCOFrench</a
+                    >
+                    some duplicates removed (85,000 divs, 3,621 documents).
                 </p>
                 <p>
                     Queries can be executed just with search terms or can be
@@ -205,7 +235,15 @@ export default {
                 });
         },
         search() {
-            let formValues = { ...this.formValues };
+            let formValues = {};
+            for (let value in this.formValues) {
+                if (
+                    !value.startsWith("source") ||
+                    !value.startsWith("target")
+                ) {
+                    formValues[value] = this.formValues[value];
+                }
+            }
             if (this.dateType == "range" && this.dateRange.from.length > 0) {
                 formValues.date = `${this.dateRange.from}<=>${this.dateRange.to}`;
             }
@@ -247,5 +285,8 @@ export default {
 ::v-deep #words .dropdown-menu {
     max-height: 300px;
     overflow-y: scroll;
+}
+::v-deep .dropdown-item {
+    padding: 0.25rem 1rem;
 }
 </style>

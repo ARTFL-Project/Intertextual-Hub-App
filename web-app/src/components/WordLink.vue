@@ -5,18 +5,12 @@
         </template>
         <b-list-group flush>
             <b-list-group-item>
-                <router-link :to="`/word/${word}`"
-                    >Explore usage in corpus</router-link
-                >
+                <router-link :to="`/word/${word}`">Explore usage in corpus</router-link>
             </b-list-group-item>
-            <!-- <b-list-group-item>
-                <a :href="link" target="_blank" v-if="metadata">See all occurrences in document</a>
-                <a
-                    :href="`${philoUrl}/query?report=concordance&q=${word}.?`"
-                    target="_blank"
-                    v-else
-                >See all occurrences</a>
-            </b-list-group-item> -->
+            <b-list-group-item>
+                <a :href="link" v-if="metadata">See all occurrences in document</a>
+                <a :href="`/search?words=${word}`" v-else>See all occurrences</a>
+            </b-list-group-item>
         </b-list-group>
     </b-popover>
 </template>
@@ -26,14 +20,29 @@ export default {
     props: ["target", "metadata", "word"],
     data() {
         return {
-            // philoUrl: this.$globalConfig.philoLogicUrl
+            philoUrl: this.$appConfig.philoDBs[this.metadata.philo_db].url,
         };
     },
     computed: {
-        link: function() {
-            let philoType = `philo_${this.metadata.philo_type}_id`;
-            let objectId = this.metadata[philoType];
-            return `${this.philoUrl}/query?report=concordance&${philoType}=${objectId}&q=${this.word}.?`;
+        link: function () {
+            let params = { q: this.word };
+            if (this.metadata.author.length) {
+                params.author = `"${this.metadata.author}"`;
+            }
+            if (this.metadata.title.length) {
+                params.title = `"${this.metadata.title}"`;
+            }
+            if (this.metadata.head.length) {
+                params.head = `"${this.metadata.head}"`;
+            }
+            if (this.metadata.philo_type == "doc") {
+                return `${
+                    this.philoUrl
+                }/query?report=concordance&${this.paramsToUrlString(params)}`;
+            }
+            return `${
+                this.philoUrl
+            }/query?report=concordance&${this.paramsToUrlString(params)}`;
         },
     },
 };

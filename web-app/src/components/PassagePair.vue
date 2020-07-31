@@ -3,7 +3,7 @@
         <b-col cols="6" class="mt-2" v-if="passage.metadata">
             <h6 class="text-center pb-2">Earlier Use</h6>
             <p class="pt-3 px-3">
-                <citations :docPair="passage.metadata" direction="source"></citations>
+                <citations :docPair="passage.metadata" direction="source" :philo-db="sourcePhiloDb"></citations>
             </p>
         </b-col>
         <b-col
@@ -13,7 +13,7 @@
         >
             <h6 class="text-center pb-2">Later use</h6>
             <p class="pt-3 px-3">
-                <citations :docPair="passage.metadata" direction="target"></citations>
+                <citations :docPair="passage.metadata" direction="target" :philo-db="targetPhiloDb"></citations>
             </p>
         </b-col>
         <b-col cols="6" class="mb-2">
@@ -42,7 +42,17 @@ import Citations from "./Citations";
 export default {
     name: "PassagePair",
     components: { Citations },
-    props: ["passage"]
+    props: [
+        "passage",
+        "sourcePhiloDb",
+        "sourcePhiloId",
+        "targetPhiloDb",
+        "targetPhiloId",
+    ],
+    created() {
+        this.passage.metadata.source_philo_id = this.sourcePhiloId;
+        this.passage.metadata.target_philo_id = this.targetPhiloId;
+    },
 };
 </script>
 <style scoped>

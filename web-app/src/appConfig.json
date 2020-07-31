@@ -1,4 +1,62 @@
 {
+    "philoDBs": {
+        "frc": {
+            "name": "French Revolutionary Pamphlets",
+            "path": "/var/www/html/intertextual_hub/philologic/frc/",
+            "url": "https://anomander.uchicago.edu/intertextual_hub/philologic/frc",
+            "object_type": "doc",
+            "citation_fields": ["author", "title", "year"],
+            "search_fields": ["author", "title", "year"]
+        },
+        "ap": {
+            "name": "Archives Parlementaires",
+            "path": "/var/www/html/intertextual_hub/philologic/ap/",
+            "url": "https://anomander.uchicago.edu/intertextual_hub/philologic/ap",
+            "object_type": "div2",
+            "citation_fields": ["title", "idno", "pub_date", "head", "div_date"],
+            "search_fields": ["year", "head", "type", "who", "div_date"]
+        },
+        "revlawallhub": {
+            "name": "Revolutionary Laws",
+            "path": "/var/www/html/intertextual_hub/philologic/revlawallhub/",
+            "url": "https://anomander.uchicago.edu/intertextual_hub/philologic/revlawallhub",
+            "object_type": "div1",
+            "citation_fields": ["author", "title", "period", "head", "div_date", "div_revdate"],
+            "search_fields": ["period", "year", "div_date", "div_revdate", "head", "title", "type", "text_form"]
+        },
+        "hub18thcfrench": {
+            "name": "18th Century French Literature",
+            "path": "/var/www/html/intertextual_hub/philologic/hub18thcfrench/",
+            "url": "https://anomander.uchicago.edu/intertextual_hub/philologic/hub18thcfrench",
+            "object_type": "div1",
+            "citation_fields": ["author", "title", "head", "year"],
+            "search_fields": ["author", "title", "head", "year"]
+        },
+        "Gldsmth18cfr": {
+            "name": "Goldsmith 18th Century",
+            "path": "/var/www/html/intertextual_hub/philologic/Gldsmth18cfr/",
+            "url": "https://anomander.uchicago.edu/intertextual_hub/philologic/Gldsmth18cfr",
+            "object_type": "div1",
+            "citation_fields": ["author", "title", "year"],
+            "search_fields": ["author", "title", "year"]
+        },
+        "marat": {
+            "name": "Journaux de Marat",
+            "path": "/var/www/html/intertextual_hub/philologic/marat/",
+            "url": "https://anomander.uchicago.edu/intertextual_hub/philologic/marat/",
+            "object_type": "div1",
+            "citation_fields": ["author", "title", "head", "idno", "pub_date"],
+            "search_fields": ["pub_date", "year", "title", "head", "idno"]
+        },
+        "hubeccofr": {
+            "name": "French ECCO",
+            "path": "/var/www/html/intertextual_hub/philologic/hubeccofr/",
+            "url": "https://anomander.uchicago.edu/intertextual_hub/philologic/hubeccofr",
+            "object_type": "div1",
+            "citation_fields": ["author", "title", "head", "year"],
+            "search_fields": ["author", "title", "head", "year"]
+        }
+    },
     "styles": {
         "author": {
             "font-variant": "small-caps",

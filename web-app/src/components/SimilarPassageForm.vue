@@ -5,24 +5,42 @@
                 <b-col cols="6">
                     <h6 class="text-center pb-2">Source</h6>
                 </b-col>
-                <b-col cols="6" class="border border-top-0 border-right-0 border-bottom-0">
+                <b-col
+                    cols="6"
+                    class="border border-top-0 border-right-0 border-bottom-0"
+                >
                     <h6 class="text-center pb-2">Target</h6>
                 </b-col>
-                <b-col cols="6" v-for="direction in ['source', 'target']" :key="direction">
+                <b-col
+                    cols="6"
+                    v-for="direction in ['source', 'target']"
+                    :key="direction"
+                >
                     <b-input-group
                         :prepend="field.label"
                         class="pb-3"
                         v-for="field in metadataFields[direction]"
                         :key="field.label"
                     >
-                        <b-form-input v-model="formValues[field.value]"></b-form-input>
+                        <b-form-input
+                            v-model="formValues[field.value]"
+                        ></b-form-input>
                     </b-input-group>
                     <b-input-group class="pb-3">
                         <template v-slot:prepend>
                             <b-input-group-text>Date</b-input-group-text>
-                            <b-dropdown :text="dateType[direction]" variant="outline-secondary">
-                                <b-dropdown-item @click="dropSelect('exact', direction)">exact</b-dropdown-item>
-                                <b-dropdown-item @click="dropSelect('range', direction)">range</b-dropdown-item>
+                            <b-dropdown
+                                :text="dateType[direction]"
+                                variant="outline-secondary"
+                            >
+                                <b-dropdown-item
+                                    @click="dropSelect('exact', direction)"
+                                    >exact</b-dropdown-item
+                                >
+                                <b-dropdown-item
+                                    @click="dropSelect('range', direction)"
+                                    >range</b-dropdown-item
+                                >
                             </b-dropdown>
                         </template>
                         <b-form-input
@@ -46,13 +64,20 @@
                             class="d-inline-flex ml-3"
                             style="width: auto"
                         >
-                            <b-form-input v-model="dateRange[direction].to" placeholder="e.g. 1799"></b-form-input>
+                            <b-form-input
+                                v-model="dateRange[direction].to"
+                                placeholder="e.g. 1799"
+                            ></b-form-input>
                         </b-input-group>
                     </b-input-group>
                 </b-col>
             </b-row>
-            <button class="btn btn-primary rounded-0" type="submit">Search</button>
-            <button type="reset" class="btn btn-secondary rounded-0">Reset</button>
+            <button class="btn btn-primary rounded-0" type="submit">
+                Search
+            </button>
+            <button type="reset" class="btn btn-secondary rounded-0">
+                Reset
+            </button>
         </b-card>
     </b-form>
 </template>
@@ -115,7 +140,12 @@ export default {
     methods: {
         search() {
             delete this.formValues.direction;
-            let formValues = { ...this.formValues };
+            let formValues = {};
+            for (let value in this.formValues) {
+                if (value.startsWith("source") || value.startsWith("target")) {
+                    formValues[value] = this.formValues[value];
+                }
+            }
             if (
                 this.dateType.source == "range" &&
                 this.dateRange.source.from.length > 0

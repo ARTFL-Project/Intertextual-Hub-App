@@ -21,8 +21,7 @@
                     size="sm"
                     variant="outline-secondary"
                     @click="goToDocument(documentPair, 'source')"
-                    >See passage(s) in document</b-button
-                >
+                >See passage(s) in document</b-button>
                 <br />
                 <citations
                     :philo-db="documentPair.target_philo_db"
@@ -35,8 +34,7 @@
                     size="sm"
                     variant="outline-secondary"
                     @click="goToDocument(documentPair, 'target')"
-                    >See passage(s) in document</b-button
-                >
+                >See passage(s) in document</b-button>
             </p>
             <div>
                 <b-button
@@ -47,20 +45,22 @@
                             resultsIndex
                         )
                     "
-                    >{{ passageTogglerMessages[resultsIndex] }}</b-button
-                >
+                >{{ passageTogglerMessages[resultsIndex] }}</b-button>
             </div>
-            <div
-                v-for="(passage, passageIndex) in passages[resultsIndex]"
-                :key="passage.passageid"
-            >
+            <div v-for="(passage, passageIndex) in passages[resultsIndex]" :key="passage.passageid">
                 <hr
                     v-if="
                         passageIndex != 0 &&
                             passageIndex != passages[resultsIndex].length
                     "
                 />
-                <passage-pair :passage="passage"></passage-pair>
+                <passage-pair
+                    :passage="passage"
+                    :source-philo-id="documentPair.source_philo_id"
+                    :source-philo-db="documentPair.source_philo_db"
+                    :target-philo-id="documentPair.target_philo_id"
+                    :target-philo-db="documentPair.target_philo_db"
+                ></passage-pair>
             </div>
         </b-card>
     </div>
@@ -68,6 +68,8 @@
 <script>
 import Citations from "./Citations";
 import PassagePair from "./PassagePair";
+import { EventBus } from "../main.js";
+
 export default {
     name: "ResultSummary",
     components: { Citations, PassagePair },
@@ -111,6 +113,7 @@ export default {
             this.$router.push(link);
         },
         fetchResults() {
+            EventBus.$emit("hideForms");
             this.$http
                 .get(
                     `https://anomander.uchicago.edu//intertextual-hub-api/search_alignments?${this.paramsToUrlString(

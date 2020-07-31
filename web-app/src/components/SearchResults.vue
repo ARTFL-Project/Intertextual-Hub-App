@@ -1,19 +1,42 @@
 <template>
     <div class="mt-4">
+        <b-card class="shadow-sm mb-4">
+            Input terms:
+            <b>{{ searchTerms }}</b>
+            <br />Bibliographic search criteria:
+            <span v-if="author">
+                <b>Author:</b>
+                {{ author }}
+            </span>
+            <span v-if="title">
+                <b>Title:</b>
+                {{ title }}
+            </span>
+            <span v-if="date">
+                <b>Date:</b>
+                {{ date }}
+            </span>
+            <br />Your query returned
+            <b v-if="results">{{ results.length }} results.</b>
+            <br />Number of documents with this search term:
+            <b>{{ docCount }}</b>
+            <br />Top 20 Author and Title Frequencies at bottom.
+        </b-card>
         <b-card
             class="position-relative mb-2 shadow-sm"
             v-for="(result, index) in results"
             :key="result.philo_id"
         >
-            <span class="count">{{index+1}}</span>
+            <span class="count">{{ index + 1 }}</span>
             <citations :docPair="result" :philo-db="`${result.philo_db}`"></citations>
-            <span class="pl-2">(score: {{result.score}})</span>
+            <span class="pl-2">(score: {{ result.score }})</span>
             <p class="mt-2 text" v-html="result.headline"></p>
         </b-card>
     </div>
 </template>
 <script>
 import Citations from "./Citations";
+import { EventBus } from "../main.js";
 
 export default {
     name: "SearchResults",
@@ -22,8 +45,12 @@ export default {
     },
     data() {
         return {
+            searchTerms: this.$route.query.words,
+            title: this.$route.query.title,
+            author: this.$route.query.author,
+            date: this.$route.query.date,
             results: null,
-            doc_count: null,
+            docCount: null,
         };
     },
     created() {
@@ -34,6 +61,7 @@ export default {
     },
     methods: {
         fetchResults() {
+            EventBus.$emit("hideForms");
             this.results = null;
             this.$http
                 .get(
@@ -43,7 +71,7 @@ export default {
                 )
                 .then((response) => {
                     this.results = response.data.results;
-                    this.doc_count = response.data.doc_count;
+                    this.docCount = response.data.doc_count;
                 });
         },
     },

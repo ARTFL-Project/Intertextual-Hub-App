@@ -6,7 +6,10 @@ import VueApexCharts from "vue-apexcharts";
 import appConfig from "./appConfig.json";
 import hubConfig from "../../../config/intertextual_hub_config.json";
 
-import { BootstrapVue, BootstrapVueIcons } from "bootstrap-vue";
+import {
+    BootstrapVue,
+    BootstrapVueIcons
+} from "bootstrap-vue";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
 import axios from "axios";

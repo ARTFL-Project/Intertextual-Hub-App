@@ -1,13 +1,13 @@
 <template>
     <div class="d-inline-block">
-        <span
-            v-for="(citation, citeIndex) in citations"
-            :key="citeIndex"
-            :style="citation.style"
-        >
-            <router-link v-if="citation.link" :to="docLink()">{{
-                citation.field || "Unnamed section"
-            }}</router-link>
+        <span v-for="(citation, citeIndex) in citations" :key="citeIndex" :style="citation.style">
+            <span v-if="citation.link">
+                <span
+                    class="link"
+                    :id="`${philoDb}_${philoId}`"
+                >{{ citation.field || 'Unnamed section' }}</span>
+                <doc-link :target="`${philoDb}_${philoId}`" :philo-db="philoDb" :philo-id="philoId"></doc-link>
+            </span>
             <span v-else>{{ citation.field }}</span>
             <span
                 class="separator"
@@ -15,8 +15,7 @@
                     citation.field.length > 0 &&
                         citeIndex != citations.length - 1
                 "
-                >&#9679;</span
-            >
+            >&#9679;</span>
         </span>
 
         <br />
@@ -24,12 +23,18 @@
     </div>
 </template>
 <script>
+import DocLink from "./DocLink";
+
 export default {
     name: "Citations",
+    components: {
+        DocLink,
+    },
     props: ["philoDb", "docPair", "direction"],
     data() {
         return {
             fields: ["author", "title", "head", "date"],
+            objectLevel: this.$appConfig.philoDBs[this.philoDb].object_type,
         };
     },
     computed: {
@@ -38,6 +43,9 @@ export default {
                 return `${this.direction}_`;
             }
             return "";
+        },
+        philoId() {
+            return this.docPair[`${this.fieldPrefix}philo_id`];
         },
         citations() {
             let citations = [];
@@ -52,10 +60,20 @@ export default {
                     if (field == "date") {
                         noDate = false;
                     }
+
+                    let link = false;
+                    if (this.objectLevel == "doc" && field == "title") {
+                        link = true;
+                    } else if (this.objectLevel == "div1" && field == "head") {
+                        link = true;
+                    } else if (this.objectLevel == "div2" && field == "head") {
+                        link = true;
+                    }
+
                     citations.push({
                         field: fieldValue,
                         style: style,
-                        link: "",
+                        link: link,
                     });
                 }
             }
@@ -69,28 +87,7 @@ export default {
             return citations;
         },
     },
-    methods: {
-        docLink() {
-            // let philoType = `philo_${this.doc.metadata.philo_type}_id`;
-            // let url = `/document/${this.philoDb}/${this.doc.metadata[philoType]
-            //     .split(" ")
-            //     .join("/")}`;
-            // return url;
-            return "";
-        },
-        goToPhilo() {
-            // let philoType = `philo_${this.doc.metadata.philo_type}_id`;
-            // if (this.doc.metadata.philo_type == "doc") {
-            //     return `${this.philoUrl}/navigate/${this.doc.metadata[philoType]}/table-of-contents/`;
-            // } else {
-            //     let objectId = this.doc.metadata[philoType]
-            //         .split(" ")
-            //         .join("/");
-            //     return `${this.philoUrl}/navigate/${objectId}/`;
-            // }
-            return "";
-        },
-    },
+    methods: {},
 };
 </script>
 <style scoped>
@@ -106,5 +103,9 @@ a:not([href]) {
 a:not([href]):hover {
     color: #55acee;
     text-decoration: underline;
+}
+.link {
+    cursor: pointer;
+    color: #007bff;
 }
 </style>

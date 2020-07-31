@@ -135,7 +135,7 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
             score = row[8]
             headline = row[9]
             results_json = {
-                "author": author,
+                "author": author or "",
                 "title": title,
                 "date": date,
                 "philo_id": philoid,
@@ -186,7 +186,7 @@ def metadata_search(author, title, start_date, end_date, collections, periods):
             headline = ""
             score = 0
             results_json = {
-                "author": author,
+                "author": author or "",
                 "title": title,
                 "date": date,
                 "philo_id": philoid,
