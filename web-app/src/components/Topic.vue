@@ -318,7 +318,7 @@ export default {
             EventBus.$emit("hideForms");
             this.$http
                 .get(
-                    "https://anomander.uchicago.edu/topologic-api/get_config/combo?full_config=True"
+                    `${this.$appConfig.topologic.api}/get_config/${this.$appConfig.topologic.dbname}?full_config=True`
                 )
                 .then((response) => {
                     this.timeSeriesConfig =
@@ -327,7 +327,7 @@ export default {
                         response.data.topics_over_time_interval;
                     this.$http
                         .get(
-                            `https://anomander.uchicago.edu/topologic-api/get_topic_data/combo/${this.$route.params.topic}`
+                            `${this.$appConfig.topologic.api}/get_topic_data/${this.$appConfig.topologic.dbname}/${this.$route.params.topic}`
                         )
                         .then((response) => {
                             this.topic = this.$route.params.topic;
@@ -513,7 +513,7 @@ export default {
             this.loading = true;
             this.$http
                 .get(
-                    `https://anomander.uchicago.edu/topologic-api//get_docs_in_topic_by_year/combo/${this.$route.params.topic}/${year}`
+                    `${this.$appConfig.topologic.api}/get_docs_in_topic_by_year/${this.$appConfig.topologic.dbname}/${this.$route.params.topic}/${year}`
                 )
                 .then((response) => {
                     this.documents = response.data;

@@ -1,9 +1,10 @@
 <template>
     <b-container fluid class="mt-4">
         <b-card no-body class="shadow-sm mb-4">
-            <h6 slot="header" class="mb-0 text-center">
-                Topics and their relative distribution in corpus
-            </h6>
+            <h6
+                slot="header"
+                class="mb-0 text-center"
+            >Topics and their relative distribution in corpus</h6>
             <b-table
                 hover
                 :items="sortedTopicDistribution"
@@ -19,9 +20,9 @@
                     <span class="frequency-parent">{{ data.value }}</span>
                 </template>
                 <template v-slot:cell(frequency)="data">
-                    <span class="frequency-value pl-2"
-                        >{{ (data.value.toFixed(8) * 100).toFixed(4) }}%</span
-                    >
+                    <span
+                        class="frequency-value pl-2"
+                    >{{ (data.value.toFixed(8) * 100).toFixed(4) }}%</span>
                     <span
                         class="frequency-bar"
                         :style="`width: ${data.value * frequencyMultiplier}%;`"
@@ -44,7 +45,7 @@ export default {
     created() {
         this.$http
             .get(
-                "https://anomander.uchicago.edu/topologic-api/get_config/combo?full_config=True"
+                `${this.$appConfig.topologic.api}/get_config/${this.$appConfig.topologic.dbname}?full_config=True`
             )
             .then((response) => {
                 this.localTopics = response.data.topics_words;
@@ -53,13 +54,13 @@ export default {
     mounted() {
         document
             .querySelectorAll("tr > td:nth-child(3)")
-            .forEach(function(element) {
+            .forEach(function (element) {
                 element.style.position = "relative";
                 element.style.padding = "0.75rem";
             });
     },
     computed: {
-        fields: function() {
+        fields: function () {
             let fields = [
                 { key: "name", label: "Topic", sortable: true },
                 { key: "description", label: "Top 10 tokens", sortable: false },
@@ -72,7 +73,7 @@ export default {
             return fields;
         },
         sortBy: {
-            get: function() {
+            get: function () {
                 if (this.$route.name == "home") {
                     return "name";
                 } else {
@@ -84,7 +85,7 @@ export default {
             },
         },
         sortDesc: {
-            get: function() {
+            get: function () {
                 if (this.$route.name == "home") {
                     return false;
                 } else {

@@ -109,5 +109,19 @@
             "text": "1789-1799",
             "value": "rev"
         }
-    ]
+    ],
+    "topologic": {
+        "dbname": "combo2",
+        "api": "https://anomander.uchicago.edu/topologic-api/"
+    },
+    "groupByLevels": {
+        "marat": "div1",
+        "hubeccofr": "doc",
+        "Gldsmth18cfr": "doc",
+        "revlawallhub": "div1",
+        "hub18thcfrench": "doc",
+        "frc": "doc",
+        "ap": "div2"
+    }
+
 }

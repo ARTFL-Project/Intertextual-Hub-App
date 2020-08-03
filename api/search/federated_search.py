@@ -2,10 +2,14 @@
 
 import sys
 import re
-from decimal import Decimal
-import unidecode
+import json
 import unicodedata
 import sqlite3
+
+with open("../web-app/src/appConfig.json") as db_config_file:
+    app_config = json.load(db_config_file)
+GROUP_BY_LEVELS = app_config["groupByLevels"]
+OBJECT_LEVELS = {db: value["object_type"] for db, value in app_config["philoDBs"].items()}
 
 
 TABLE_NAME = "intertextual_hub_federated"
@@ -70,6 +74,17 @@ def build_match(searchwords, author, title):
     return match_stmt_parts
 
 
+def retrieve_section_names(cursor, filename, philo_db):
+    cursor.execute(
+        f"""SELECT distinct divhead, philoid, divdate FROM {TABLE_NAME} WHERE {TABLE_NAME} MATCH '(filename:"{filename}") AND (philodbname:"{philo_db}")'"""
+    )
+    results = [
+        {"head": row["divhead"], "philo_id": row["philoid"], "divdate": row["divdate"], "philo_db": philo_db}
+        for row in cursor
+    ]
+    return results
+
+
 def word_search(searchwords, author, title, start_date, end_date, collections, periods, opbind):
 
     got_metadata_OR = 0
@@ -97,6 +112,7 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
 
     with sqlite3.connect("../intertextual_hub_federated") as conn:
         conn.text_factory = str
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
         # print("Word search.", file=sys.stderr)
@@ -125,23 +141,16 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
         count = 0
         for row in cursor:
             count += 1
-            author = row[1]
-            title = row[2]
-            date = row[3]
-            philoid = row[4]
-            divhead = row[5]
-            divdate = row[6]
-            philodbname = row[7]
             score = row[8]
             headline = row[9]
             results_json = {
-                "author": author or "",
-                "title": title,
-                "date": date,
-                "philo_id": philoid,
-                "head": divhead,
-                "divdate": divdate,
-                "philo_db": philodbname,
+                "author": row["author"] or "",
+                "title": row["title"],
+                "date": row["date"],
+                "philo_id": row["philoid"],
+                "head": row["divhead"],
+                "divdate": row["divdate"] or "",
+                "philo_db": row["philodbname"],
                 "headline": headline,
                 "score": score,
             }
@@ -152,7 +161,7 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
 
 
 def metadata_search(author, title, start_date, end_date, collections, periods):
-    select_vals = "filename, author, title, date, philoid, divhead, divdate, philodbname"
+    select_vals = "filename, author, title, date, philoid, philodbname"
     match_stmt_list = build_match("", author, title)
     match_stmt = " AND ".join(match_stmt_list)
     where_like_list = build_where_likes(start_date, end_date, collections, periods)
@@ -165,46 +174,38 @@ def metadata_search(author, title, start_date, end_date, collections, periods):
     else:
         select_stmt = "SELECT {0} FROM {1} WHERE ".format(select_vals, TABLE_NAME)
         query_stmt = select_stmt + where_likes
-    query_stmt += " GROUP BY author, title ORDER BY date"
+    query_stmt += " GROUP BY author, title ORDER BY date, filename"
 
     print(query_stmt, file=sys.stderr)
     with sqlite3.connect("../intertextual_hub_federated") as conn:
         conn.text_factory = str
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        cursor.execute(query_stmt,)
-        results_list = []
-        count = 0
-        for row in cursor:
-            count += 1
-            author = row[1]
-            title = row[2]
-            date = row[3]
-            philoid = row[4]
-            divhead = row[5]
-            divdate = row[6]
-            philodbname = row[7]
-            headline = ""
-            score = 0
-            results_json = {
-                "author": author or "",
-                "title": title,
-                "date": date,
-                "philo_id": philoid,
-                "head": divhead,
-                "divdate": divdate,
-                "philo_db": philodbname,
-                "headline": headline,
-                "score": score,
-            }
-            results_list.append(results_json)
-
-        doc_count = 0
-        # print(fullcount_query, file=sys.stderr)
-
-        # cursor.execute(fullcount_query,)
-        # doc_count = 0
-        # doc_count = cursor.fetchone()
-
-        # print(doc_count, file=sys.stderr)
+        with sqlite3.connect("../intertextual_hub_federated") as secondary_conn:
+            secondary_conn.text_factory = str
+            secondary_conn.row_factory = sqlite3.Row
+            secondary_cursor = secondary_conn.cursor()
+            cursor.execute(query_stmt,)
+            results_list = []
+            count = 0
+            for row in cursor:
+                count += 1
+                philo_db = row["philodbname"]
+                sections = []
+                if OBJECT_LEVELS[philo_db] != GROUP_BY_LEVELS[philo_db]:
+                    sections = retrieve_section_names(secondary_cursor, row["filename"], philo_db)
+                results_list.append(
+                    {
+                        "author": row["author"] or "",
+                        "title": row["title"],
+                        "date": row["date"],
+                        "philo_id": row["philoid"],
+                        "philo_db": philo_db,
+                        "sections": sections,
+                        "score": 0,
+                    }
+                )
+            doc_count = 0
 
     return results_list, doc_count
+

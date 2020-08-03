@@ -19,19 +19,13 @@
                             @row-clicked="goToTopic"
                         >
                             <template slot="[name]" slot-scope="data">
-                                <span class="frequency-parent"
-                                    >Topic {{ data.value }}</span
-                                >
+                                <span class="frequency-parent">Topic {{ data.value }}</span>
                             </template>
                             <template slot="[description]" slot-scope="data">
-                                <span class="frequency-parent">
-                                    {{ data.value }}
-                                </span>
+                                <span class="frequency-parent">{{ data.value }}</span>
                             </template>
                             <template slot="[frequency]" slot-scope="data">
-                                <span class="frequency-value pl-2"
-                                    >{{ data.value }}%</span
-                                >
+                                <span class="frequency-value pl-2">{{ data.value }}%</span>
                             </template>
                         </b-table>
                     </div>
@@ -48,10 +42,7 @@
                         class="card-text"
                     >
                         <div>
-                            <span
-                                v-for="weightedWord in words"
-                                :key="weightedWord[2]"
-                            >
+                            <span v-for="weightedWord in words" :key="weightedWord[2]">
                                 <a
                                     :id="`${weightedWord[2]}`"
                                     :style="
@@ -60,8 +51,7 @@
                                             weightedWord[3]
                                         }`
                                     "
-                                    >{{ weightedWord[0] }}</a
-                                >
+                                >{{ weightedWord[0] }}</a>
                                 <word-link
                                     :target="weightedWord[2]"
                                     :metadata="mainDoc.metadata"
@@ -96,8 +86,7 @@
                                 variant="secondary"
                                 pill
                                 class="float-right"
-                                >{{ (doc.score * 100).toFixed(2) }}%</b-badge
-                            >
+                            >{{ (doc.score * 100).toFixed(2) }}%</b-badge>
                         </b-list-group-item>
                     </b-list-group>
                 </b-card>
@@ -124,8 +113,7 @@
                                 variant="secondary"
                                 pill
                                 class="float-right"
-                                >{{ (doc.score * 100).toFixed(0) }}%</b-badge
-                            >
+                            >{{ (doc.score * 100).toFixed(0) }}%</b-badge>
                         </b-list-group-item>
                     </b-list-group>
                 </b-card>
@@ -177,7 +165,7 @@ export default {
             this.text = "";
             this.$http
                 .get(
-                    `https://anomander.uchicago.edu/topologic-api/get_doc_data/combo/${this.$route.params.philoDb}?philo_id=${philo_id}`
+                    `${this.$appConfig.topologic.api}/get_doc_data/${this.$appConfig.topologic.dbname}/${this.$route.params.philoDb}?philo_id=${philo_id}`
                 )
                 .then((response) => {
                     this.words = response.data.words;
@@ -204,7 +192,7 @@ export default {
                 modLabels.push(label);
             }
             let zippedData = modLabels.map((e, i) => [e, modData[i]]);
-            zippedData.sort(function(a, b) {
+            zippedData.sort(function (a, b) {
                 return b[1] - a[1];
             });
             let sortedDistribution = [];

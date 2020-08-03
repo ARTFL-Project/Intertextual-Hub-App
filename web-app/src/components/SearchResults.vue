@@ -30,7 +30,17 @@
             <span class="count">{{ index + 1 }}</span>
             <citations :docPair="result" :philo-db="`${result.philo_db}`"></citations>
             <span class="pl-2">(score: {{ result.score }})</span>
-            <p class="mt-2 text" v-html="result.headline"></p>
+            <p class="mt-2 text" v-if="!biblioQuery" v-html="result.headline"></p>
+            <div v-if="biblioQuery && result.sections.length > 0">
+                <h6 class="mt-1" @click="showSections(index)">See all chapters or sections</h6>
+                <transition name="slide-fade">
+                    <ul v-if="sectionsDisplay[index]">
+                        <li v-for="section in result.sections" :key="section.philo_id">
+                            <citations :docPair="section" :philo-db="`${result.philo_db}`"></citations>
+                        </li>
+                    </ul>
+                </transition>
+            </div>
         </b-card>
     </div>
 </template>
@@ -46,18 +56,23 @@ export default {
     data() {
         return {
             searchTerms: this.$route.query.words,
+            biblioQuery: false,
             title: this.$route.query.title,
             author: this.$route.query.author,
             date: this.$route.query.date,
             results: null,
             docCount: null,
+            sectionsDisplay: [],
         };
     },
     created() {
+        if (!("words" in this.$route.query)) {
+            this.biblioQuery = true;
+        }
         this.fetchResults();
     },
     watch: {
-        $route: "fetchResults",
+        $route: "updateResults",
     },
     methods: {
         fetchResults() {
@@ -71,8 +86,28 @@ export default {
                 )
                 .then((response) => {
                     this.results = response.data.results;
+                    this.sectionsDisplay = this.results.map(() => {
+                        return false;
+                    });
                     this.docCount = response.data.doc_count;
                 });
+        },
+        updateResults() {
+            this.searchTerms = this.$route.query.words;
+            this.title = this.$route.query.title;
+            this.author = this.$route.query.author;
+            this.date = this.$route.query.date;
+            this.results = null;
+            this.docCount = null;
+            if (!("words" in this.$route.query)) {
+                this.biblioQuery = true;
+            } else {
+                this.biblioQuery = false;
+            }
+            this.fetchResults();
+        },
+        showSections(index) {
+            this.$set(this.sectionsDisplay, index, true);
         },
     },
 };
@@ -92,5 +127,16 @@ export default {
 }
 .text {
     line-height: 1.5rem;
+}
+.slide-fade-enter-active {
+    transition: all 0.3s ease-out;
+}
+.slide-fade-leave-active {
+    transition: all 0.3s ease-out;
+}
+.slide-fade-enter, .slide-fade-leave-to
+/* .slide-fade-leave-active below version 2.1.8 */ {
+    transform: translateY(-30px);
+    opacity: 0;
 }
 </style>

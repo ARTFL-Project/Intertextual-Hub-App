@@ -74,7 +74,10 @@ def search_texts(request: Request):
         date = request.query_params["date"]
         dates = date.split("<=>")
         start_date = dates[0]
-        end_date = dates[1]
+        try:
+            end_date = dates[1]
+        except IndexError:
+            pass
     if "binding" in request.query_params:
         opbind = request.query_params["binding"]
     if "words" in request.query_params:
@@ -85,4 +88,3 @@ def search_texts(request: Request):
     else:
         results, doc_count = search.metadata_search(author, title, start_date, end_date, collections, periods)
     return {"results": results, "doc_count": doc_count}
-

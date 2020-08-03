@@ -19,9 +19,10 @@
                                     v-for="topic in topics"
                                     :key="topic.name"
                                     @click="selectTopic(topic.description)"
-                                    ><b>Topic {{ topic.name }}:</b>
-                                    {{ topic.description }}</b-dropdown-item
                                 >
+                                    <b>Topic {{ topic.name }}:</b>
+                                    {{ topic.description }}
+                                </b-dropdown-item>
                             </b-dropdown>
                         </template>
                     </b-input-group>
@@ -31,8 +32,7 @@
                         value="OR"
                         unchecked-value
                         class="mb-3"
-                        >OR search</b-form-checkbox
-                    >
+                    >OR search</b-form-checkbox>
                     <b-input-group
                         :prepend="field.label"
                         class="pb-3"
@@ -47,16 +47,9 @@
                     <b-input-group class="pb-3">
                         <template v-slot:prepend>
                             <b-input-group-text>Date</b-input-group-text>
-                            <b-dropdown
-                                :text="dateType"
-                                variant="outline-secondary"
-                            >
-                                <b-dropdown-item @click="dropSelect('exact')"
-                                    >exact</b-dropdown-item
-                                >
-                                <b-dropdown-item @click="dropSelect('range')"
-                                    >range</b-dropdown-item
-                                >
+                            <b-dropdown :text="dateType" variant="outline-secondary">
+                                <b-dropdown-item @click="dropSelect('exact')">exact</b-dropdown-item>
+                                <b-dropdown-item @click="dropSelect('range')">range</b-dropdown-item>
                             </b-dropdown>
                         </template>
                         <b-form-input
@@ -90,23 +83,13 @@
                         </b-input-group>
                     </b-input-group>
                     <b-input-group prepend="Collections" class="mb-3">
-                        <b-form-select
-                            v-model="collectionSelected"
-                            :options="collections"
-                        ></b-form-select>
+                        <b-form-select v-model="collectionSelected" :options="collections"></b-form-select>
                     </b-input-group>
                     <b-input-group prepend="Period" class="mb-3">
-                        <b-form-select
-                            v-model="periodSelected"
-                            :options="periods"
-                        ></b-form-select>
+                        <b-form-select v-model="periodSelected" :options="periods"></b-form-select>
                     </b-input-group>
-                    <button class="btn btn-primary rounded-0" type="submit">
-                        Search
-                    </button>
-                    <button type="reset" class="btn btn-secondary rounded-0">
-                        Reset
-                    </button>
+                    <button class="btn btn-primary rounded-0" type="submit">Search</button>
+                    <button type="reset" class="btn btn-secondary rounded-0">Reset</button>
                 </b-form>
             </b-col>
             <b-col class="d-xs-none d-md-none d-lg-block">
@@ -116,39 +99,34 @@
                     versions of the
                     <a
                         href="https://anomander.uchicago.edu/intertextual_hub/philologic/frc/"
-                        >Newberry French Revolution Collection</a
-                    >
+                    >Newberry French Revolution Collection</a>
                     (25,935 documents), the
                     <a
                         href="https://anomander.uchicago.edu/intertextual_hub/philologic/revlawallhub/"
-                        >French Revolutionary Laws</a
-                    >
+                    >French Revolutionary Laws</a>
                     (56,035 divs), the
                     <a
                         href="https://anomander.uchicago.edu/intertextual_hub/philologic/marat/"
-                        >Journaux de Marat</a
-                    >
+                    >Journaux de Marat</a>
                     (932 documents), the
                     <a
                         href="https://anomander.uchicago.edu/intertextual_hub/philologic/ap/"
-                        >Archives Parlementaires</a
-                    >
+                    >Archives Parlementaires</a>
                     (4,650 divs),
                     <a
                         href="https://anomander.uchicago.edu/intertextual_hub/philologic/hub18thcfrench/"
-                        >18th Century French</a
-                    >
+                    >18th Century French</a>
                     (31,313 divs, 1,822 documents),
                     <a
                         href="https://anomander.uchicago.edu/intertextual_hub/philologic/Gldsmth18cfr/"
-                        >Selected 18th century documents of the Goldsmith-Kress
-                        Collection</a
                     >
+                        Selected 18th century documents of the Goldsmith-Kress
+                        Collection
+                    </a>
                     (201,000 divs, 5,855 documents), and
                     <a
                         href="https://anomander.uchicago.edu/intertextual_hub/philologic/hubeccofr/"
-                        >ECCOFrench</a
-                    >
+                    >ECCOFrench</a>
                     some duplicates removed (85,000 divs, 3,621 documents).
                 </p>
                 <p>
@@ -228,7 +206,7 @@ export default {
         getTopics() {
             this.$http
                 .get(
-                    "https://anomander.uchicago.edu/topologic-api/get_config/combo?full_config=True"
+                    `${this.$appConfig.topologic.api}/get_config/${this.$appConfig.topologic.dbname}?full_config=True`
                 )
                 .then((response) => {
                     this.topics = response.data.topics_words;
@@ -264,6 +242,11 @@ export default {
             this.formValues = {};
             this.periodSelected = null;
             this.collectionSelected = null;
+            this.dateType = "exact";
+            this.dateRange = {
+                to: null,
+                from: null,
+            };
         },
         dropSelect(selection) {
             this.dateType = selection;

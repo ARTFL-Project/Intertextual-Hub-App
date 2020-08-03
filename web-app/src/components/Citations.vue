@@ -78,11 +78,13 @@ export default {
                 }
             }
             if (noDate) {
-                citations.push({
-                    field: this.docPair.year,
-                    style: this.$appConfig.styles.date,
-                    link: "",
-                });
+                if (typeof this.docPair.year != "undefined") {
+                    citations.push({
+                        field: this.docPair.year,
+                        style: this.$appConfig.styles.date,
+                        link: "",
+                    });
+                }
             }
             return citations;
         },
