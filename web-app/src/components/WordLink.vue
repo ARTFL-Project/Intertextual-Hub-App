@@ -8,8 +8,8 @@
                 <router-link :to="`/word/${word}`">Explore usage in corpus</router-link>
             </b-list-group-item>
             <b-list-group-item>
-                <a :href="link" v-if="metadata">See all occurrences in document</a>
-                <a :href="`/search?words=${word}`" v-else>See all occurrences</a>
+                <a :href="link" v-if="metadata && philoUrl">See all occurrences in document</a>
+                <a :href="`/search?words=${word}`" v-else>Find most relevant documents</a>
             </b-list-group-item>
         </b-list-group>
     </b-popover>
@@ -20,8 +20,15 @@ export default {
     props: ["target", "metadata", "word"],
     data() {
         return {
-            philoUrl: this.$appConfig.philoDBs[this.metadata.philo_db].url,
+            philoUrl: null,
         };
+    },
+    created() {
+        if (this.metadata) {
+            this.philoUrl = this.$appConfig.philoDBs[
+                this.metadata.philo_db
+            ].url;
+        }
     },
     computed: {
         link: function () {

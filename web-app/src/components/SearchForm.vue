@@ -31,8 +31,14 @@
                         name="binding"
                         value="OR"
                         unchecked-value
-                        class="mb-3"
+                        class="d-inline-block mb-3"
                     >OR search</b-form-checkbox>
+                    <b-button
+                        size="sm"
+                        class="d-inline-block ml-3 mb-3"
+                        style="vertical-align: baseline"
+                        @click="addAssociatedWords()"
+                    >add 10 most associated words</b-button>
                     <b-input-group
                         :prepend="field.label"
                         class="pb-3"
@@ -255,6 +261,30 @@ export default {
             let words = topic.replace(/,/g, "");
             this.formValues.words = words;
             document.querySelector("#words input").value = words;
+        },
+        addAssociatedWords() {
+            if (this.formValues.words.split(" ").length > 1) {
+                alert(
+                    "This feature only works with one word in the search box"
+                );
+            } else {
+                this.$http
+                    .get(
+                        `${this.$appConfig.topologic.api}/get_word_data/${this.$appConfig.topologic.dbname}/${this.formValues.words}`
+                    )
+                    .then((response) => {
+                        this.formValues.words = `${
+                            this.formValues.words
+                        } ${response.data.similar_words_by_topic
+                            .map((word) => {
+                                return word.word;
+                            })
+                            .join(" ")}`;
+                        document.querySelector(
+                            "#words input"
+                        ).value = this.formValues.words;
+                    });
+            }
         },
     },
 };

@@ -12,7 +12,7 @@
             <span
                 class="separator"
                 v-if="
-                    citation.field.length > 0 &&
+                    (citation.field.length > 0 || citation.link) &&
                         citeIndex != citations.length - 1
                 "
             >&#9679;</span>
