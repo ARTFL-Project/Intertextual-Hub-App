@@ -42,7 +42,7 @@ def build_match(searchwords, author, title):
     if searchwords:
         match_stmt_parts.append("(content:{0})".format(searchwords))
     if author:
-        author = re.sub("[-,'\.:;]", " ", author)
+        author = re.sub(r"[-,'.:;]", " ", author)
         if re.search(" OR ", author):
             OR_stmt_parts = []
             OR_authors = author.split(" OR ")
@@ -57,7 +57,7 @@ def build_match(searchwords, author, title):
         else:
             match_stmt_parts.append("(author:{0})".format(author))
     if title:
-        title = re.sub("[-,'\.:;]", " ", title)
+        title = re.sub(r"[-,'.:;]", " ", title)
         if re.search(" OR ", title):
             OR_stmt_parts = []
             OR_titles = title.split(" OR ")
@@ -76,10 +76,10 @@ def build_match(searchwords, author, title):
 
 def retrieve_section_names(cursor, filename, philo_db):
     cursor.execute(
-        f"""SELECT distinct divhead, philoid, divdate FROM {TABLE_NAME} WHERE {TABLE_NAME} MATCH '(filename:"{filename}") AND (philodbname:"{philo_db}")'"""
+        f"""SELECT distinct head, philo_id, div_date FROM {TABLE_NAME} WHERE {TABLE_NAME} MATCH '(filename:"{filename}") AND (philo_db:"{philo_db}")'"""
     )
     results = [
-        {"head": row["divhead"], "philo_id": row["philoid"], "divdate": row["divdate"], "philo_db": philo_db}
+        {"head": row["head"], "philo_id": row["philo_id"], "div_date": row["div_date"], "philo_db": philo_db}
         for row in cursor
     ]
     return results
@@ -110,13 +110,13 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
     where_stmt_list = []
     fullcount_query = 0
 
-    with sqlite3.connect("../intertextual_hub_federated") as conn:
+    with sqlite3.connect("../intertextual_hub_federated.db") as conn:
         conn.text_factory = str
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
         # print("Word search.", file=sys.stderr)
-        select_vals = "filename, author, title, date, philoid, divhead, divdate, philodbname, bm25({0}), {1}".format(
+        select_vals = "filename, author, title, date, philo_id, head, div_date, philo_db, bm25({0}), {1}".format(
             TABLE_NAME, snippets
         )
         searchwords = de_accent(searchwords)
@@ -147,10 +147,10 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
                 "author": row["author"] or "",
                 "title": row["title"],
                 "date": row["date"],
-                "philo_id": row["philoid"],
-                "head": row["divhead"],
-                "divdate": row["divdate"] or "",
-                "philo_db": row["philodbname"],
+                "philo_id": row["philo_id"],
+                "head": row["head"],
+                "div_date": row["div_date"] or "",
+                "philo_db": row["philo_db"],
                 "headline": headline,
                 "score": score,
             }
@@ -161,7 +161,7 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
 
 
 def metadata_search(author, title, start_date, end_date, collections, periods):
-    select_vals = "filename, author, title, date, philoid, philodbname"
+    select_vals = "filename, author, title, date, philo_id, philo_db"
     match_stmt_list = build_match("", author, title)
     match_stmt = " AND ".join(match_stmt_list)
     where_like_list = build_where_likes(start_date, end_date, collections, periods)
@@ -177,11 +177,11 @@ def metadata_search(author, title, start_date, end_date, collections, periods):
     query_stmt += " GROUP BY author, title ORDER BY date, filename"
 
     print(query_stmt, file=sys.stderr)
-    with sqlite3.connect("../intertextual_hub_federated") as conn:
+    with sqlite3.connect("../intertextual_hub_federated.db") as conn:
         conn.text_factory = str
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        with sqlite3.connect("../intertextual_hub_federated") as secondary_conn:
+        with sqlite3.connect("../intertextual_hub_federated.db") as secondary_conn:
             secondary_conn.text_factory = str
             secondary_conn.row_factory = sqlite3.Row
             secondary_cursor = secondary_conn.cursor()
@@ -190,7 +190,7 @@ def metadata_search(author, title, start_date, end_date, collections, periods):
             count = 0
             for row in cursor:
                 count += 1
-                philo_db = row["philodbname"]
+                philo_db = row["philo_db"]
                 sections = []
                 if OBJECT_LEVELS[philo_db] != GROUP_BY_LEVELS[philo_db]:
                     sections = retrieve_section_names(secondary_cursor, row["filename"], philo_db)
@@ -199,7 +199,7 @@ def metadata_search(author, title, start_date, end_date, collections, periods):
                         "author": row["author"] or "",
                         "title": row["title"],
                         "date": row["date"],
-                        "philo_id": row["philoid"],
+                        "philo_id": row["philo_id"],
                         "philo_db": philo_db,
                         "sections": sections,
                         "score": 0,

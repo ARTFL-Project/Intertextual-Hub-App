@@ -3,10 +3,7 @@ from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 import aligner
 import search
-from psycopg2.pool import ThreadedConnectionPool
-import json
 from typing import Optional
-import databases
 
 app = FastAPI()
 
@@ -38,6 +35,12 @@ def navigate(philo_db: str, pairid: str, direction: str, philo_id: str):
 @app.get("/search_alignments")
 def search_alignments(request: Request):
     results = aligner.search_alignments(**request.query_params)
+    return results[:50]
+
+
+@app.get("/search_alignments2")
+def search_alignments2(request: Request):
+    results = aligner.search_alignments2(**request.query_params)
     return results[:50]
 
 

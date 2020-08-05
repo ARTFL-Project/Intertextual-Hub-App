@@ -2,7 +2,7 @@
     <div id="app">
         <b-navbar type="light" variant="light" class="shadow">
             <b-navbar-nav>
-                <b-navbar-brand>Intertextual Hub</b-navbar-brand>
+                <b-navbar-brand to="/">Intertextual Hub</b-navbar-brand>
             </b-navbar-nav>
         </b-navbar>
         <b-container fluid class="mt-4">
@@ -14,14 +14,15 @@
                 >
                     <transition name="slide-fade">
                         <b-card
-                            class="mt-4 shadow-sm"
+                            class="shadow-sm"
+                            style="border-top-width: 0"
                             v-if="show"
                         >This is what the Hub is all about...</b-card>
                     </transition>
                 </b-tab>
                 <b-tab
                     :active="activeTab == 'textpair'"
-                    title="Explore similar passages"
+                    title="Explore text reuse"
                     @click="selectModule('SeqPairResultsSummary')"
                 >
                     <transition name="slide-fade">
@@ -48,6 +49,15 @@
                         <search-form v-if="show"></search-form>
                     </transition>
                 </b-tab>
+                <b-tab
+                    :active="activeTab == 'wordUse'"
+                    title="Explore word usage"
+                    @click="selectModule('wordUse')"
+                >
+                    <transition name="slide-fade">
+                        <word-search></word-search>
+                    </transition>
+                </b-tab>
             </b-tabs>
             <transition name="fade">
                 <div
@@ -61,6 +71,7 @@
             <router-view name="SeqPairResultsSummary"></router-view>
             <router-view name="topicModeling"></router-view>
             <router-view name="Search"></router-view>
+            <router-view name="wordUse"></router-view>
         </b-container>
     </div>
 </template>
@@ -69,6 +80,7 @@
 import SimilarPassageForm from "./components/SimilarPassageForm.vue";
 import SearchForm from "./components/SearchForm";
 import TopicDistributions from "./components/TopicDistributions.vue";
+import WordSearch from "./components/WordSearch.vue";
 import { EventBus } from "./main.js";
 
 export default {
@@ -77,12 +89,14 @@ export default {
         SimilarPassageForm,
         SearchForm,
         TopicDistributions,
+        WordSearch,
     },
     data() {
         return {
             activeTab: "intro",
             report: this.$route.name,
             show: true,
+            word: "",
         };
     },
     created() {

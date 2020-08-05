@@ -2,7 +2,7 @@ import Vue from "vue";
 import Router from "vue-router";
 import ResultSummary from "../components/ResultSummary";
 import TextNavigation from "../components/TextNavigation";
-// import TopicDistributions from "../components/TopicDistributions.vue";
+import Word from "../components/Word.vue";
 import Topic from "../components/Topic.vue";
 import Document from "../components/Document.vue";
 import SearchResults from "../components/SearchResults.vue"
@@ -30,13 +30,13 @@ export default new Router({
                 SeqPairResultsSummary: ResultSummary,
             },
         },
-        // {
-        //     path: "/topic-modeling",
-        //     name: "topicModeling",
-        //     components: {
-        //         topicModeling: TopicDistributions,
-        //     },
-        // },
+        {
+            path: "/word/:word",
+            name: "wordUse",
+            components: {
+                wordUse: Word,
+            },
+        },
         {
             path: "/topic/:topic",
             name: "Topic",
