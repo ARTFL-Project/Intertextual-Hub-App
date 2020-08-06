@@ -261,6 +261,7 @@ export default {
             let words = topic.replace(/,/g, "");
             this.formValues.words = words;
             document.querySelector("#words input").value = words;
+            this.formValues.binding = "OR";
         },
         addAssociatedWords() {
             if (this.formValues.words.split(" ").length > 1) {
@@ -283,6 +284,7 @@ export default {
                         document.querySelector(
                             "#words input"
                         ).value = this.formValues.words;
+                        this.formValues.binding = "OR";
                     });
             }
         },

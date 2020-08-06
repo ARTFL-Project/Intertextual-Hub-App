@@ -126,6 +126,8 @@ export default {
                 this.activeTab = "search";
             } else if (report == "intro") {
                 this.activeTab = "intro";
+            } else if (report == "wordUse") {
+                this.activeTab = "wordUse";
             }
             this.show = true;
         },
