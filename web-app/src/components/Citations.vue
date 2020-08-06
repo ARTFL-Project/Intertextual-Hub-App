@@ -2,11 +2,17 @@
     <div class="d-inline-block">
         <span v-for="(citation, citeIndex) in citations" :key="citeIndex" :style="citation.style">
             <span v-if="citation.link">
-                <span
+                <b-button
+                    href="#"
+                    tabindex="0"
                     class="link"
-                    :id="`${philoDb}_${philoId}`"
-                >{{ citation.field || 'Unnamed section' }}</span>
-                <doc-link :target="`${philoDb}_${philoId}`" :philo-db="philoDb" :philo-id="philoId"></doc-link>
+                    :id="`${philoDb}_${philoId}-${index}`"
+                >{{ citation.field || 'Unnamed section' }}</b-button>
+                <doc-link
+                    :target="`${philoDb}_${philoId}-${index}`"
+                    :philo-db="philoDb"
+                    :philo-id="philoId"
+                ></doc-link>
             </span>
             <span v-else>{{ citation.field }}</span>
             <span
@@ -17,8 +23,6 @@
                 "
             >&#9679;</span>
         </span>
-
-        <br />
         <!-- <a :href="goToPhilo()" target="_blank" v-if="doc.philo_type">Navigate to full text</a> -->
     </div>
 </template>
@@ -30,7 +34,7 @@ export default {
     components: {
         DocLink,
     },
-    props: ["philoDb", "docPair", "direction"],
+    props: ["philoDb", "docPair", "direction", "index"],
     data() {
         return {
             fields: ["author", "title", "head", "date"],
@@ -109,5 +113,18 @@ a:not([href]):hover {
 .link {
     cursor: pointer;
     color: #007bff;
+    background-color: #fff;
+    border-width: 0 !important;
+    padding: 0;
+    text-align: initial !important;
+    vertical-align: initial;
+    line-height: inherit;
+}
+.link:hover,
+.link:focus,
+.link:active {
+    background-color: #fff !important;
+    color: #0056b3 !important;
+    box-shadow: initial !important;
 }
 </style>

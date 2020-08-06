@@ -13,11 +13,20 @@
                     @click="selectModule('home')"
                 >
                     <transition name="slide-fade">
-                        <b-card
-                            class="shadow-sm"
-                            style="border-top-width: 0"
-                            v-if="show"
-                        >This is what the Hub is all about...</b-card>
+                        <b-card class="shadow-sm" style="border-top-width: 0" v-if="show">
+                            <p style="text-align: justify; max-width:1000px">
+                                The Intertextual Hub is a pilot project to develop a model that will allow scholars of 18th century France to bridge
+                                the gap between distant and close reading when conducting research on large, heterogeneous digital text collections.
+                            </p>
+                            <h5>Top 5 most pre-rev author reused between 1789-1799</h5>
+                            <ol>
+                                <li>Jousse, Daniel 371252</li>
+                                <li>La Mare, Nicolas de 85766</li>
+                                <li>Chambon, M. 24645</li>
+                                <li>Savary, Jacques 13418</li>
+                                <li>Chardon, Daniel-Marc-Antoine 9490</li>
+                            </ol>
+                        </b-card>
                     </transition>
                 </b-tab>
                 <b-tab

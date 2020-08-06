@@ -7,35 +7,50 @@
             v-for="(documentPair, resultsIndex) in results"
             :key="documentPair.pairid"
         >
-            {{ documentPair.passage_number }} common passages between:
-            <br />
-            <p style="line-height: 2rem">
-                <citations
-                    :philo-db="documentPair.source_philo_db"
-                    :docPair="documentPair"
-                    direction="source"
-                ></citations>
-                <b-button
-                    class="ml-2"
-                    pill
-                    size="sm"
-                    variant="outline-secondary"
-                    @click="goToDocument(documentPair, 'source')"
-                >See passage(s) in document</b-button>
-                <br />
-                <citations
-                    :philo-db="documentPair.target_philo_db"
-                    :docPair="documentPair"
-                    direction="target"
-                ></citations>
-                <b-button
-                    class="ml-2"
-                    pill
-                    size="sm"
-                    variant="outline-secondary"
-                    @click="goToDocument(documentPair, 'target')"
-                >See passage(s) in document</b-button>
-            </p>
+            <span class="count">{{ resultsIndex + 1 }}</span>
+            <b-row>
+                <b-col sm="3" md="3" lg="2" align-self="center">
+                    <h6
+                        style="color: SlateGray"
+                    >{{ documentPair.passage_number }} common passage(s) between:</h6>
+                </b-col>
+                <b-col>
+                    <p style="line-height: 2rem">
+                        <citations
+                            :philo-db="documentPair.source_philo_db"
+                            :docPair="documentPair"
+                            direction="source"
+                            :index="resultsIndex"
+                        ></citations>
+                        <b-button
+                            class="ml-2"
+                            pill
+                            size="sm"
+                            variant="outline-secondary"
+                            @click="goToDocument(documentPair, 'source')"
+                        >See passage(s) in document</b-button>
+                        <br />
+                        <span
+                            class="d-inline-block ml-4"
+                            style="text-align: center; color: SlateGray"
+                        >and</span>
+                        <br />
+                        <citations
+                            :philo-db="documentPair.target_philo_db"
+                            :docPair="documentPair"
+                            direction="target"
+                            :index="resultsIndex"
+                        ></citations>
+                        <b-button
+                            class="ml-2"
+                            pill
+                            size="sm"
+                            variant="outline-secondary"
+                            @click="goToDocument(documentPair, 'target')"
+                        >See passage(s) in document</b-button>
+                    </p>
+                </b-col>
+            </b-row>
             <div>
                 <b-button
                     @click="
@@ -170,5 +185,14 @@ export default {
 .source-passage,
 .target-passage {
     color: dodgerblue;
+}
+.count {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0 0.25rem;
+    border: #ddd solid 1px;
+    border-width: 0 1px 1px 0;
+    font-size: 0.8rem;
 }
 </style>
