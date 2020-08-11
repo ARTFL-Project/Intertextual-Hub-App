@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 import aligner
 import search
-from typing import Optional
+from typing import List, Optional
 
 app = FastAPI()
 
@@ -13,23 +13,54 @@ app.add_middleware(
 
 HUB_URL = "https://anomander.uchicago.edu/intertextual_hub/"
 
+PHILO_TYPE = {1: "doc", 2: "div1", 3: "div2"}
 
-@app.get("/navigate/{philo_db}/{pairid}/{direction}")
-def navigate(philo_db: str, pairid: str, direction: str, philo_id: str):
-    passage_data = aligner.get_passage_byte_offsets(pairid, direction)
-    text_object_id = philo_id.split("/")
-    while text_object_id[-1] == "0":
-        text_object_id.pop()
-    philologic_response = requests.post(
-        f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py",
-        params={"philo_id": " ".join(text_object_id)},
-        json={"passages": passage_data["passages"]},
-    )
-    philo_text_object = philologic_response.json()
-    return {
-        "text": philo_text_object["text"],
-        "metadata": passage_data["metadata"],
-    }
+
+@app.get("/navigate/{philo_db}")
+def navigate(
+    philo_db: str,
+    philo_id: str,
+    pairid: Optional[str] = None,
+    direction: Optional[str] = None,
+    intertextual: Optional[bool] = None,
+):
+    text_object_id: List[str] = philo_id.split()
+    if pairid is not None:
+        passage_data = aligner.get_passage_byte_offsets(pairid, direction)
+        while text_object_id[-1] == "0":
+            text_object_id.pop()
+        philologic_response = requests.post(
+            f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py",
+            params={"philo_id": " ".join(text_object_id)},
+            json={"passages": passage_data["passages"]},
+        )
+        philo_text_object = philologic_response.json()
+        return {
+            "text": philo_text_object["text"],
+            "metadata": passage_data["metadata"],
+        }
+    elif intertextual is True and direction is not None:
+        passage_data, metadata_list, doc_metadata = aligner.get_passage_by_philo_id(text_object_id, direction, philo_db)
+        philologic_response = requests.post(
+            f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py",
+            params={"philo_id": " ".join(text_object_id)},
+            json={"passages": passage_data},
+        )
+        philo_text_object = philologic_response.json()
+        return {"text": philo_text_object["text"], "intertextual_metadata": metadata_list, "doc_metadata": doc_metadata}
+    else:
+        philologic_response = requests.post(
+            f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py", params={"philo_id": " ".join(text_object_id)},
+        )
+        philo_text_object = philologic_response.json()
+        return {
+            "text": philo_text_object["text"],
+            "metadata": {
+                "philo_db": philo_db,
+                "philo_id": " ".join(text_object_id),
+                "date": philo_text_object["metadata_fields"]["year"] ** philo_text_object["metadata_fields"],
+            },
+        }
 
 
 @app.get("/search_alignments")

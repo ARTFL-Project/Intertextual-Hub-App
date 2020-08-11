@@ -2,10 +2,10 @@
     <b-card class="shadow">
         <h5 class="text-center mb-4">
             <citations
-                :docPair="currentIntertextualMetadata"
+                :docPair="docMetadata"
                 :direction="direction"
                 :philo-db="philoDb"
-                v-if="currentIntertextualMetadata"
+                v-if="docMetadata"
             ></citations>
         </h5>
         <b-card-text>
@@ -68,11 +68,22 @@ export default {
             text: null,
             intertextualLink: null,
             highlighted: {},
+            intertextualMetadata: null,
             currentIntertextualMetadata: null,
+            docMetadata: null,
             direction: this.$route.query.direction,
             alreadyScrolled: false,
             philoDb: null,
         };
+    },
+    computed: {
+        dbPrefix: function () {
+            if (this.direction) {
+                return `${this.direction}_`;
+            } else {
+                return "";
+            }
+        },
     },
     created() {
         this.fetchPassage();
@@ -115,27 +126,33 @@ export default {
     },
     methods: {
         fetchPassage() {
+            let philoId = this.$route.params.doc.split("/").join(" ");
             this.$http
                 .get(
-                    `https://anomander.uchicago.edu/intertextual-hub-api/navigate/${this.$route.params.philoDb}/${this.$route.query.pairid}/${this.direction}`,
+                    `https://anomander.uchicago.edu/intertextual-hub-api/navigate/${this.$route.params.philoDb}`,
                     {
                         params: {
-                            philo_id: this.$route.params.doc,
+                            philo_id: philoId,
+                            pairid: this.$route.query.pairid,
+                            direction: this.direction,
+                            intertextual: this.$route.query.intertextual,
                         },
                     }
                 )
                 .then((response) => {
                     this.text = response.data.text;
                     this.philoDb =
-                        response.data.metadata[`${this.direction}_philo_db`];
-                    this.currentIntertextualMetadata = response.data.metadata;
-                    console.log(this.philoDb, this.currentIntertextualMetadata);
+                        response.data.doc_metadata[`${this.dbPrefix}philo_db`];
+                    this.docMetadata = response.data.doc_metadata;
+                    this.intertextualMetadata =
+                        response.data.intertextual_metadata;
                 });
         },
         showPassage(element) {
             if (!element.id.startsWith("end-passage")) {
                 let passageNumber = element.getAttribute("n");
                 let offsets = element.dataset.offsets.split("-");
+                console.log(passageNumber, offsets);
                 var getAlignments = () => {
                     this.getAlignments({
                         offsets: offsets,

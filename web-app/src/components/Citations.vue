@@ -43,7 +43,7 @@ export default {
     },
     computed: {
         fieldPrefix() {
-            if (this.direction) {
+            if (this.direction && typeof this.direction != "undefined") {
                 return `${this.direction}_`;
             }
             return "";

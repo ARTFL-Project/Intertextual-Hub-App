@@ -4,6 +4,8 @@ import re
 
 import psycopg2
 import psycopg2.extras
+from typing import List, Dict, Union, Tuple
+from dataclasses import dataclass
 import rapidjson as json
 
 with open("./db_config.json") as db_config_file:
@@ -76,6 +78,13 @@ FILTERED_QUERY_WORDS = {
     "un",
     "une",
 }
+
+
+@dataclass
+class Passage:
+    start_byte: int
+    end_byte: int
+    metadata: List[Dict[str, str]]
 
 
 def query_builder(query_args: dict):
@@ -169,7 +178,7 @@ def search_alignments(**query_params):
             metadata = {field: row[field] for field in FIELD_TYPES if field != "passages"}
             metadata["passage_number"] = len(row["passages"])
             results.append(metadata)
-        return results
+    return results
 
 
 def search_alignments2(**query_params):
@@ -236,10 +245,11 @@ def search_alignments2(**query_params):
                 }
             )
         results.append({"metadata_list": metadata_list, "doc_metadata": doc_metadata})
-        return results
+    return results
 
 
 def get_passages(pairid):
+    """Get passages by pairid"""
     with psycopg2.connect(
         user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
     ) as conn:
@@ -261,7 +271,64 @@ def get_passages(pairid):
         ]
 
 
+def get_passage_by_philo_id(
+    object_id: List[str], direction: str, philo_db: str
+) -> Tuple[List[Dict[str, int]], List[List[Dict[str, str]]], Dict[str, str]]:
+    """Get all passage bytes offsets by philo_id"""
+    zeros_to_add = " ".join(["0" for _ in range(7 - len(object_id))])
+    philo_id: str = f"{' '.join(object_id)} {zeros_to_add}"
+
+    doc_metadata: Dict[str, str] = {}
+    if direction == "source":
+        opposite_direction = "target"
+    else:
+        opposite_direction = "source"
+    with psycopg2.connect(
+        user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
+    ) as conn:
+        passages: List[Tuple[int, int, Dict[str, str]]] = []
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cursor.execute(
+            f"SELECT * FROM {ALIGNMENTS_TABLE} WHERE {direction}_philo_id=%s AND {direction}_philo_db=%s",
+            (philo_id, philo_db),
+        )
+        for row in cursor:
+            local_metadata = {field: row[field] for field in FIELD_TYPES if not field.startswith(direction)}
+            local_offsets: List[Tuple[int, int, Dict[str, str]]] = [
+                (int(passage[f"{direction}_start_byte"]), int(passage[f"{direction}_end_byte"]), local_metadata,)
+                for passage in row["passages"]
+            ]
+            passages.extend(local_offsets)
+            if not doc_metadata:
+                doc_metadata = {
+                    field: row[field]
+                    for field in FIELD_TYPES
+                    if not field.startswith(opposite_direction) and field not in ("pairid", "passages")
+                }
+
+        passages.sort(key=lambda x: (x[0], x[1]))
+
+    # byte_offsets, metadata = zip(
+    #     *[((passage["start_byte"], passage["end_byte"]), passage["metadata"]) for passage in passages]
+    # )
+    current_passage: Dict[str, int] = {"start_byte": passages[0][0], "end_byte": passages[0][1]}
+    passage_groups: List[Dict[str, int]] = []
+    metadata_list: List[List[Dict[str, str]]] = [[passages[0][2]]]
+    for start_byte, end_byte, metadata in passages:
+        if start_byte < current_passage["end_byte"] and end_byte > current_passage["end_byte"]:
+            current_passage["end_byte"] = end_byte
+            metadata_list[len(passage_groups)].append(metadata)
+        elif start_byte >= current_passage["end_byte"]:
+            passage_groups.append(current_passage)
+            current_passage = {"start_byte": start_byte, "end_byte": end_byte}
+            metadata_list.append([metadata])
+    passage_groups.append(current_passage)
+    print(len(passages), len(passage_groups), len(metadata_list))
+    return passage_groups, metadata_list, doc_metadata
+
+
 def get_passage_byte_offsets(pairid, direction):
+    """Get passage byte offsets by pairid"""
     with psycopg2.connect(
         user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
     ) as conn:
@@ -273,11 +340,12 @@ def get_passage_byte_offsets(pairid, direction):
             {"start_byte": int(passage[f"{direction}_start_byte"]), "end_byte": int(passage[f"{direction}_end_byte"]),}
             for passage in passages
         ]
-
-        return {"passages": offsets, "metadata": {field: results[index] for index, field in enumerate(FIELD_TYPES)}}
+        metadata = {field: results[index] for index, field in enumerate(FIELD_TYPES)}
+    return {"passages": offsets, "metadata": metadata}
 
 
 def get_passage(pairid, start_byte, direction):
+    """Get single passage by pairid and start byte"""
     with psycopg2.connect(
         user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
     ) as conn:
@@ -298,5 +366,5 @@ def get_passage(pairid, start_byte, direction):
         cursor.execute(f"SELECT * FROM {ALIGNMENTS_TABLE} WHERE pairid=%s", (pairid,))
         results = cursor.fetchone()
         passage["metadata"] = {field: results[index] for index, field in enumerate(FIELD_TYPES)}
-        return passage
+    return passage
 

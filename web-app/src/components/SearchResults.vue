@@ -29,10 +29,14 @@
         >
             <span class="count">{{ index + 1 }}</span>
             <citations :docPair="result" :philo-db="`${result.philo_db}`"></citations>
-            <span class="pl-2">(score: {{ result.score }})</span>
+            <span class="pl-2" v-if="!biblioQuery">(score: {{ result.score }})</span>
             <p class="mt-2 text" v-if="!biblioQuery" v-html="result.headline"></p>
             <div v-if="biblioQuery && result.sections.length > 0">
-                <h6 class="mt-1" @click="showSections(index)">See all chapters or sections</h6>
+                <h6
+                    class="mt-1"
+                    style="cursor:pointer"
+                    @click="showSections(index)"
+                >See all chapters or sections</h6>
                 <transition name="slide-fade">
                     <ul v-if="sectionsDisplay[index]">
                         <li v-for="section in result.sections" :key="section.philo_id">

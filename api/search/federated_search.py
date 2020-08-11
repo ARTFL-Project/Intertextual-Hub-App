@@ -106,7 +106,7 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
         pass
 
     query_terms = []
-    snippets = "snippet({0}, 10, '<b>', '</b>', '...', 64)".format(TABLE_NAME)
+    snippets = "snippet({0}, 13, '<b>', '</b>', '...', 64)".format(TABLE_NAME)
     where_stmt_list = []
     fullcount_query = 0
 
