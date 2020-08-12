@@ -19,34 +19,53 @@
             hide-footer
             title="Intertextual Link"
         >
-            <passage-pair
-                v-if="currentIntertextualMetadata"
-                :passage="intertextualLink"
-                :source-philo-id="currentIntertextualMetadata.source_philo_id"
-                :source-philo-db="currentIntertextualMetadata.source_philo_db"
-                :target-philo-id="currentIntertextualMetadata.target_philo_id"
-                :target-philo-db="currentIntertextualMetadata.target_philo_db"
-            ></passage-pair>
+            <div v-if="intertextualPassages">
+                <passage-pair
+                    v-for="passage in intertextualPassages"
+                    :key="passage.passageid"
+                    :passage="passage"
+                    :source-philo-id="passage.metadata.source_philo_id"
+                    :source-philo-db="passage.metadata.source_philo_db"
+                    :target-philo-id="passage.metadata.target_philo_id"
+                    :target-philo-db="passage.metadata.target_philo_db"
+                ></passage-pair>
+            </div>
         </b-modal>
-        <div id="intertextual-metadata" class="shadow px-2 pt-2 d-none">
-            <div v-if="currentIntertextualMetadata">
-                <h6>Passage found in:</h6>
-                <b>
+        <div
+            :id="`intertextual-metadata-${groupIndex}`"
+            class="shadow px-2 pt-2 d-none"
+            v-for="(_, groupIndex) in intertextualMetadata"
+            :key="groupIndex"
+        >
+            <div v-if="intertextualMetadata">
+                <h6 class="mb-3">
+                    <strong>Passage found in:</strong>
+                </h6>
+                <div
+                    class="px-2"
+                    v-for="(metadata, index) in intertextualMetadata[groupIndex]"
+                    :key="index"
+                >
                     <citations
-                        :docPair="currentIntertextualMetadata"
+                        :docPair="metadata"
                         direction="source"
-                        :philo-db="currentIntertextualMetadata.source_philo_db"
+                        :philo-db="metadata.source_philo_db"
                         v-if="direction == 'target'"
-                    ></citations>
+                        nolink
+                    >-</citations>
                     <citations
-                        :docPair="currentIntertextualMetadata"
+                        :docPair="metadata"
                         direction="target"
-                        :philo-db="currentIntertextualMetadata.target_philo_db"
+                        :philo-db="metadata.target_philo_db"
+                        nolink
                         v-else
                     ></citations>
-                </b>
+                    <hr class="m-2" v-if="index != intertextualMetadata[groupIndex].length-1" />
+                </div>
             </div>
-            <p class="mt-2 mb-0">Click on passage to see reuse.</p>
+            <p class="mt-3 mb-0">
+                <strong>Click on passage to see reuse.</strong>
+            </p>
         </div>
     </b-card>
 </template>
@@ -66,7 +85,7 @@ export default {
     data() {
         return {
             text: null,
-            intertextualLink: null,
+            intertextualPassages: null,
             highlighted: {},
             intertextualMetadata: null,
             currentIntertextualMetadata: null,
@@ -99,16 +118,20 @@ export default {
                 Array.from(
                     document.getElementsByClassName("passage-marker")
                 ).forEach((el) => this.showPassage(el));
-                tippy("[class^=passage-]", {
-                    content() {
-                        let popup = document.getElementById(
-                            "intertextual-metadata"
-                        );
-                        return popup.innerHTML;
-                    },
-                    allowHTML: true,
-                    theme: "light-border",
-                });
+                for (let i = 0; i < this.intertextualMetadata.length; i += 1) {
+                    let passage = `.passage-${i}`;
+                    tippy(passage, {
+                        content() {
+                            let popup = document.getElementById(
+                                `intertextual-metadata-${i}`
+                            );
+                            return popup.innerHTML;
+                        },
+                        allowHTML: true,
+                        maxWidth: 550,
+                        theme: "light-border",
+                    });
+                }
             });
             this.alreadyScrolled = true;
         }
@@ -116,13 +139,14 @@ export default {
     destroyed() {
         let passageMarkers = document.getElementsByClassName("passage-marker");
         for (let i = 0; i < passageMarkers.length; i += 1) {
-            let passageNumber = i + 1;
+            let passageNumber = i;
             document
                 .getElementsByClassName(`passage-${passageNumber}`)
                 .forEach((el) => {
                     el.removeEventListener("click");
                 });
         }
+        // TODO: destroy all Tippy instances
     },
     methods: {
         fetchPassage() {
@@ -151,16 +175,32 @@ export default {
         showPassage(element) {
             if (!element.id.startsWith("end-passage")) {
                 let passageNumber = element.getAttribute("n");
-                let offsets = element.dataset.offsets.split("-");
-                console.log(passageNumber, offsets);
-                var getAlignments = () => {
-                    this.getAlignments({
-                        offsets: offsets,
-                        passageNumber: passageNumber,
-                        element: element,
-                    });
-                };
-
+                var getAlignments;
+                if (!("intertextual" in this.$route.query)) {
+                    let offsets = element.dataset.offsets.split("-");
+                    getAlignments = () => {
+                        this.getAlignment({
+                            offsets: offsets,
+                            passageNumber: passageNumber,
+                            element: element,
+                        });
+                    };
+                } else {
+                    getAlignments = () => {
+                        let passagesMetadata = this.intertextualMetadata[
+                            parseInt(passageNumber)
+                        ];
+                        this.getAlignments(
+                            passagesMetadata.map((metadata) => {
+                                return metadata.pairid;
+                            }),
+                            passagesMetadata.map((metadata) => {
+                                return metadata.passageid;
+                            }),
+                            passagesMetadata
+                        );
+                    };
+                }
                 document
                     .getElementsByClassName(`passage-${passageNumber}`)
                     .forEach((el) => {
@@ -170,7 +210,7 @@ export default {
                 this.highlighted[passageNumber] = true;
             }
         },
-        getAlignments(data) {
+        getAlignment(data) {
             this.$http
                 .get(
                     `https://anomander.uchicago.edu/intertextual-hub-api/retrieve_passage/${this.$route.query.pairid}`,
@@ -183,6 +223,30 @@ export default {
                 )
                 .then((response) => {
                     this.intertextualLink = response.data;
+                    this.$bvModal.show("text-reuse");
+                });
+        },
+        getAlignments(pairids, passageids, passagesMetadata) {
+            this.$http
+                .post(
+                    "https://anomander.uchicago.edu/intertextual-hub-api/retrieve_passages_all/",
+                    {
+                        pairids: pairids,
+                        passageids: passageids,
+                    }
+                )
+                .then((response) => {
+                    let intertextualPassages = [];
+                    for (let i = 0; i < passagesMetadata.length; i += 1) {
+                        intertextualPassages.push({
+                            ...response.data[i],
+                            metadata: {
+                                ...passagesMetadata[i],
+                                ...this.docMetadata,
+                            },
+                        });
+                    }
+                    this.intertextualPassages = intertextualPassages;
                     this.$bvModal.show("text-reuse");
                 });
         },

@@ -293,9 +293,15 @@ def get_passage_by_philo_id(
             (philo_id, philo_db),
         )
         for row in cursor:
-            local_metadata = {field: row[field] for field in FIELD_TYPES if not field.startswith(direction)}
+            local_metadata = {
+                field: row[field] for field in FIELD_TYPES if not field.startswith(direction) and field != "passages"
+            }
             local_offsets: List[Tuple[int, int, Dict[str, str]]] = [
-                (int(passage[f"{direction}_start_byte"]), int(passage[f"{direction}_end_byte"]), local_metadata,)
+                (
+                    int(passage[f"{direction}_start_byte"]),
+                    int(passage[f"{direction}_end_byte"]),
+                    {**local_metadata, "passageid": passage["passageid"]},
+                )
                 for passage in row["passages"]
             ]
             passages.extend(local_offsets)
@@ -308,9 +314,6 @@ def get_passage_by_philo_id(
 
         passages.sort(key=lambda x: (x[0], x[1]))
 
-    # byte_offsets, metadata = zip(
-    #     *[((passage["start_byte"], passage["end_byte"]), passage["metadata"]) for passage in passages]
-    # )
     current_passage: Dict[str, int] = {"start_byte": passages[0][0], "end_byte": passages[0][1]}
     passage_groups: List[Dict[str, int]] = []
     metadata_list: List[List[Dict[str, str]]] = [[passages[0][2]]]
@@ -367,4 +370,20 @@ def get_passage(pairid, start_byte, direction):
         results = cursor.fetchone()
         passage["metadata"] = {field: results[index] for index, field in enumerate(FIELD_TYPES)}
     return passage
+
+
+def get_passages_by_pairids_and_passageids(pairids: List[str], passageids: List[str]) -> List[Dict[str, str]]:
+    with psycopg2.connect(
+        user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
+    ) as conn:
+        cursor = conn.cursor()
+        passage_objects: List[Dict[str, str]] = []
+        for pairid, passageid in zip(pairids, passageids):
+            cursor.execute(f"SELECT passages FROM {PASSAGES_TABLE} WHERE pairid=%s", (pairid,))
+            passages: List[Dict[str, str]] = cursor.fetchone()[0]
+            for passage_object in passages:
+                if passage_object["passageid"] == passageid:
+                    passage_objects.append(passage_object)
+                    break
+    return passage_objects
 

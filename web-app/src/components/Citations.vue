@@ -34,7 +34,7 @@ export default {
     components: {
         DocLink,
     },
-    props: ["philoDb", "docPair", "direction", "index"],
+    props: ["philoDb", "docPair", "direction", "index", "nolink"],
     data() {
         return {
             fields: ["author", "title", "head", "date"],
@@ -54,6 +54,7 @@ export default {
         citations() {
             let citations = [];
             let noDate = true;
+            console.log(this.nolink);
             for (let field of this.fields) {
                 let style = this.$appConfig.styles[field];
                 let fieldValue = this.docPair[`${this.fieldPrefix}${field}`];
@@ -66,12 +67,20 @@ export default {
                     }
 
                     let link = false;
-                    if (this.objectLevel == "doc" && field == "title") {
-                        link = true;
-                    } else if (this.objectLevel == "div1" && field == "head") {
-                        link = true;
-                    } else if (this.objectLevel == "div2" && field == "head") {
-                        link = true;
+                    if (typeof this.nolink == "undefined") {
+                        if (this.objectLevel == "doc" && field == "title") {
+                            link = true;
+                        } else if (
+                            this.objectLevel == "div1" &&
+                            field == "head"
+                        ) {
+                            link = true;
+                        } else if (
+                            this.objectLevel == "div2" &&
+                            field == "head"
+                        ) {
+                            link = true;
+                        }
                     }
 
                     citations.push({

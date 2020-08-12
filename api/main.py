@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 import aligner
 import search
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 app = FastAPI()
 
@@ -85,6 +85,13 @@ def retrieve_passages(pairid: str):
 def retrieve_passage(pairid: str, start_byte: int, direction: str):
     passage = aligner.get_passage(pairid, start_byte, direction)
     return passage
+
+
+@app.post("/retrieve_passages_all/")
+def retrieve_passages_all(passages: Dict[str, List[str]]):
+    print(passages["pairids"])
+    passage_objects = aligner.get_passages_by_pairids_and_passageids(passages["pairids"], passages["passageids"])
+    return passage_objects
 
 
 @app.get("/search_texts")
