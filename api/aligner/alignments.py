@@ -273,7 +273,7 @@ def get_passages(pairid):
 
 def get_passage_by_philo_id(
     object_id: List[str], direction: str, philo_db: str
-) -> Tuple[List[Dict[str, int]], List[List[Dict[str, str]]], Dict[str, str]]:
+) -> Union[Tuple[List[Dict[str, int]], List[List[Dict[str, str]]], Dict[str, str]], Tuple[None, None, None]]:
     """Get all passage bytes offsets by philo_id"""
     zeros_to_add = " ".join(["0" for _ in range(7 - len(object_id))])
     philo_id: str = f"{' '.join(object_id)} {zeros_to_add}"
@@ -313,6 +313,9 @@ def get_passage_by_philo_id(
                 }
 
         passages.sort(key=lambda x: (x[0], x[1]))
+
+    if not passages:
+        return None, None, None
 
     current_passage: Dict[str, int] = {"start_byte": passages[0][0], "end_byte": passages[0][1]}
     passage_groups: List[Dict[str, int]] = []

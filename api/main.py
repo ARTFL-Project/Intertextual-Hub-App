@@ -44,25 +44,31 @@ def navigate(
         }
     elif intertextual is True and direction is not None:
         passage_data, metadata_list, doc_metadata = aligner.get_passage_by_philo_id(text_object_id, direction, philo_db)
+        if passage_data is None:
+            philologic_response = requests.post(
+                f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py", params={"philo_id": " ".join(text_object_id)},
+            )
+            philo_text_object = philologic_response.json()
+            return {
+                "text": philo_text_object["text"],
+                "doc_metadata": {
+                    f"{direction}_philo_db": philo_db,
+                    f"{direction}_philo_id": " ".join(text_object_id),
+                    f"{direction}_date": philo_text_object["metadata_fields"]["year"],
+                    **{f"{direction}_{field}": value for field, value in philo_text_object["metadata_fields"].items()},
+                },
+                "intertextual_metadata": [],
+            }
         philologic_response = requests.post(
             f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py",
             params={"philo_id": " ".join(text_object_id)},
             json={"passages": passage_data},
         )
         philo_text_object = philologic_response.json()
-        return {"text": philo_text_object["text"], "intertextual_metadata": metadata_list, "doc_metadata": doc_metadata}
-    else:
-        philologic_response = requests.post(
-            f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py", params={"philo_id": " ".join(text_object_id)},
-        )
-        philo_text_object = philologic_response.json()
         return {
             "text": philo_text_object["text"],
-            "metadata": {
-                "philo_db": philo_db,
-                "philo_id": " ".join(text_object_id),
-                "date": philo_text_object["metadata_fields"]["year"] ** philo_text_object["metadata_fields"],
-            },
+            "intertextual_metadata": metadata_list,
+            "doc_metadata": doc_metadata,
         }
 
 

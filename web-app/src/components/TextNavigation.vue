@@ -17,7 +17,7 @@
             centered
             scrollable
             hide-footer
-            title="Intertextual Link"
+            title="Intertextual Links"
         >
             <div v-if="intertextualPassages">
                 <passage-pair
@@ -153,6 +153,7 @@ export default {
     methods: {
         fetchPassage() {
             this.alreadyScrolled = false;
+            this.$bvModal.hide("text-reuse");
             let philoId = this.$route.params.doc.split("/").join(" ");
             this.$http
                 .get(
