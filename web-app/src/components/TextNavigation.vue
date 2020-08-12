@@ -13,13 +13,11 @@
                 v-model="direction"
                 name="direction"
                 value="target"
-                @click="toggleDirection('target')"
             >View reuses from earlier texts</b-form-radio>
             <b-form-radio
                 v-model="direction"
                 name="direction"
                 value="source"
-                @click="toggleDirection('source')"
             >View reuses in later texts</b-form-radio>
         </b-form-group>
         <b-card-text>
@@ -277,7 +275,6 @@ export default {
                 });
         },
         toggleDirection() {
-            console.log("HA");
             this.$router.push(
                 `/navigate/${this.philoDb}/${this.$route.params.doc}?intertextual=true&direction=${this.direction}`
             );

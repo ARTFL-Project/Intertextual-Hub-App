@@ -37,7 +37,7 @@ export default {
     props: ["philoDb", "docPair", "direction", "index", "nolink"],
     data() {
         return {
-            fields: ["author", "title", "head", "date"],
+            fields: this.$appConfig.philoDBs[this.philoDb].citation_fields,
             objectLevel: this.$appConfig.philoDBs[this.philoDb].object_type,
         };
     },
