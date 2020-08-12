@@ -8,6 +8,20 @@
                 v-if="docMetadata"
             ></citations>
         </h5>
+        <b-form-group label="Intertextual Links" v-if="intertextual">
+            <b-form-radio
+                v-model="direction"
+                name="direction"
+                value="target"
+                @click="toggleDirection('target')"
+            >View reuses from earlier texts</b-form-radio>
+            <b-form-radio
+                v-model="direction"
+                name="direction"
+                value="source"
+                @click="toggleDirection('source')"
+            >View reuses in later texts</b-form-radio>
+        </b-form-group>
         <b-card-text>
             <div id="main-text" v-html="text"></div>
         </b-card-text>
@@ -90,6 +104,7 @@ export default {
             currentIntertextualMetadata: null,
             docMetadata: null,
             direction: this.$route.query.direction,
+            intertextual: this.$route.query.intertextual,
             alreadyScrolled: false,
             philoDb: null,
         };
@@ -105,6 +120,7 @@ export default {
     },
     watch: {
         $route: "fetchPassage",
+        direction: "toggleDirection",
     },
     created() {
         this.fetchPassage();
@@ -260,6 +276,12 @@ export default {
                     this.$bvModal.show("text-reuse");
                 });
         },
+        toggleDirection() {
+            console.log("HA");
+            this.$router.push(
+                `/navigate/${this.philoDb}/${this.$route.params.doc}?intertextual=true&direction=${this.direction}`
+            );
+        },
     },
 };
 </script>
@@ -277,6 +299,7 @@ export default {
     display: inline-block;
     margin: 0 0.15rem;
     font-weight: 700;
+    font-style: normal;
 }
 ::v-deep .passage-marker:hover {
     background-color: #a74b4b;

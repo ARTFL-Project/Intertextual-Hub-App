@@ -18,11 +18,7 @@ PHILO_TYPE = {1: "doc", 2: "div1", 3: "div2"}
 
 @app.get("/navigate/{philo_db}")
 def navigate(
-    philo_db: str,
-    philo_id: str,
-    pairid: Optional[str] = None,
-    direction: Optional[str] = None,
-    intertextual: Optional[bool] = None,
+    philo_db: str, philo_id: str, direction: str, pairid: Optional[str] = None, intertextual: Optional[bool] = None,
 ):
     text_object_id: List[str] = philo_id.split()
     if pairid is not None:
@@ -42,7 +38,7 @@ def navigate(
                 field: value for field, value in passage_data["metadata"].items() if field.startswith(direction)
             },
         }
-    elif intertextual is True and direction is not None:
+    elif intertextual is True:
         passage_data, metadata_list, doc_metadata = aligner.get_passage_by_philo_id(text_object_id, direction, philo_db)
         if passage_data is None:
             philologic_response = requests.post(
@@ -59,6 +55,9 @@ def navigate(
                 },
                 "intertextual_metadata": [],
             }
+        print(
+            f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py?philo_id={' '.join(text_object_id)}", passage_data,
+        )
         philologic_response = requests.post(
             f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py",
             params={"philo_id": " ".join(text_object_id)},

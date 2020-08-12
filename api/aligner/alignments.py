@@ -248,7 +248,7 @@ def search_alignments2(**query_params):
     return results
 
 
-def get_passages(pairid):
+def get_passages(pairid: str):
     """Get passages by pairid"""
     with psycopg2.connect(
         user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
@@ -333,7 +333,7 @@ def get_passage_by_philo_id(
     return passage_groups, metadata_list, doc_metadata
 
 
-def get_passage_byte_offsets(pairid, direction):
+def get_passage_byte_offsets(pairid: str, direction: str):
     """Get passage byte offsets by pairid"""
     with psycopg2.connect(
         user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
@@ -350,7 +350,7 @@ def get_passage_byte_offsets(pairid, direction):
     return {"passages": offsets, "metadata": metadata}
 
 
-def get_passage(pairid, start_byte, direction):
+def get_passage(pairid: str, start_byte: int, direction: str):
     """Get single passage by pairid and start byte"""
     with psycopg2.connect(
         user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
