@@ -54,7 +54,6 @@ export default {
         citations() {
             let citations = [];
             let noDate = true;
-            console.log(this.nolink);
             for (let field of this.fields) {
                 let style = this.$appConfig.styles[field];
                 let fieldValue = this.docPair[`${this.fieldPrefix}${field}`];

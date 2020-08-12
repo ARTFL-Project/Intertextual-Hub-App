@@ -18,14 +18,14 @@
                                 The Intertextual Hub is a pilot project to develop a model that will allow scholars of 18th century France to bridge
                                 the gap between distant and close reading when conducting research on large, heterogeneous digital text collections.
                             </p>
-                            <h5>Top 5 most pre-rev author reused between 1789-1799</h5>
+                            <!-- <h5>Top 5 most pre-rev author reused between 1789-1799</h5>
                             <ol>
                                 <li>Jousse, Daniel 371252</li>
                                 <li>La Mare, Nicolas de 85766</li>
                                 <li>Chambon, M. 24645</li>
                                 <li>Savary, Jacques 13418</li>
                                 <li>Chardon, Daniel-Marc-Antoine 9490</li>
-                            </ol>
+                            </ol>-->
                         </b-card>
                     </transition>
                 </b-tab>

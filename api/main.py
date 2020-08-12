@@ -37,7 +37,10 @@ def navigate(
         philo_text_object = philologic_response.json()
         return {
             "text": philo_text_object["text"],
-            "metadata": passage_data["metadata"],
+            "intertextual_metadata": [[passage_data["metadata"]]],
+            "doc_metadata": {
+                field: value for field, value in passage_data["metadata"].items() if field.startswith(direction)
+            },
         }
     elif intertextual is True and direction is not None:
         passage_data, metadata_list, doc_metadata = aligner.get_passage_by_philo_id(text_object_id, direction, philo_db)

@@ -86,7 +86,6 @@ export default {
         return {
             text: null,
             intertextualPassages: null,
-            highlighted: {},
             intertextualMetadata: null,
             currentIntertextualMetadata: null,
             docMetadata: null,
@@ -103,6 +102,9 @@ export default {
                 return "";
             }
         },
+    },
+    watch: {
+        $route: "fetchPassage",
     },
     created() {
         this.fetchPassage();
@@ -150,6 +152,7 @@ export default {
     },
     methods: {
         fetchPassage() {
+            this.alreadyScrolled = false;
             let philoId = this.$route.params.doc.split("/").join(" ");
             this.$http
                 .get(
@@ -206,8 +209,6 @@ export default {
                     .forEach((el) => {
                         el.addEventListener("click", getAlignments, false);
                     });
-
-                this.highlighted[passageNumber] = true;
             }
         },
         getAlignment(data) {
@@ -222,7 +223,15 @@ export default {
                     }
                 )
                 .then((response) => {
-                    this.intertextualLink = response.data;
+                    this.intertextualPassages = [
+                        {
+                            ...response.data,
+                            metadata: {
+                                ...this.intertextualMetadata[0][0],
+                                ...this.docMetadata,
+                            },
+                        },
+                    ];
                     this.$bvModal.show("text-reuse");
                 });
         },
