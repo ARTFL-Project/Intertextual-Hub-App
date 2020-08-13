@@ -8,6 +8,18 @@
                 v-if="docMetadata"
             ></citations>
         </h5>
+        <b-form-group label="Intertextual Links" v-if="intertextual">
+            <b-form-radio
+                v-model="direction"
+                name="direction"
+                value="target"
+            >View reuses from earlier texts</b-form-radio>
+            <b-form-radio
+                v-model="direction"
+                name="direction"
+                value="source"
+            >View reuses in later texts</b-form-radio>
+        </b-form-group>
         <b-card-text>
             <div id="main-text" v-html="text"></div>
         </b-card-text>
@@ -17,7 +29,7 @@
             centered
             scrollable
             hide-footer
-            title="Intertextual Link"
+            title="Intertextual Links"
         >
             <div v-if="intertextualPassages">
                 <passage-pair
@@ -28,6 +40,8 @@
                     :source-philo-db="passage.metadata.source_philo_db"
                     :target-philo-id="passage.metadata.target_philo_id"
                     :target-philo-db="passage.metadata.target_philo_db"
+                    message="all reuses of current text"
+                    :pairid="pairid || passage.pairid"
                 ></passage-pair>
             </div>
         </b-modal>
@@ -75,6 +89,7 @@ import Citations from "./Citations.vue";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light-border.css";
+import "tippy.js/animations/scale.css";
 
 export default {
     name: "TextNavigation",
@@ -86,11 +101,9 @@ export default {
         return {
             text: null,
             intertextualPassages: null,
-            highlighted: {},
             intertextualMetadata: null,
             currentIntertextualMetadata: null,
             docMetadata: null,
-            direction: this.$route.query.direction,
             alreadyScrolled: false,
             philoDb: null,
         };
@@ -103,6 +116,19 @@ export default {
                 return "";
             }
         },
+        intertextual: function () {
+            return this.$route.query.intertextual;
+        },
+        direction: function () {
+            return this.$route.query.direction;
+        },
+        pairid: function () {
+            return this.$route.query.pairid;
+        },
+    },
+    watch: {
+        $route: "fetchPassage",
+        direction: "toggleDirection",
     },
     created() {
         this.fetchPassage();
@@ -130,6 +156,7 @@ export default {
                         allowHTML: true,
                         maxWidth: 550,
                         theme: "light-border",
+                        animation: "scale",
                     });
                 }
             });
@@ -150,6 +177,10 @@ export default {
     },
     methods: {
         fetchPassage() {
+            this.text = null;
+            this.docMetadata = null;
+            this.alreadyScrolled = false;
+            this.$bvModal.hide("text-reuse");
             let philoId = this.$route.params.doc.split("/").join(" ");
             this.$http
                 .get(
@@ -206,8 +237,6 @@ export default {
                     .forEach((el) => {
                         el.addEventListener("click", getAlignments, false);
                     });
-
-                this.highlighted[passageNumber] = true;
             }
         },
         getAlignment(data) {
@@ -222,7 +251,15 @@ export default {
                     }
                 )
                 .then((response) => {
-                    this.intertextualLink = response.data;
+                    this.intertextualPassages = [
+                        {
+                            ...response.data,
+                            metadata: {
+                                ...this.intertextualMetadata[0][0],
+                                ...this.docMetadata,
+                            },
+                        },
+                    ];
                     this.$bvModal.show("text-reuse");
                 });
         },
@@ -250,6 +287,11 @@ export default {
                     this.$bvModal.show("text-reuse");
                 });
         },
+        toggleDirection() {
+            this.$router.push(
+                `/navigate/${this.philoDb}/${this.$route.params.doc}?intertextual=true&direction=${this.direction}`
+            );
+        },
     },
 };
 </script>
@@ -267,6 +309,7 @@ export default {
     display: inline-block;
     margin: 0 0.15rem;
     font-weight: 700;
+    font-style: normal;
 }
 ::v-deep .passage-marker:hover {
     background-color: #a74b4b;

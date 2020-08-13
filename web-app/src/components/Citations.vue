@@ -1,5 +1,5 @@
 <template>
-    <div class="d-inline-block">
+    <span>
         <span v-for="(citation, citeIndex) in citations" :key="citeIndex" :style="citation.style">
             <span v-if="citation.link">
                 <b-button
@@ -23,8 +23,7 @@
                 "
             >&#9679;</span>
         </span>
-        <!-- <a :href="goToPhilo()" target="_blank" v-if="doc.philo_type">Navigate to full text</a> -->
-    </div>
+    </span>
 </template>
 <script>
 import DocLink from "./DocLink";
@@ -37,7 +36,7 @@ export default {
     props: ["philoDb", "docPair", "direction", "index", "nolink"],
     data() {
         return {
-            fields: ["author", "title", "head", "date"],
+            fields: this.$appConfig.philoDBs[this.philoDb].citation_fields,
             objectLevel: this.$appConfig.philoDBs[this.philoDb].object_type,
         };
     },
@@ -54,7 +53,6 @@ export default {
         citations() {
             let citations = [];
             let noDate = true;
-            console.log(this.nolink);
             for (let field of this.fields) {
                 let style = this.$appConfig.styles[field];
                 let fieldValue = this.docPair[`${this.fieldPrefix}${field}`];

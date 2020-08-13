@@ -5,6 +5,18 @@
             <p class="pt-3 px-3">
                 <citations :docPair="passage.metadata" direction="source" :philo-db="sourcePhiloDb"></citations>
             </p>
+            <b-button
+                class="ml-3 mb-2"
+                size="sm"
+                variant="outline-secondary"
+                @click="goToDocument(passage, 'source')"
+            >
+                See
+                <span v-if="message">{{message}}</span>
+                <span
+                    v-else
+                >{{"this" | pluralize(passageNumber)}} {{'passage' | pluralize(passageNumber)}}</span> in document
+            </b-button>
         </b-col>
         <b-col
             cols="6"
@@ -15,6 +27,18 @@
             <p class="pt-3 px-3">
                 <citations :docPair="passage.metadata" direction="target" :philo-db="targetPhiloDb"></citations>
             </p>
+            <b-button
+                class="ml-3"
+                size="sm"
+                variant="outline-secondary"
+                @click="goToDocument(passage, 'target')"
+            >
+                See
+                <span v-if="message">{{message}}</span>
+                <span
+                    v-else
+                >{{"this" | pluralize(passageNumber)}} {{'passage' | pluralize(passageNumber)}}</span> in document
+            </b-button>
         </b-col>
         <b-col cols="6" class="mb-2">
             <p class="card-text text-justify px-3 pt-2 pb-4 mb-4">
@@ -48,10 +72,42 @@ export default {
         "sourcePhiloId",
         "targetPhiloDb",
         "targetPhiloId",
+        "passageNumber",
+        "pairid",
+        "message",
     ],
     created() {
-        this.passage.metadata.source_philo_id = this.sourcePhiloId;
-        this.passage.metadata.target_philo_id = this.targetPhiloId;
+        if ("metadata" in this.passage) {
+            this.passage.metadata.source_philo_id = this.sourcePhiloId;
+            this.passage.metadata.target_philo_id = this.targetPhiloId;
+        }
+    },
+    methods: {
+        goToDocument(documentPair, direction) {
+            let link;
+            if (direction == "source") {
+                link = this.paramsToRoute(
+                    {
+                        pairid: this.pairid || this.passage.metadata.pairid,
+                        direction: direction,
+                    },
+                    `/navigate/${this.sourcePhiloDb}/${this.sourcePhiloId
+                        .split(" ")
+                        .join("/")}`
+                );
+            } else {
+                link = this.paramsToRoute(
+                    {
+                        pairid: this.pairid || this.passage.metadata.pairid,
+                        direction: direction,
+                    },
+                    `/navigate/${this.targetPhiloDb}/${this.targetPhiloId
+                        .split(" ")
+                        .join("/")}`
+                );
+            }
+            this.$router.push(link);
+        },
     },
 };
 </script>

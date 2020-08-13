@@ -18,11 +18,7 @@ PHILO_TYPE = {1: "doc", 2: "div1", 3: "div2"}
 
 @app.get("/navigate/{philo_db}")
 def navigate(
-    philo_db: str,
-    philo_id: str,
-    pairid: Optional[str] = None,
-    direction: Optional[str] = None,
-    intertextual: Optional[bool] = None,
+    philo_db: str, philo_id: str, direction: str, pairid: Optional[str] = None, intertextual: Optional[bool] = None,
 ):
     text_object_id: List[str] = philo_id.split()
     if pairid is not None:
@@ -37,29 +33,39 @@ def navigate(
         philo_text_object = philologic_response.json()
         return {
             "text": philo_text_object["text"],
-            "metadata": passage_data["metadata"],
+            "intertextual_metadata": [[passage_data["metadata"]]],
+            "doc_metadata": {
+                field: value for field, value in passage_data["metadata"].items() if field.startswith(direction)
+            },
         }
-    elif intertextual is True and direction is not None:
+    elif intertextual is True:
         passage_data, metadata_list, doc_metadata = aligner.get_passage_by_philo_id(text_object_id, direction, philo_db)
+        if passage_data is None:
+            philologic_response = requests.post(
+                f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py", params={"philo_id": " ".join(text_object_id)},
+            )
+            philo_text_object = philologic_response.json()
+            return {
+                "text": philo_text_object["text"],
+                "doc_metadata": {
+                    f"{direction}_philo_db": philo_db,
+                    f"{direction}_philo_id": " ".join(text_object_id),
+                    f"{direction}_date": philo_text_object["metadata_fields"]["year"],
+                    **{f"{direction}_{field}": value for field, value in philo_text_object["metadata_fields"].items()},
+                },
+                "intertextual_metadata": [],
+            }
+        print(passage_data)
         philologic_response = requests.post(
             f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py",
             params={"philo_id": " ".join(text_object_id)},
             json={"passages": passage_data},
         )
         philo_text_object = philologic_response.json()
-        return {"text": philo_text_object["text"], "intertextual_metadata": metadata_list, "doc_metadata": doc_metadata}
-    else:
-        philologic_response = requests.post(
-            f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py", params={"philo_id": " ".join(text_object_id)},
-        )
-        philo_text_object = philologic_response.json()
         return {
             "text": philo_text_object["text"],
-            "metadata": {
-                "philo_db": philo_db,
-                "philo_id": " ".join(text_object_id),
-                "date": philo_text_object["metadata_fields"]["year"] ** philo_text_object["metadata_fields"],
-            },
+            "intertextual_metadata": metadata_list,
+            "doc_metadata": doc_metadata,
         }
 
 
