@@ -107,6 +107,7 @@ export default {
             alreadyScrolled: false,
             philoDb: null,
             pairid: this.$route.query.pairid,
+            direction: this.$route.query.direction,
         };
     },
     computed: {
@@ -120,13 +121,10 @@ export default {
         intertextual: function () {
             return this.$route.query.intertextual;
         },
-        direction: function () {
-            return this.$route.query.direction;
-        },
     },
     watch: {
         $route: "fetchPassage",
-        direction: "toggleDirection",
+        direction: "fetchPassage",
     },
     created() {
         this.fetchPassage();
