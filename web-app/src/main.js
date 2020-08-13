@@ -55,6 +55,16 @@ Vue.mixin({
     },
 });
 
+Vue.filter('pluralize', (word, count) => {
+    if (count == '1') {
+        return word
+    }
+    if (word == "this") {
+        return `these ${count}`
+    }
+    return `${word}s`
+})
+
 new Vue({
     el: "#app",
     router,

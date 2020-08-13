@@ -37,7 +37,7 @@
             "path": "/var/www/html/intertextual_hub/philologic/Gldsmth18cfr/",
             "url": "https://anomander.uchicago.edu/intertextual_hub/philologic/Gldsmth18cfr",
             "object_type": "div1",
-            "citation_fields": ["author", "title", "date"],
+            "citation_fields": ["author", "title", "head", "date"],
             "search_fields": ["author", "title", "year"]
         },
         "marat": {

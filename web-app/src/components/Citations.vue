@@ -1,5 +1,5 @@
 <template>
-    <div class="d-inline-block">
+    <span>
         <span v-for="(citation, citeIndex) in citations" :key="citeIndex" :style="citation.style">
             <span v-if="citation.link">
                 <b-button
@@ -23,8 +23,7 @@
                 "
             >&#9679;</span>
         </span>
-        <!-- <a :href="goToPhilo()" target="_blank" v-if="doc.philo_type">Navigate to full text</a> -->
-    </div>
+    </span>
 </template>
 <script>
 import DocLink from "./DocLink";

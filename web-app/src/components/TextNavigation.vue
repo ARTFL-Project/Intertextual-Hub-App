@@ -40,6 +40,8 @@
                     :source-philo-db="passage.metadata.source_philo_db"
                     :target-philo-id="passage.metadata.target_philo_id"
                     :target-philo-db="passage.metadata.target_philo_db"
+                    message="all reuses of current text"
+                    :pairid="pairid"
                 ></passage-pair>
             </div>
         </b-modal>
@@ -87,6 +89,7 @@ import Citations from "./Citations.vue";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light-border.css";
+import "tippy.js/animations/scale.css";
 
 export default {
     name: "TextNavigation",
@@ -105,6 +108,7 @@ export default {
             intertextual: this.$route.query.intertextual,
             alreadyScrolled: false,
             philoDb: null,
+            pairid: this.$route.query.pairid,
         };
     },
     computed: {
@@ -146,6 +150,7 @@ export default {
                         allowHTML: true,
                         maxWidth: 550,
                         theme: "light-border",
+                        animation: "scale",
                     });
                 }
             });

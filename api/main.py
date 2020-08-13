@@ -55,6 +55,7 @@ def navigate(
                 },
                 "intertextual_metadata": [],
             }
+        print(passage_data)
         philologic_response = requests.post(
             f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py",
             params={"philo_id": " ".join(text_object_id)},
