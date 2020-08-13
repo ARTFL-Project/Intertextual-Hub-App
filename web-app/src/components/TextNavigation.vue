@@ -106,6 +106,7 @@ export default {
             docMetadata: null,
             alreadyScrolled: false,
             philoDb: null,
+            pairid: this.$route.query.pairid,
         };
     },
     computed: {
@@ -121,9 +122,6 @@ export default {
         },
         direction: function () {
             return this.$route.query.direction;
-        },
-        pairid: function () {
-            return this.$route.query.pairid;
         },
     },
     watch: {

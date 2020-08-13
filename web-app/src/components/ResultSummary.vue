@@ -177,7 +177,6 @@ export default {
                 this.passageTogglerMessages[index] = "Show passage";
                 this.$set(this.passages, index, {});
             }
-            console.log(this.passageTogglerMessages[index]);
         },
     },
 };
