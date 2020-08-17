@@ -39,7 +39,9 @@ def navigate(
             },
         }
     elif intertextual is True:
-        passage_data, metadata_list, doc_metadata = aligner.get_passage_by_philo_id(text_object_id, direction, philo_db)
+        passage_data, metadata_list, doc_metadata, docs_cited = aligner.get_passage_by_philo_id(
+            text_object_id, direction, philo_db
+        )
         if passage_data is None:
             philologic_response = requests.post(
                 f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py", params={"philo_id": " ".join(text_object_id)},
@@ -65,6 +67,7 @@ def navigate(
             "text": philo_text_object["text"],
             "intertextual_metadata": metadata_list,
             "doc_metadata": doc_metadata,
+            "docs_cited": docs_cited,
         }
 
 

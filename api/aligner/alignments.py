@@ -7,6 +7,7 @@ import psycopg2.extras
 from typing import List, Dict, Union, Tuple
 from dataclasses import dataclass
 import rapidjson as json
+from datetime import datetime
 
 with open("./db_config.json") as db_config_file:
     db_config = json.load(db_config_file)
@@ -273,12 +274,20 @@ def get_passages(pairid: str):
 
 def get_passage_by_philo_id(
     object_id: List[str], direction: str, philo_db: str
-) -> Union[Tuple[List[Dict[str, int]], List[List[Dict[str, str]]], Dict[str, str]], Tuple[None, None, None]]:
+) -> Union[
+    Tuple[
+        List[Dict[str, int]],
+        List[List[Dict[str, Union[str, datetime]]]],
+        Dict[str, Union[str, datetime]],
+        List[Union[Dict[str, Union[str, datetime]], str]],
+    ],
+    Tuple[None, None, None, None],
+]:
     """Get all passage bytes offsets by philo_id"""
     zeros_to_add = " ".join(["0" for _ in range(7 - len(object_id))])
     philo_id: str = f"{' '.join(object_id)} {zeros_to_add}"
 
-    doc_metadata: Dict[str, str] = {}
+    doc_metadata: Dict[str, Union[str, datetime]] = {}
     if direction == "source":
         opposite_direction = "target"
     else:
@@ -286,7 +295,7 @@ def get_passage_by_philo_id(
     with psycopg2.connect(
         user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
     ) as conn:
-        passages: List[Tuple[int, int, Dict[str, str]]] = []
+        passages: List[Tuple[int, int, Dict[str, Union[str, datetime]]]] = []
         cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute(
             f"SELECT * FROM {ALIGNMENTS_TABLE} WHERE {direction}_philo_id=%s AND {direction}_philo_db=%s",
@@ -296,7 +305,7 @@ def get_passage_by_philo_id(
             local_metadata = {
                 field: row[field] for field in FIELD_TYPES if not field.startswith(direction) and field != "passages"
             }
-            local_offsets: List[Tuple[int, int, Dict[str, str]]] = [
+            local_offsets: List[Tuple[int, int, Dict[str, Union[str, datetime]]]] = [
                 (
                     int(passage[f"{direction}_start_byte"]),
                     int(passage[f"{direction}_end_byte"]),
@@ -315,11 +324,11 @@ def get_passage_by_philo_id(
         passages.sort(key=lambda x: (x[0], x[1]))
 
     if not passages:
-        return None, None, None
+        return None, None, None, None
 
     current_passage: Dict[str, int] = {"start_byte": passages[0][0], "end_byte": passages[0][1]}
     passage_groups: List[Dict[str, int]] = []
-    metadata_list: List[List[Dict[str, str]]] = [[passages[0][2]]]
+    metadata_list: List[List[Dict[str, Union[str, datetime]]]] = [[passages[0][2]]]
     for start_byte, end_byte, metadata in passages:
         if start_byte < current_passage["end_byte"] and end_byte > current_passage["end_byte"]:
             current_passage["end_byte"] = end_byte
@@ -329,8 +338,27 @@ def get_passage_by_philo_id(
             current_passage = {"start_byte": start_byte, "end_byte": end_byte}
             metadata_list.append([metadata])
     passage_groups.append(current_passage)
-    print(len(passages), len(passage_groups), len(metadata_list))
-    return passage_groups, metadata_list, doc_metadata
+
+    author_titles: Dict[str, List[Dict[str, Union[str, datetime]]]] = {}
+    for group in metadata_list:
+        for doc in group:
+            author_title = doc[f"{opposite_direction}_author"] + "_" + doc[f"{opposite_direction}_title"]
+            if author_title not in author_titles:
+                author_titles[author_title] = [doc]
+            else:
+                author_titles[author_title].append(doc)
+    docs_cited: List[Union[Dict[str, Union[str, datetime]], str]] = [
+        {
+            "doc_metadata": {
+                f"{opposite_direction}_author": metadata[0][f"{opposite_direction}_author"],
+                f"{opposite_direction}_title": metadata[0][f"{opposite_direction}_title"],
+            },
+            "metadata": metadata,
+            "direction": opposite_direction,
+        }
+        for metadata in author_titles.values()
+    ]
+    return passage_groups, metadata_list, doc_metadata, docs_cited
 
 
 def get_passage_byte_offsets(pairid: str, direction: str):

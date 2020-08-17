@@ -1,5 +1,19 @@
 <template>
-    <b-card class="shadow">
+    <b-card class="shadow mt-4">
+        <div id="direction-toggle">
+            <b-form-group v-if="intertextual">
+                <b-form-radio
+                    v-model="direction"
+                    name="direction"
+                    value="target"
+                >View reuses from earlier texts</b-form-radio>
+                <b-form-radio
+                    v-model="direction"
+                    name="direction"
+                    value="source"
+                >View reuses in later texts</b-form-radio>
+            </b-form-group>
+        </div>
         <h5 class="text-center mb-4">
             <citations
                 :docPair="docMetadata"
@@ -8,18 +22,18 @@
                 v-if="docMetadata"
             ></citations>
         </h5>
-        <b-form-group label="Intertextual Links" v-if="intertextual">
-            <b-form-radio
-                v-model="direction"
-                name="direction"
-                value="target"
-            >View reuses from earlier texts</b-form-radio>
-            <b-form-radio
-                v-model="direction"
-                name="direction"
-                value="source"
-            >View reuses in later texts</b-form-radio>
-        </b-form-group>
+        <div v-if="docsCited">
+            <h6 class="pt-4">Reuses from these documents:</h6>
+            <ul style="padding-inline-start: 2rem">
+                <li v-for="(doc, docIndex) in docsCited" :key="docIndex">
+                    <span
+                        v-if="doc.doc_metadata[`${doc.direction}_author`]"
+                    >{{doc.doc_metadata[`${doc.direction}_author`]}},</span>
+                    <i>{{doc.doc_metadata[`${doc.direction}_title`]}}</i>
+                </li>
+            </ul>
+        </div>
+        <hr class="my-4 pb-2" style="width:50%; color:#ddd" />
         <b-card-text>
             <div id="main-text" v-html="text"></div>
         </b-card-text>
@@ -110,6 +124,8 @@ export default {
             direction: this.$route.query.direction,
             updatedText: false,
             reload: false,
+            tippyInstances: [],
+            docsCited: [],
         };
     },
     computed: {
@@ -144,7 +160,10 @@ export default {
                     el.removeEventListener("click");
                 });
         }
-        // TODO: destroy all Tippy instances
+        this.tippyInstances.forEach((instance) => {
+            instance.destroy();
+        });
+        this.tippyInstances.length = 0;
     },
     methods: {
         fetchPassage() {
@@ -174,6 +193,7 @@ export default {
                     this.docMetadata = response.data.doc_metadata;
                     this.intertextualMetadata =
                         response.data.intertextual_metadata;
+                    this.docsCited = response.data.docs_cited;
                     if (this.reload) {
                         this.$nextTick(() => {
                             this.updateInit();
@@ -268,7 +288,6 @@ export default {
         toggleDirection() {
             if (this.$route.query.intertextual == "true") {
                 this.reload = true;
-                console.log("Toggle Direction");
                 this.$router.push(
                     `/navigate/${this.philoDb}/${this.$route.params.doc}?intertextual=true&direction=${this.direction}`
                 );
@@ -289,10 +308,10 @@ export default {
                     Array.from(passageMarkers).forEach((el) =>
                         this.showPassage(el)
                     );
+                    this.tippyInstances = [];
                     for (let i = 0; i < passageMarkers.length; i += 1) {
                         let passage = `.passage-${i}`;
-                        console.log(passage);
-                        tippy(passage, {
+                        let tippyInstances = tippy(passage, {
                             content() {
                                 let popup = document.getElementById(
                                     `intertextual-metadata-${i}`
@@ -304,6 +323,7 @@ export default {
                             theme: "light-border",
                             animation: "scale",
                         });
+                        this.tippyInstances.push(...tippyInstances);
                     }
                 });
                 this.alreadyScrolled = true;
@@ -313,6 +333,16 @@ export default {
 };
 </script>
 <style scoped>
+#direction-toggle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0.5rem;
+    border: solid 1px #ddd;
+}
+#direction-toggle fieldset {
+    margin-bottom: 0;
+}
 #intertextual-metadata {
     background-color: white;
 }
