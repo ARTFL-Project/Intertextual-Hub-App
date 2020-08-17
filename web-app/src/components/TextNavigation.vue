@@ -108,6 +108,8 @@ export default {
             philoDb: null,
             pairid: this.$route.query.pairid,
             direction: this.$route.query.direction,
+            updatedText: false,
+            reload: false,
         };
     },
     computed: {
@@ -124,40 +126,13 @@ export default {
     },
     watch: {
         $route: "fetchPassage",
-        direction: "fetchPassage",
+        direction: "toggleDirection",
     },
     created() {
         this.fetchPassage();
     },
     updated() {
-        if (!this.alreadyScrolled) {
-            this.$nextTick(() => {
-                this.$scrollTo(
-                    document.getElementsByClassName("passage-marker")[0],
-                    1000,
-                    { easing: "ease-out", offset: -150 }
-                );
-                Array.from(
-                    document.getElementsByClassName("passage-marker")
-                ).forEach((el) => this.showPassage(el));
-                for (let i = 0; i < this.intertextualMetadata.length; i += 1) {
-                    let passage = `.passage-${i}`;
-                    tippy(passage, {
-                        content() {
-                            let popup = document.getElementById(
-                                `intertextual-metadata-${i}`
-                            );
-                            return popup.innerHTML;
-                        },
-                        allowHTML: true,
-                        maxWidth: 550,
-                        theme: "light-border",
-                        animation: "scale",
-                    });
-                }
-            });
-            this.alreadyScrolled = true;
-        }
+        this.updateInit();
     },
     destroyed() {
         let passageMarkers = document.getElementsByClassName("passage-marker");
@@ -173,6 +148,8 @@ export default {
     },
     methods: {
         fetchPassage() {
+            console.log(this.$route.params, this.$route.query);
+            this.direction = this.$route.query.direction;
             this.text = null;
             this.docMetadata = null;
             this.alreadyScrolled = false;
@@ -197,6 +174,11 @@ export default {
                     this.docMetadata = response.data.doc_metadata;
                     this.intertextualMetadata =
                         response.data.intertextual_metadata;
+                    if (this.reload) {
+                        this.$nextTick(() => {
+                            this.updateInit();
+                        });
+                    }
                 });
         },
         showPassage(element) {
@@ -284,9 +266,48 @@ export default {
                 });
         },
         toggleDirection() {
-            this.$router.push(
-                `/navigate/${this.philoDb}/${this.$route.params.doc}?intertextual=true&direction=${this.direction}`
-            );
+            if (this.$route.query.intertextual == "true") {
+                this.reload = true;
+                console.log("Toggle Direction");
+                this.$router.push(
+                    `/navigate/${this.philoDb}/${this.$route.params.doc}?intertextual=true&direction=${this.direction}`
+                );
+            }
+        },
+        updateInit() {
+            let firstPassage = document.querySelector(".passage-marker");
+            if (!this.alreadyScrolled && firstPassage != null) {
+                this.$nextTick(() => {
+                    this.$scrollTo(
+                        document.querySelector(".passage-marker"),
+                        1000,
+                        { easing: "ease-out", offset: -150 }
+                    );
+                    Array.from(
+                        document.getElementsByClassName("passage-marker")
+                    ).forEach((el) => this.showPassage(el));
+                    for (
+                        let i = 0;
+                        i < this.intertextualMetadata.length;
+                        i += 1
+                    ) {
+                        let passage = `.passage-${i}`;
+                        tippy(passage, {
+                            content() {
+                                let popup = document.getElementById(
+                                    `intertextual-metadata-${i}`
+                                );
+                                return popup.innerHTML;
+                            },
+                            allowHTML: true,
+                            maxWidth: 550,
+                            theme: "light-border",
+                            animation: "scale",
+                        });
+                    }
+                });
+                this.alreadyScrolled = true;
+            }
         },
     },
 };
