@@ -283,15 +283,15 @@ export default {
                         1000,
                         { easing: "ease-out", offset: -150 }
                     );
-                    Array.from(
-                        document.getElementsByClassName("passage-marker")
-                    ).forEach((el) => this.showPassage(el));
-                    for (
-                        let i = 0;
-                        i < this.intertextualMetadata.length;
-                        i += 1
-                    ) {
+                    let passageMarkers = document.getElementsByClassName(
+                        "passage-marker"
+                    );
+                    Array.from(passageMarkers).forEach((el) =>
+                        this.showPassage(el)
+                    );
+                    for (let i = 0; i < passageMarkers.length; i += 1) {
                         let passage = `.passage-${i}`;
+                        console.log(passage);
                         tippy(passage, {
                             content() {
                                 let popup = document.getElementById(

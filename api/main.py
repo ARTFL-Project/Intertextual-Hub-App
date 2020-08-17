@@ -31,13 +31,9 @@ def navigate(
             json={"passages": passage_data["passages"]},
         )
         philo_text_object = philologic_response.json()
-        print(
-            direction,
-            {field: value for field, value in passage_data["metadata"].items() if field.startswith(direction)},
-        )
         return {
             "text": philo_text_object["text"],
-            "intertextual_metadata": [[passage_data["metadata"]]],
+            "intertextual_metadata": [[passage_data["metadata"]] for _ in passage_data["metadata"]["passages"]],
             "doc_metadata": {
                 field: value for field, value in passage_data["metadata"].items() if field.startswith(direction)
             },
