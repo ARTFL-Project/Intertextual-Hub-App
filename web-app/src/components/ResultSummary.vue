@@ -2,7 +2,7 @@
     <div class="mt-4">
         <h5 v-if="results">Showing results 1-{{ results.length }}</h5>
         <b-card
-            class="pb-3 mt-4 mb-4 shadow-sm"
+            class="mt-4 mb-4 shadow-sm"
             no-body
             v-for="(documentPair, resultsIndex) in results"
             :key="documentPair.pairid"
@@ -40,24 +40,31 @@
                     </b-row>
                 </b-col>
             </b-row>
-            <div class="position-relative" style="margin-bottom: -1rem">
-                <b-button
-                    class="position-absolute"
-                    style="bottom:0; left:0;"
-                    size="sm"
-                    variant="secondary"
-                    @click="
+            <b-row class="position-relative m-0">
+                <b-col
+                    class="position-absolute text-center"
+                    style="top: -1.95rem;"
+                    sm="3"
+                    md="3"
+                    lg="2"
+                >
+                    <b-button
+                        size="sm"
+                        variant="outline-info"
+                        @click="
                         togglePassages(
                             documentPair,
                             documentPair.pairid,
                             resultsIndex
                         )
                     "
-                >{{ passageTogglerMessages[resultsIndex] | pluralize(documentPair.passage_number)}}</b-button>
-            </div>
+                    >{{ passageTogglerMessages[resultsIndex] | pluralize(documentPair.passage_number)}}</b-button>
+                </b-col>
+            </b-row>
+
             <transition name="slide-fade">
                 <div
-                    class="mt-3 pt-3"
+                    class="pt-3 pb-2"
                     style="border-top: solid 1px #ddd"
                     v-if="passages[resultsIndex].length > 0"
                 >

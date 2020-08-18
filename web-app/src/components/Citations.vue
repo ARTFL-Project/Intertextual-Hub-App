@@ -106,8 +106,8 @@ export default {
 <style scoped>
 .separator {
     display: inline-block;
-    margin: 0 0.25rem;
-    font-style: italic;
+    margin: 0 0.3rem;
+    font-style: initial;
 }
 a:not([href]) {
     color: #55acee;

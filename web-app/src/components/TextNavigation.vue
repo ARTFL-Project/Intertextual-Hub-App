@@ -28,14 +28,14 @@
                 <li v-for="(doc, docIndex) in docsCited" :key="docIndex">
                     <span
                         v-if="doc.doc_metadata[`${doc.direction}_author`]"
-                    >{{doc.doc_metadata[`${doc.direction}_author`]}},</span>
+                    >{{doc.doc_metadata[`${doc.direction}_author`]}}&nbsp;&#9679;&nbsp;</span>
                     <i>{{doc.doc_metadata[`${doc.direction}_title`]}}</i>
                 </li>
             </ul>
         </div>
         <hr class="my-4 pb-2" style="width:50%; color:#ddd" />
         <b-card-text>
-            <div id="main-text" v-html="text"></div>
+            <div id="main-text" class="text" v-html="text"></div>
         </b-card-text>
         <b-modal
             id="text-reuse"

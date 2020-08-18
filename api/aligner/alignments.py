@@ -338,6 +338,8 @@ def get_passage_by_philo_id(
             current_passage = {"start_byte": start_byte, "end_byte": end_byte}
             metadata_list.append([metadata])
     passage_groups.append(current_passage)
+    for pos, _ in enumerate(metadata_list):
+        metadata_list[pos].sort(key=lambda x: x[f"{opposite_direction}_date"])
 
     author_titles: Dict[str, List[Dict[str, Union[str, datetime]]]] = {}
     for group in metadata_list:

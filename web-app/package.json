@@ -13,11 +13,13 @@
         "axios": "^0.19.2",
         "bootstrap-vue": "^2.15.0",
         "core-js": "^3.6.5",
+        "epic-spinners": "^1.1.0",
         "tippy.js": "^6.2.5",
         "vue": "^2.6.11",
         "vue-apexcharts": "^1.6.0",
         "vue-router": "^3.3.4",
-        "vue-scrollto": "^2.18.1"
+        "vue-scrollto": "^2.18.1",
+        "worker-loader": "^3.0.1"
     },
     "devDependencies": {
         "@vue/cli-plugin-babel": "^4.4.6",
