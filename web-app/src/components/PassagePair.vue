@@ -93,7 +93,6 @@ export default {
         "message",
     ],
     created() {
-        console.log(this.passage);
         if ("metadata" in this.passage) {
             this.passage.metadata.source_philo_id = this.sourcePhiloId;
             this.passage.metadata.target_philo_id = this.targetPhiloId;

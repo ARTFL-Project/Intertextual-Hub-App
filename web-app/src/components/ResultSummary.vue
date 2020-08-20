@@ -50,7 +50,7 @@
                 >
                     <b-button
                         size="sm"
-                        variant="outline-info"
+                        variant="info"
                         @click="
                         togglePassages(
                             documentPair,

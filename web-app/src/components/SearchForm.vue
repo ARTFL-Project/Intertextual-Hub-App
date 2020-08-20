@@ -1,5 +1,5 @@
 <template>
-    <b-card class="shadow-sm mb-4 border-top-0">
+    <b-card class="mb-4 border-top-0">
         <b-row>
             <b-col sm="12" lg="8" xl="7">
                 <b-form @submit.stop.prevent="search" @reset="clearForm">
@@ -35,6 +35,7 @@
                     >OR search</b-form-checkbox>
                     <b-button
                         size="sm"
+                        variant="outline-primary"
                         class="d-inline-block ml-3 mb-3"
                         style="vertical-align: baseline"
                         @click="addAssociatedWords()"
@@ -94,8 +95,10 @@
                     <b-input-group prepend="Period" class="mb-3">
                         <b-form-select v-model="periodSelected" :options="periods"></b-form-select>
                     </b-input-group>
-                    <button class="btn btn-primary rounded-0" type="submit">Search</button>
-                    <button type="reset" class="btn btn-secondary rounded-0">Reset</button>
+                    <b-button-group>
+                        <b-button variant="primary" type="submit">Search</b-button>
+                        <b-button type="reset" variant="outline-primary">Reset</b-button>
+                    </b-button-group>
                 </b-form>
             </b-col>
             <b-col class="d-xs-none d-md-none d-lg-block">

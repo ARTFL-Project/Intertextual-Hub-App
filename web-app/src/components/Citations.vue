@@ -109,29 +109,4 @@ export default {
     margin: 0 0.3rem;
     font-style: initial;
 }
-a:not([href]) {
-    color: #55acee;
-    cursor: pointer;
-}
-a:not([href]):hover {
-    color: #55acee;
-    text-decoration: underline;
-}
-.link {
-    cursor: pointer;
-    color: #007bff;
-    background-color: #fff;
-    border-width: 0 !important;
-    padding: 0;
-    text-align: initial !important;
-    vertical-align: initial;
-    line-height: inherit;
-}
-.link:hover,
-.link:focus,
-.link:active {
-    background-color: #fff !important;
-    color: #0056b3 !important;
-    box-shadow: initial !important;
-}
 </style>

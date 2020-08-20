@@ -166,7 +166,12 @@ export default {
                 fill: {
                     opacity: 0.9,
                 },
-                theme: { palette: "palette3" },
+                theme: {
+                    monochrome: {
+                        enabled: true,
+                        color: "#A9534B",
+                    },
+                },
                 tooltip: {
                     x: {
                         formatter: (year) => {

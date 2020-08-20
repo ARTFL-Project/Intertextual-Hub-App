@@ -1,6 +1,6 @@
 <template>
     <b-container fluid class="mt-4">
-        <b-card no-body class="shadow-sm mb-4">
+        <b-card no-body class="mb-4">
             <h6
                 slot="header"
                 class="mb-0 text-center"
@@ -132,9 +132,15 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import "../assets/theme.scss";
+@import "~bootstrap/scss/bootstrap.scss";
+@import "~bootstrap-vue/src/index.scss";
 .frequency-value {
     display: inline-block;
+    position: relative;
+    z-index: 1;
+    color: $link-color;
 }
 .frequency-bar {
     display: inline-block;
@@ -143,7 +149,7 @@ export default {
     top: 0;
     padding: 0.75rem;
     height: 100%;
-    background-color: rgba(85, 172, 238, 0.4);
+    background-color: $yellow;
     background-clip: content-box;
 }
 ::v-deep td {

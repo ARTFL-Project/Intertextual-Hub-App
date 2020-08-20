@@ -6,14 +6,14 @@
             </b-navbar-nav>
         </b-navbar>
         <b-container fluid class="mt-4">
-            <b-tabs>
+            <b-tabs fill class="shadow-sm">
                 <b-tab
                     :active="activeTab == 'intro'"
                     title="Intro to the HUB"
                     @click="selectModule('home')"
                 >
                     <transition name="slide-fade">
-                        <b-card class="shadow-sm" style="border-top-width: 0" v-if="show">
+                        <b-card style="border-top-width: 0" v-if="show">
                             <p style="text-align: justify; max-width:1000px">
                                 The Intertextual Hub is a pilot project to develop a model that will allow scholars of 18th century France to bridge
                                 the gap between distant and close reading when conducting research on large, heterogeneous digital text collections.
@@ -27,6 +27,15 @@
                                 <li>Chardon, Daniel-Marc-Antoine 9490</li>
                             </ol>-->
                         </b-card>
+                    </transition>
+                </b-tab>
+                <b-tab
+                    :active="activeTab == 'search'"
+                    title="Search and Retrieval"
+                    @click="selectModule('search')"
+                >
+                    <transition name="slide-fade">
+                        <search-form v-if="show"></search-form>
                     </transition>
                 </b-tab>
                 <b-tab
@@ -49,15 +58,7 @@
                     </div>
                     <topic-distributions v-if="show"></topic-distributions>
                 </b-tab>
-                <b-tab
-                    :active="activeTab == 'search'"
-                    title="Search and Retrieval"
-                    @click="selectModule('search')"
-                >
-                    <transition name="slide-fade">
-                        <search-form v-if="show"></search-form>
-                    </transition>
-                </b-tab>
+
                 <b-tab
                     :active="activeTab == 'wordUse'"
                     title="Explore word usage"
@@ -138,10 +139,11 @@ export default {
 };
 </script>
 
-<style>
-body {
-    background-color: rgba(230, 230, 230, 0.2) !important;
-}
+<style lang="scss">
+@import "./assets/theme.scss";
+@import "~bootstrap/scss/bootstrap.scss";
+@import "~bootstrap-vue/src/index.scss";
+
 ::-webkit-scrollbar {
     -webkit-appearance: none;
     width: 7px;
@@ -152,6 +154,33 @@ body {
     background-color: rgba(0, 0, 0, 0.5);
     box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
 }
+
+a:not([href]) {
+    color: #55acee;
+    cursor: pointer;
+}
+a:not([href]):hover {
+    color: $link-color;
+    text-decoration: underline;
+}
+.link {
+    cursor: pointer;
+    color: $link-color;
+    background-color: #fff;
+    border-width: 0 !important;
+    padding: 0;
+    text-align: initial !important;
+    vertical-align: initial;
+    line-height: inherit;
+}
+.link:hover,
+.link:focus,
+.link:active {
+    background-color: #fff !important;
+    color: darken($link-color, 15%) !important;
+    box-shadow: initial !important;
+}
+
 #show {
     cursor: pointer;
     color: #111;
