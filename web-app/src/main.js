@@ -53,6 +53,20 @@ Vue.mixin({
     },
 });
 
+Vue.directive('scroll', {
+    inserted: function(el, binding) {
+        el.scrollHandler = function(evt) {
+            if (binding.value(evt, el)) {
+                window.removeEventListener('scroll', el.scrollHandler)
+            }
+        }
+        window.addEventListener('scroll', el.scrollHandler)
+    },
+    unbind: function(el) {
+        window.removeEventListener("scroll", el.scrollHandler)
+    }
+})
+
 Vue.filter('pluralize', (word, count) => {
     if (count == '1') {
         return word

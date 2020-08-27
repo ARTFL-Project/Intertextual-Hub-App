@@ -20,7 +20,12 @@ PHILO_TYPE = {1: "doc", 2: "div1", 3: "div2"}
 
 @app.get("/navigate/{philo_db}")
 def navigate(
-    philo_db: str, philo_id: str, direction: str, pairid: Optional[str] = None, intertextual: Optional[bool] = None,
+    philo_db: str,
+    philo_id: str,
+    direction: Optional[str] = None,
+    pairid: Optional[str] = None,
+    intertextual: Optional[bool] = None,
+    byte: Optional[str] = None,
 ):
     text_object_id: List[str] = philo_id.split()
     if pairid is not None:
@@ -70,6 +75,22 @@ def navigate(
             "intertextual_metadata": metadata_list,
             "doc_metadata": doc_metadata,
             "docs_cited": docs_cited,
+        }
+    else:
+        philologic_response = requests.post(
+            f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py",
+            params={"philo_id": " ".join(text_object_id), "byte": byte},
+        )
+        philo_text_object = philologic_response.json()
+        return {
+            "text": philo_text_object["text"],
+            "doc_metadata": {
+                f"{direction}_philo_db": philo_db,
+                f"{direction}_philo_id": " ".join(text_object_id),
+                f"{direction}_date": philo_text_object["metadata_fields"]["year"],
+                **{f"{direction}_{field}": value for field, value in philo_text_object["metadata_fields"].items()},
+            },
+            "intertextual_metadata": [],
         }
 
 

@@ -35,6 +35,83 @@
             </ul>
         </div>
         <hr class="my-4 pb-2" style="width:50%; color:#ddd" />
+        <b-row id="toc-wrapper" class="text-center mt-4" v-if="loading === false">
+            <div id="toc-top-bar">
+                <div id="nav-buttons" v-scroll="handleScroll">
+                    <b-button id="back-to-top" size="sm" @click="backToTop()">
+                        <span class="d-xs-none d-sm-inline-block">Back to top</span>
+                        <span class="d-xs-inline-block d-sm-none">Top</span>
+                    </b-button>
+                    <b-button-group size="sm" style="pointer-events: all">
+                        <b-button
+                            disabled="disabled"
+                            id="prev-obj"
+                            variant="primary"
+                            @click="goToTextObject(textObject.prev)"
+                        >&lt;</b-button>
+                        <b-button
+                            id="show-toc"
+                            disabled="disabled"
+                            variant="primary"
+                            @click="toggleTableOfContents()"
+                        >Table of contents</b-button>
+                        <b-button
+                            disabled="disabled"
+                            id="next-obj"
+                            variant="primary"
+                            @click="goToTextObject(textObject.next)"
+                        >&gt;</b-button>
+                    </b-button-group>
+                </div>
+                <div id="toc">
+                    <div id="toc-titlebar" class="d-none">
+                        <b-button id="hide-toc" @click="toggleTableOfContents()">X</b-button>
+                    </div>
+                    <transition name="slide-fade">
+                        <b-card
+                            no-body
+                            id="toc-content"
+                            class="p-3 shadow"
+                            :style="tocHeight"
+                            :scroll-to="tocPosition"
+                            v-if="tocOpen"
+                        >
+                            <div class="toc-more before" v-if="start !== 0">
+                                <b-button size="sm" variant="primary" @click="loadBefore()"></b-button>
+                            </div>
+                            <div
+                                v-for="(element, tocIndex) in tocElementsToDisplay"
+                                :key="tocIndex"
+                            >
+                                <div
+                                    :id="element.philo_id"
+                                    :class="'toc-' + element.philo_type"
+                                    @click="textObjectSelection(element.philo_id, tocIndex)"
+                                >
+                                    <span :class="'bullet-point-' + element.philo_type"></span>
+                                    <a
+                                        :class="{ 'current-obj': element.philo_id === currentPhiloId }"
+                                        href
+                                    >
+                                        {{
+                                        element.label
+                                        }}
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="toc-more after" v-if="end < tocElements.length">
+                                <b-button
+                                    type="button"
+                                    size="sm"
+                                    variant="primary"
+                                    @click="loadAfter()"
+                                ></b-button>
+                            </div>
+                        </b-card>
+                    </transition>
+                </div>
+            </div>
+        </b-row>
         <b-card-text>
             <div id="main-text" class="text" v-html="text"></div>
         </b-card-text>
@@ -101,6 +178,7 @@
 <script>
 import PassagePair from "./PassagePair.vue";
 import Citations from "./Citations.vue";
+import Gallery from "blueimp-gallery";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light-border.css";
@@ -127,6 +205,26 @@ export default {
             reload: false,
             tippyInstances: [],
             docsCited: [],
+            beforeObjImgs: [],
+            afterObjImgs: [],
+            beforeGraphicsImgs: [],
+            afterGraphicsImgs: [],
+            navbar: null,
+            loading: false,
+            tocOpen: false,
+            done: false,
+            authorized: true,
+            textObjectURL: "",
+            philoID: "",
+            highlight: false,
+            start: 0,
+            end: 0,
+            tocPosition: 0,
+            navButtonPosition: 0,
+            navBarVisible: false,
+            timeToRender: 0,
+            gallery: null,
+            tocElements: [],
         };
     },
     computed: {
@@ -140,6 +238,15 @@ export default {
         intertextual: function () {
             return this.$route.query.intertextual;
         },
+        philoUrl: function () {
+            return this.$appConfig.philoDBs[this.$route.params.philoDb].url;
+        },
+        tocElementsToDisplay: function () {
+            return this.tocElements.elements.slice(this.start, this.end);
+        },
+        tocHeight() {
+            return `max-height: ${window.innerHeight - 200}`;
+        },
     },
     watch: {
         $route: "fetchPassage",
@@ -147,6 +254,11 @@ export default {
     },
     created() {
         this.fetchPassage();
+        this.fetchToC();
+    },
+    mounted() {
+        let tocButton = document.querySelector("#show-toc");
+        this.navButtonPosition = tocButton.getBoundingClientRect().top;
     },
     updated() {
         this.updateInit();
@@ -184,6 +296,7 @@ export default {
                             pairid: this.$route.query.pairid,
                             direction: this.direction,
                             intertextual: this.$route.query.intertextual,
+                            byte: this.$route.query.byte,
                         },
                     }
                 )
@@ -296,6 +409,7 @@ export default {
         },
         updateInit() {
             let firstPassage = document.querySelector(".passage-marker");
+            let wordHighlight = document.querySelector(".highlight");
             if (!this.alreadyScrolled && firstPassage != null) {
                 this.$nextTick(() => {
                     this.$scrollTo(
@@ -328,12 +442,377 @@ export default {
                     }
                 });
                 this.alreadyScrolled = true;
+            } else if (wordHighlight) {
+                this.$nextTick(() => {
+                    this.$scrollTo(wordHighlight, 1000, {
+                        easing: "ease-out",
+                        offset: -150,
+                    });
+                });
+            }
+        },
+        insertPageLinks(imgObj) {
+            let currentObjImgs = imgObj.current_obj_img;
+            let allImgs = imgObj.all_imgs;
+            this.beforeObjImgs = [];
+            this.afterObjImgs = [];
+            if (currentObjImgs.length > 0) {
+                let beforeIndex = 0;
+                for (let i = 0; i < allImgs.length; i++) {
+                    let img = allImgs[i];
+                    if (currentObjImgs.indexOf(img[0]) === -1) {
+                        if (img.length == 2) {
+                            this.beforeObjImgs.push([
+                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
+                                `${this.philoConfig.page_images_url_root}/${img[1]}`,
+                            ]);
+                        } else {
+                            this.beforeObjImgs.push([
+                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
+                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
+                            ]);
+                        }
+                    } else {
+                        beforeIndex = i;
+                        break;
+                    }
+                }
+                for (let i = beforeIndex; i < allImgs.length; i++) {
+                    let img = allImgs[i];
+                    if (currentObjImgs.indexOf(img[0]) === -1) {
+                        if (img.length == 2) {
+                            this.afterObjImgs.push([
+                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
+                                `${this.philoConfig.page_images_url_root}/${img[1]}`,
+                            ]);
+                        } else {
+                            this.afterObjImgs.push([
+                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
+                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
+                            ]);
+                        }
+                    }
+                }
+            }
+        },
+        insertInlineImgs(imgObj) {
+            var currentObjImgs = imgObj.current_graphic_img;
+            var allImgs = imgObj.graphics;
+            var img;
+            this.beforeGraphicsImgs = [];
+            this.afterGraphicsImgs = [];
+            if (currentObjImgs.length > 0) {
+                var beforeIndex = 0;
+                for (let i = 0; i < allImgs.length; i++) {
+                    img = allImgs[i];
+                    if (currentObjImgs.indexOf(img[0]) === -1) {
+                        if (img.length == 2) {
+                            this.beforeGraphicsImgs.push([
+                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
+                                `${this.philoConfig.page_images_url_root}/${img[1]}`,
+                            ]);
+                        } else {
+                            this.beforeGraphicsImgs.push([
+                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
+                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
+                            ]);
+                        }
+                    } else {
+                        beforeIndex = i;
+                        break;
+                    }
+                }
+                for (let i = beforeIndex; i < allImgs.length; i++) {
+                    img = allImgs[i];
+                    if (currentObjImgs.indexOf(img[0]) === -1) {
+                        if (img.length == 2) {
+                            this.afterGraphicsImgs.push([
+                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
+                                `${this.philoConfig.page_images_url_root}/${img[1]}`,
+                            ]);
+                        } else {
+                            this.afterGraphicsImgs.push([
+                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
+                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
+                            ]);
+                        }
+                    }
+                }
+            }
+        },
+        fetchToC() {
+            this.tocPosition = "";
+            var philoId = this.$route.params.doc.split("/").join(" ");
+            let docId = philoId.split(" ")[0];
+            this.currentPhiloId = philoId;
+            if (docId !== this.tocElements.docId) {
+                this.$http
+                    .get(`${this.philoUrl}/scripts/get_table_of_contents.py`, {
+                        params: {
+                            philo_id: this.currentPhiloId,
+                        },
+                    })
+                    .then((response) => {
+                        let tocElements = response.data.toc;
+                        this.start = response.data.current_obj_position - 100;
+                        if (this.start < 0) {
+                            this.start = 0;
+                        }
+                        this.end = response.data.current_obj_position + 100;
+                        this.tocElements = {
+                            docId: philoId.split(" ")[0],
+                            elements: tocElements,
+                            start: this.start,
+                            end: this.end,
+                        };
+                        let tocButton = document.querySelector("#show-toc");
+                        tocButton.removeAttribute("disabled");
+                        tocButton.classList.remove("disabled");
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
+            } else {
+                this.start = this.tocElements.start;
+                this.end = this.tocElements.end;
+                this.$nextTick(function () {
+                    let tocButton = document.querySelector("#show-toc");
+                    tocButton.removeAttribute("disabled");
+                    tocButton.classList.remove("disabled");
+                });
+            }
+        },
+        setUpGallery() {
+            // Image Gallery handling
+            for (let imageType of [
+                "page-image-link",
+                "inline-img",
+                "external-img",
+            ]) {
+                Array.from(document.getElementsByClassName(imageType)).forEach(
+                    (item) => {
+                        item.addEventListener("click", (event) => {
+                            event.preventDefault();
+                            let target = event.srcElement;
+                            this.gallery = Gallery(
+                                [
+                                    ...document.getElementsByClassName(
+                                        imageType
+                                    ),
+                                ].map(
+                                    (item) =>
+                                        item.getAttribute("href") ||
+                                        item.getAttribute("src")
+                                ),
+                                {
+                                    index: Array.from(
+                                        document.getElementsByClassName(
+                                            imageType
+                                        )
+                                    ).indexOf(target),
+                                    continuous: false,
+                                    thumbnailIndicators: false,
+                                }
+                            );
+                        });
+                    }
+                );
+                document
+                    .getElementById("full-size-image")
+                    .addEventListener("click", () => {
+                        let imageIndex = this.gallery.getIndex();
+                        let img = Array.from(
+                            document.getElementsByClassName(imageType)
+                        )[imageIndex].getAttribute("large-img");
+                        window.open(img);
+                    });
+            }
+        },
+        loadBefore() {
+            var firstElement = this.tocElements[this.start - 2].philo_id;
+            this.start -= 200;
+            if (this.start < 0) {
+                this.start = 0;
+            }
+            this.tocPosition = firstElement;
+        },
+        loadAfter() {
+            this.end += 200;
+        },
+        toggleTableOfContents() {
+            if (this.tocOpen) {
+                this.tocOpen = false;
+            } else {
+                this.tocOpen = true;
+                this.$nextTick(() => {
+                    this.$scrollTo(
+                        document.querySelector(".current-obj"),
+                        500,
+                        {
+                            container: document.querySelector("#toc-content"),
+                        }
+                    );
+                });
+            }
+        },
+        backToTop() {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        },
+        goToTextObject(philoID) {
+            philoID = philoID.split(/[- ]/).join("/");
+            if (this.tocOpen) {
+                this.tocOpen = false;
+            }
+            this.$router.push({ path: `/navigate/${philoID}` });
+        },
+        textObjectSelection(philoId, index) {
+            event.preventDefault();
+            let newStart = this.tocElements.start + index - 100;
+            if (newStart < 0) {
+                newStart = 0;
+            }
+            this.tocElements = {
+                ...this.tocElements,
+                start: newStart,
+                end: this.tocElements.end - index + 100,
+            };
+            this.goToTextObject(philoId);
+        },
+        setUpNavBar() {
+            let prevButton = document.querySelector("#prev-obj");
+            let nextButton = document.querySelector("#next-obj");
+            if (
+                this.textObject.next === "" ||
+                typeof this.textObject.next === "undefined"
+            ) {
+                nextButton.classList.add("disabled");
+            } else {
+                nextButton.removeAttribute("disabled");
+                nextButton.classList.remove("disabled");
+            }
+            if (
+                this.textObject.prev === "" ||
+                typeof this.textObject.prev === "undefined"
+            ) {
+                prevButton.classList.add("disabled");
+            } else {
+                prevButton.removeAttribute("disabled");
+                prevButton.classList.remove("disabled");
+            }
+        },
+        handleScroll() {
+            if (!this.navBarVisible) {
+                if (window.scrollY > this.navButtonPosition) {
+                    this.navBarVisible = true;
+                    let topBar = document.getElementById("toc-top-bar");
+                    topBar.style.top = 0;
+                    topBar.classList.add("visible", "shadow");
+                    let tocWrapper = document.getElementById("toc-wrapper");
+                    tocWrapper.style.top = "31px";
+                    let navButtons = document.getElementById("nav-buttons");
+                    navButtons.classList.add("visible");
+                    let backToTop = document.getElementById("back-to-top");
+                    backToTop.classList.add("visible");
+                    let reportError = document.getElementById("report-error");
+                    if (reportError != null) {
+                        reportError.classList.add("visible");
+                    }
+                }
+            } else if (window.scrollY < this.navButtonPosition) {
+                this.navBarVisible = false;
+                let topBar = document.getElementById("toc-top-bar");
+                topBar.style.top = "initial";
+                topBar.classList.remove("visible", "shadow");
+                let tocWrapper = document.getElementById("toc-wrapper");
+                tocWrapper.style.top = "0px";
+                let navButtons = document.getElementById("nav-buttons");
+                navButtons.style.top = "initial";
+                navButtons.classList.remove("visible");
+                let backToTop = document.getElementById("back-to-top");
+                backToTop.classList.remove("visible");
+                let reportError = document.getElementById("report-error");
+                if (reportError != null) {
+                    reportError.classList.remove("visible");
+                }
+            }
+        },
+        dicoLookup(event, year) {
+            if (event.key === "d") {
+                let selection = window.getSelection().toString();
+                let century = parseInt(year.slice(0, year.length - 2));
+                let range = `${century.toString()}00-${String(century + 1)}00`;
+                if (range == "NaN00-NaN00") {
+                    range = "";
+                }
+                let link = `${this.philoConfig.dictionary_lookup}?docyear=${range}&strippedhw=${selection}`;
+                window.open(link);
             }
         },
     },
 };
 </script>
 <style scoped>
+.separator {
+    padding: 5px;
+    font-size: 60%;
+    display: inline-block;
+    vertical-align: middle;
+}
+#toc-content {
+    display: inline-block;
+    position: relative;
+    max-height: 30vh;
+    overflow: scroll;
+    text-align: justify;
+    line-height: 180%;
+    z-index: 50;
+    background: #fff;
+}
+#toc-wrapper {
+    position: relative;
+    z-index: 49;
+    pointer-events: all;
+}
+#toc-top-bar {
+    height: 31px;
+    width: 100%;
+    left: 0;
+    pointer-events: none;
+}
+#toc {
+    margin-top: 31px;
+    pointer-events: all;
+}
+#toc-top-bar.visible {
+    position: fixed;
+}
+#nav-buttons.visible {
+    position: fixed;
+    backdrop-filter: blur(0.5rem);
+    background-color: rgba(255, 255, 255, 0.3);
+    pointer-events: all;
+}
+#nav-buttons {
+    position: absolute;
+    opacity: 0.9;
+    width: 100%;
+}
+#toc-nav-bar {
+    background-color: #ddd;
+    opacity: 0.95;
+    backdrop-filter: blur(5px) contrast(0.8);
+}
+a.current-obj,
+#toc-container a:hover {
+    background: #e8e8e8;
+}
+#back-to-top {
+    position: absolute;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.25s;
+    pointer-events: none;
+}
 #direction-toggle {
     position: absolute;
     top: 0;
@@ -386,7 +865,7 @@ export default {
     margin-bottom: 0.5rem;
 }
 ::v-deep .highlight {
-    background-color: red;
+    background-color: indianred;
     color: #fff;
 }
 /* Styling for theater */
