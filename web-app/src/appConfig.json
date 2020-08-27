@@ -111,7 +111,7 @@
         }
     ],
     "topologic": {
-        "dbname": "combo2",
+        "dbname": "combo300",
         "api": "https://anomander.uchicago.edu/topologic-api/"
     },
     "groupByLevels": {

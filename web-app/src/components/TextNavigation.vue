@@ -30,6 +30,7 @@
                         v-if="doc.doc_metadata[`${doc.direction}_author`]"
                     >{{doc.doc_metadata[`${doc.direction}_author`]}}&nbsp;&#9679;&nbsp;</span>
                     <i>{{doc.doc_metadata[`${doc.direction}_title`]}}</i>
+                    {{doc.doc_metadata[`${doc.direction}_date`]}}
                 </li>
             </ul>
         </div>

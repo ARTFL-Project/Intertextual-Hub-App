@@ -7,7 +7,7 @@
         </h5>
         <b-row>
             <b-col cols="3">
-                <b-card no-body class="shadow-sm" header="Top 50 Tokens">
+                <b-card no-body class="shadow-sm" header="Top Tokens">
                     <b-list-group flush>
                         <b-list-group-item>
                             <router-link
@@ -121,7 +121,6 @@
     </div>
 </template>
 <script>
-import topicData from "../../topic_words.json";
 import Citations from "./Citations";
 import { EventBus } from "../main.js";
 
@@ -133,8 +132,8 @@ export default {
     data() {
         return {
             timeSeriesConfig: null,
+            topicData: null,
             year_interval: 0,
-            topicData: topicData,
             wordDistributionLabels: [],
             documents: [],
             similarTopics: [],
@@ -150,6 +149,13 @@ export default {
                     },
                     events: {
                         click: this.goToYear,
+                    },
+                    animations: {
+                        speed: 250,
+                        animateGradually: {
+                            enabled: true,
+                            delay: 10,
+                        },
                     },
                 },
                 xaxis: {
@@ -200,6 +206,9 @@ export default {
                     },
                     events: {
                         click: this.goToWord,
+                    },
+                    animations: {
+                        enabled: false,
                     },
                 },
                 plotOptions: {
@@ -268,6 +277,9 @@ export default {
                     toolbar: {
                         show: false,
                     },
+                    animations: {
+                        enabled: false,
+                    },
                 },
                 yaxis: {
                     labels: {
@@ -330,6 +342,7 @@ export default {
                         response.data.appConfig.timeSeriesConfig;
                     this.year_interval =
                         response.data.topics_over_time_interval;
+                    this.topicData = response.data.topics_words;
                     this.$http
                         .get(
                             `${this.$appConfig.topologic.api}/get_topic_data/${this.$appConfig.topologic.dbname}/${this.$route.params.topic}`
@@ -480,7 +493,6 @@ export default {
             this.wordDistributionSeries[0].data = this.formatWordDistribution(
                 wordDistribution.data
             );
-            this.wordDistributionLabels = wordDistribution.labels;
         },
         buildTopicEvolution(topicEvolution, startIndex, endIndex) {
             topicEvolution.data = topicEvolution.data.slice(

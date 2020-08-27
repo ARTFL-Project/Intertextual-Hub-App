@@ -3,7 +3,9 @@ from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 import aligner
 import search
+from words import get_word_evolution
 from typing import List, Optional, Dict
+
 
 app = FastAPI()
 
@@ -137,3 +139,9 @@ def search_texts(request: Request):
     else:
         results, doc_count = search.metadata_search(author, title, start_date, end_date, collections, periods)
     return {"results": results, "doc_count": doc_count}
+
+
+@app.get("/get_word_vectors/{word}")
+def get_word_vectors(word: str):
+    word_evolution = get_word_evolution(word)
+    return word_evolution

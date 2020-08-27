@@ -11,20 +11,24 @@ nav.navbar {
     background-color: $yellow !important;
 }
 
-.nav-tabs {
+#main-tabs .nav-tabs {
     border-bottom-width: 0 !important;
 }
 
 $nav-tabs-border-radius: 0;
-.nav-link {
+#main-tabs .nav-link {
     background-color: $button-primary-color;
     color: #fff !important;
 }
 
-.nav-tabs .nav-link.active {
+#main-tabs .nav-tabs .nav-link.active {
     color: $link-color !important;
     background-color: #fff !important;
     border-width: 0 !important;
+}
+
+a:not([href]) {
+    color: $link-color !important;
 }
 
 // $secondary: $button-color;

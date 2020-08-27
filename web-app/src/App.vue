@@ -5,8 +5,8 @@
                 <b-navbar-brand to="/">Intertextual Hub</b-navbar-brand>
             </b-navbar-nav>
         </b-navbar>
-        <b-container fluid class="mt-4">
-            <b-tabs fill class="shadow-sm">
+        <b-container fluid>
+            <b-tabs fill id="main-tabs" class="shadow-sm">
                 <b-tab
                     :active="activeTab == 'intro'"
                     title="Intro to the HUB"
