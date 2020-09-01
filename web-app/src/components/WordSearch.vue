@@ -19,13 +19,19 @@ export default {
     name: "WordSearch",
     data() {
         return {
-            word: "",
+            word: this.$route.params.word || "",
         };
     },
     mounted() {
         if ("word" in this.$route.query) {
             this.word = this.$route.query.word;
         }
+    },
+    watch: {
+        // call again the method if the route changes
+        $route: function () {
+            this.word = this.$route.params.word || "";
+        },
     },
     methods: {
         search() {

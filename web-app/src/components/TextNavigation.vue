@@ -1,19 +1,5 @@
 <template>
     <b-card class="shadow mt-4">
-        <div id="direction-toggle">
-            <b-form-group v-if="intertextual">
-                <b-form-radio
-                    v-model="direction"
-                    name="direction"
-                    value="target"
-                >View reuses from earlier texts</b-form-radio>
-                <b-form-radio
-                    v-model="direction"
-                    name="direction"
-                    value="source"
-                >View reuses in later texts</b-form-radio>
-            </b-form-group>
-        </div>
         <h5 class="text-center mb-4">
             <citations
                 :docPair="docMetadata"
@@ -22,18 +8,44 @@
                 v-if="docMetadata"
             ></citations>
         </h5>
-        <div v-if="docsCited">
-            <h6 class="pt-4">Reuses from these documents:</h6>
-            <ul style="padding-inline-start: 2rem">
-                <li v-for="(doc, docIndex) in docsCited" :key="docIndex">
-                    <span
-                        v-if="doc.doc_metadata[`${doc.direction}_author`]"
-                    >{{doc.doc_metadata[`${doc.direction}_author`]}}&nbsp;&#9679;&nbsp;</span>
-                    <i>{{doc.doc_metadata[`${doc.direction}_title`]}}</i>
-                    {{doc.doc_metadata[`${doc.direction}_date`]}}
-                </li>
-            </ul>
-        </div>
+        <b-tabs>
+            <b-tab title="Similar documents" :active="!intertextual">
+                <h6
+                    class="p-2"
+                    v-if="similarDocs.length>0"
+                >These documents were found to use similar vocabulary:</h6>
+                <h6 class="p-2" v-else>No similar docs were found.</h6>
+            </b-tab>
+            <b-tab title="Text reuses" :active="intertextual == 'true'">
+                <div id="direction-toggle">
+                    <b-form-group @change.native="toggleDirection">
+                        <b-form-radio
+                            v-model="direction"
+                            name="direction"
+                            value="target"
+                        >View reuses from earlier texts</b-form-radio>
+                        <b-form-radio
+                            v-model="direction"
+                            name="direction"
+                            value="source"
+                        >View reuses in later texts</b-form-radio>
+                    </b-form-group>
+                </div>
+                <div v-if="docsCited">
+                    <h6 class="pt-4">Reuses from these documents:</h6>
+                    <ul style="padding-inline-start: 2rem">
+                        <li v-for="(doc, docIndex) in docsCited" :key="docIndex">
+                            <span
+                                v-if="doc.doc_metadata[`${doc.direction}_author`]"
+                            >{{doc.doc_metadata[`${doc.direction}_author`]}}&nbsp;&#9679;&nbsp;</span>
+                            <i>{{doc.doc_metadata[`${doc.direction}_title`]}}</i>
+                            {{doc.doc_metadata[`${doc.direction}_date`]}}
+                        </li>
+                    </ul>
+                </div>
+                <div class="p-2" v-else>No reuses were found.</div>
+            </b-tab>
+        </b-tabs>
         <hr class="my-4 pb-2" style="width:50%; color:#ddd" />
         <b-row id="toc-wrapper" class="text-center mt-4" v-if="loading === false">
             <div id="toc-top-bar">
@@ -47,7 +59,7 @@
                             disabled="disabled"
                             id="prev-obj"
                             variant="primary"
-                            @click="goToTextObject(textObject.prev)"
+                            @click="goToTextObject(prev)"
                         >&lt;</b-button>
                         <b-button
                             id="show-toc"
@@ -59,7 +71,7 @@
                             disabled="disabled"
                             id="next-obj"
                             variant="primary"
-                            @click="goToTextObject(textObject.next)"
+                            @click="goToTextObject(next)"
                         >&gt;</b-button>
                     </b-button-group>
                 </div>
@@ -112,7 +124,7 @@
                 </div>
             </div>
         </b-row>
-        <b-card-text>
+        <b-card-text class="mt-4">
             <div id="main-text" class="text" v-html="text"></div>
         </b-card-text>
         <b-modal
@@ -225,10 +237,14 @@ export default {
             timeToRender: 0,
             gallery: null,
             tocElements: [],
+            prev: null,
+            next: null,
+            similarDocs: [],
         };
     },
     computed: {
         dbPrefix: function () {
+            console.log(this.direction);
             if (this.direction) {
                 return `${this.direction}_`;
             } else {
@@ -250,7 +266,6 @@ export default {
     },
     watch: {
         $route: "fetchPassage",
-        direction: "toggleDirection",
     },
     created() {
         this.fetchPassage();
@@ -258,7 +273,9 @@ export default {
     },
     mounted() {
         let tocButton = document.querySelector("#show-toc");
-        this.navButtonPosition = tocButton.getBoundingClientRect().top;
+        this.$nextTick(() => {
+            this.navButtonPosition = tocButton.getBoundingClientRect().top;
+        });
     },
     updated() {
         this.updateInit();
@@ -281,7 +298,6 @@ export default {
     methods: {
         fetchPassage() {
             console.log(this.$route.params, this.$route.query);
-            this.direction = this.$route.query.direction;
             this.text = null;
             this.docMetadata = null;
             this.alreadyScrolled = false;
@@ -294,7 +310,7 @@ export default {
                         params: {
                             philo_id: philoId,
                             pairid: this.$route.query.pairid,
-                            direction: this.direction,
+                            direction: this.$route.query.direction,
                             intertextual: this.$route.query.intertextual,
                             byte: this.$route.query.byte,
                         },
@@ -302,12 +318,26 @@ export default {
                 )
                 .then((response) => {
                     this.text = response.data.text;
-                    this.philoDb =
-                        response.data.doc_metadata[`${this.dbPrefix}philo_db`];
+                    this.direction = this.$route.query.direction;
+                    if (this.$route.query.direction) {
+                        this.philoDb =
+                            response.data.doc_metadata[
+                                `${this.dbPrefix}philo_db`
+                            ];
+                    } else {
+                        this.philoDb = response.data.doc_metadata.philo_db;
+                    }
                     this.docMetadata = response.data.doc_metadata;
                     this.intertextualMetadata =
                         response.data.intertextual_metadata;
                     this.docsCited = response.data.docs_cited;
+                    if (!this.deepEqual(response.data.imgs, {})) {
+                        this.insertPageLinks(response.data.imgs);
+                        this.insertInlineImgs(response.data.imgs);
+                    }
+                    this.prev = response.data.prev;
+                    this.next = response.data.next;
+                    this.setUpNavBar();
                     if (this.reload) {
                         this.$nextTick(() => {
                             this.updateInit();
@@ -400,12 +430,10 @@ export default {
                 });
         },
         toggleDirection() {
-            if (this.$route.query.intertextual == "true") {
-                this.reload = true;
-                this.$router.push(
-                    `/navigate/${this.philoDb}/${this.$route.params.doc}?intertextual=true&direction=${this.direction}`
-                );
-            }
+            this.reload = true;
+            this.$router.push(
+                `/navigate/${this.philoDb}/${this.$route.params.doc}?intertextual=true&direction=${this.direction}`
+            );
         },
         updateInit() {
             let firstPassage = document.querySelector(".passage-marker");
@@ -663,7 +691,11 @@ export default {
             if (this.tocOpen) {
                 this.tocOpen = false;
             }
-            this.$router.push({ path: `/navigate/${philoID}` });
+            console.log(`/navigate/${this.philoDb}/${philoID}`);
+            this.$router.push({
+                path: `/navigate/${this.philoDb}/${philoID}`,
+                params: {},
+            });
         },
         textObjectSelection(philoId, index) {
             event.preventDefault();
@@ -681,19 +713,13 @@ export default {
         setUpNavBar() {
             let prevButton = document.querySelector("#prev-obj");
             let nextButton = document.querySelector("#next-obj");
-            if (
-                this.textObject.next === "" ||
-                typeof this.textObject.next === "undefined"
-            ) {
+            if (!this.next) {
                 nextButton.classList.add("disabled");
             } else {
                 nextButton.removeAttribute("disabled");
                 nextButton.classList.remove("disabled");
             }
-            if (
-                this.textObject.prev === "" ||
-                typeof this.textObject.prev === "undefined"
-            ) {
+            if (!this.prev) {
                 prevButton.classList.add("disabled");
             } else {
                 prevButton.removeAttribute("disabled");
@@ -752,6 +778,21 @@ export default {
 };
 </script>
 <style scoped>
+::v-deep .nav-tabs {
+    border-bottom-width: 0;
+}
+::v-deep .nav-link {
+    background-color: rgba(230, 230, 230, 0.6) !important;
+    border-bottom: 1px solid #dee2e6;
+    color: rgba(0, 0, 0, 0.6) !important;
+    transition: all 250ms;
+}
+
+::v-deep .nav-link.active {
+    background-color: rgba(230, 230, 230, 0.2) !important;
+    border-bottom-color: transparent !important;
+    color: rgb(0, 0, 0) !important;
+}
 .separator {
     padding: 5px;
     font-size: 60%;
@@ -814,11 +855,11 @@ a.current-obj,
     pointer-events: none;
 }
 #direction-toggle {
-    position: absolute;
+    /* position: absolute;
     top: 0;
-    left: 0;
+    left: 0; */
+    display: inline-block;
     padding: 0.5rem;
-    border: solid 1px #ddd;
 }
 #direction-toggle fieldset {
     margin-bottom: 0;

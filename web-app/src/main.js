@@ -50,6 +50,15 @@ Vue.mixin({
         copyObject: function(objectToCopy) {
             return JSON.parse(JSON.stringify(objectToCopy));
         },
+        deepEqual: function(x, y) {
+            const ok = Object.keys,
+                tx = typeof x,
+                ty = typeof y;
+            return x && y && tx === 'object' && tx === ty ? (
+                ok(x).length === ok(y).length &&
+                ok(x).every(key => this.deepEqual(x[key], y[key]))
+            ) : (x === y);
+        },
     },
 });
 

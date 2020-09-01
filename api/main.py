@@ -40,6 +40,9 @@ def navigate(
         philo_text_object = philologic_response.json()
         return {
             "text": philo_text_object["text"],
+            "prev": philo_text_object["prev"],
+            "next": philo_text_object["next"],
+            "imgs": philo_text_object["imgs"],
             "intertextual_metadata": [[passage_data["metadata"]] for _ in passage_data["metadata"]["passages"]],
             "doc_metadata": {
                 field: value for field, value in passage_data["metadata"].items() if field.startswith(direction)
@@ -56,6 +59,9 @@ def navigate(
             philo_text_object = philologic_response.json()
             return {
                 "text": philo_text_object["text"],
+                "prev": philo_text_object["prev"],
+                "next": philo_text_object["next"],
+                "imgs": philo_text_object["imgs"],
                 "doc_metadata": {
                     f"{direction}_philo_db": philo_db,
                     f"{direction}_philo_id": " ".join(text_object_id),
@@ -72,6 +78,9 @@ def navigate(
         philo_text_object = philologic_response.json()
         return {
             "text": philo_text_object["text"],
+            "prev": philo_text_object["prev"],
+            "next": philo_text_object["next"],
+            "imgs": philo_text_object["imgs"],
             "intertextual_metadata": metadata_list,
             "doc_metadata": doc_metadata,
             "docs_cited": docs_cited,
@@ -82,13 +91,20 @@ def navigate(
             params={"philo_id": " ".join(text_object_id), "byte": byte},
         )
         philo_text_object = philologic_response.json()
+        if direction is not None:
+            prefix = f"{direction}_"
+        else:
+            prefix = ""
         return {
             "text": philo_text_object["text"],
+            "prev": philo_text_object["prev"],
+            "imgs": philo_text_object["imgs"],
+            "next": philo_text_object["next"],
             "doc_metadata": {
-                f"{direction}_philo_db": philo_db,
-                f"{direction}_philo_id": " ".join(text_object_id),
-                f"{direction}_date": philo_text_object["metadata_fields"]["year"],
-                **{f"{direction}_{field}": value for field, value in philo_text_object["metadata_fields"].items()},
+                f"{prefix}philo_db": philo_db,
+                f"{prefix}philo_id": " ".join(text_object_id),
+                f"{prefix}date": philo_text_object["metadata_fields"]["year"],
+                **{f"{prefix}{field}": value for field, value in philo_text_object["metadata_fields"].items()},
             },
             "intertextual_metadata": [],
         }
@@ -164,5 +180,5 @@ def search_texts(request: Request):
 
 @app.get("/get_word_vectors/{word}")
 def get_word_vectors(word: str):
-    word_evolution = get_word_evolution(word)
-    return word_evolution
+    word_evolution, word_movers, overall_movers = get_word_evolution(word)
+    return {"evolution": word_evolution, "movers": word_movers, "overall_movers": overall_movers}

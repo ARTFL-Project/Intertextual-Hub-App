@@ -1,5 +1,5 @@
 <template>
-    <b-container fluid class="mt-4">
+    <b-container fluid class="my-4">
         <div v-if="noResults">
             <h6>
                 This document does not have enough words from which to derive a topic distribution.
@@ -78,12 +78,12 @@
                     <b-card
                         no-body
                         :header="
-                        `Top ${topicSimDocs.length} documents with most similar topic distribution`
+                        `Top ${topicSimDocs.slice(0,20).length} documents with most similar topic distribution`
                     "
                     >
                         <b-list-group flush>
                             <b-list-group-item
-                                v-for="doc in topicSimDocs"
+                                v-for="doc in topicSimDocs.slice(0,20)"
                                 :key="doc.doc_id"
                                 class="list-group-item"
                                 style="border-radius: 0px; border-width: 1px 0px"

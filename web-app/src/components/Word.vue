@@ -1,5 +1,5 @@
 <template>
-    <b-container fluid class="mt-4">
+    <div class="my-4">
         <b-tabs justified content-class="mt-3">
             <b-tab active>
                 <template v-slot:title>
@@ -138,43 +138,124 @@
                         <b>{{word}}</b> over time
                     </span>
                 </template>
-                <b-row class="mt-4" v-if="wordEvolution">
-                    <b-col cols="6" v-for="(decadeObj, decade) in wordEvolution" :key="decade">
-                        <b-card class="mb-3 shadow-sm" no-body>
-                            <template v-slot:header>
-                                <h5 class="mb-0 text-center">{{decade}}-{{parseInt(decade) +10}}</h5>
-                            </template>
-                            <div
-                                style="display: flex; height: 100%; justify-content: center; align-items: center;"
-                                class="card-text"
-                            >
-                                <div class="p-3">
-                                    <span
-                                        v-for="weightedWord in decadeObj"
-                                        :key="weightedWord.word"
-                                    >
-                                        <a
-                                            :id="`${weightedWord.word}-${decade}`"
-                                            :style="
-                                        `display:inline-block; padding: 5px; cursor: pointer; font-size: ${1 +
-                                            weightedWord.size}rem; color: ${
-                                            weightedWord.color
-                                        } !important`
-                                    "
-                                        >{{ weightedWord.word }}</a>
-                                        <word-link
-                                            :target="`${weightedWord.word}-${decade}`"
-                                            :word="weightedWord.word"
-                                        ></word-link>
-                                    </span>
-                                </div>
-                            </div>
-                        </b-card>
+                <b-row class="mt-4" no-gutters align-h="center" v-if="wordMovers">
+                    <b-col cols="2" offset-md="4" align-self="center">
+                        <h4 class="pl-3">Overall evolution:</h4>
+                    </b-col>
+                    <b-col cols="6">
+                        <h5>
+                            <a :id="`${wordMovers.max_up}-overall`">
+                                <b>&nearr;</b>
+                                {{ wordMovers.max_up }}
+                            </a>
+                            <word-link
+                                :target="`${wordMovers.max_up}-overall`"
+                                :word="wordMovers.max_up"
+                            ></word-link>moved up the most
+                        </h5>
+                        <h5>
+                            <a :id="`${wordMovers.max_down}-overall`">
+                                <b>&searr;</b>
+                                {{ wordMovers.max_down }}
+                            </a>
+                            <word-link
+                                :target="`${wordMovers.max_down}-overall`"
+                                :word="wordMovers.max_down"
+                            ></word-link>moved down the most
+                        </h5>
                     </b-col>
                 </b-row>
+                <div class="mt-4" v-if="periodPairs">
+                    <b-row
+                        v-for="periodPair in periodPairs"
+                        :key="`${periodPair.start.period}-${word}`"
+                    >
+                        <b-col cols="5">
+                            <b-card class="mb-3 shadow-sm" no-body>
+                                <template v-slot:header>
+                                    <h5
+                                        class="mb-0 text-center"
+                                    >{{periodPair.start.period}}-{{parseInt(periodPair.start.period) + 24}}</h5>
+                                </template>
+                                <div class="card-text word-cloud">
+                                    <div class="p-2">
+                                        <span
+                                            v-for="weightedWord in periodPair.start.words"
+                                            :key="weightedWord.word"
+                                        >
+                                            <a
+                                                :id="`${weightedWord.word}-${periodPair.start.period}`"
+                                                :style="`font-size: ${1 + weightedWord.size}rem; color: ${weightedWord.color} !important`"
+                                            >{{ weightedWord.word }}</a>
+                                            <word-link
+                                                :target="`${weightedWord.word}-${periodPair.start.period}`"
+                                                :word="weightedWord.word"
+                                            ></word-link>
+                                        </span>
+                                    </div>
+                                </div>
+                            </b-card>
+                        </b-col>
+                        <b-col cols="2" align-self="center">
+                            <div>
+                                <span style="font-size: 1.25rem">
+                                    <a
+                                        :id="`${periodPair.movers.max_up}-${periodPair.start.period}-movers`"
+                                    >
+                                        <b>&nearr;</b>
+                                        {{ periodPair.movers.max_up }}
+                                    </a>
+                                    <word-link
+                                        :target="`${periodPair.movers.max_up}-${periodPair.start.period}-movers`"
+                                        :word="periodPair.movers.max_up"
+                                    ></word-link>
+                                </span>
+                                <br />
+                                <span style="font-size: 1.25rem">
+                                    <a
+                                        :id="`${periodPair.movers.max_down}-${periodPair.start.period}-movers`"
+                                    >
+                                        <b>&searr;</b>
+                                        {{ periodPair.movers.max_down }}
+                                    </a>
+                                    <word-link
+                                        :target="`${periodPair.movers.max_down}-${periodPair.start.period}-movers`"
+                                        :word="periodPair.movers.max_down"
+                                    ></word-link>
+                                </span>
+                            </div>
+                        </b-col>
+                        <b-col cols="5">
+                            <b-card class="mb-3 shadow-sm" no-body>
+                                <template v-slot:header>
+                                    <h5
+                                        class="mb-0 text-center"
+                                    >{{periodPair.end.period}}-{{parseInt(periodPair.end.period) + 24}}</h5>
+                                </template>
+                                <div class="card-text word-cloud">
+                                    <div class="p-2">
+                                        <span
+                                            v-for="weightedWord in periodPair.end.words"
+                                            :key="weightedWord.word"
+                                        >
+                                            <a
+                                                :id="`${weightedWord.word}-${periodPair.end.period}`"
+                                                :style="`font-size: ${1 + weightedWord.size}rem; color: ${weightedWord.color} !important`"
+                                            >{{ weightedWord.word }}</a>
+                                            <word-link
+                                                :target="`${weightedWord.word}-${periodPair.end.period}`"
+                                                :word="weightedWord.word"
+                                            ></word-link>
+                                        </span>
+                                    </div>
+                                </div>
+                            </b-card>
+                        </b-col>
+                    </b-row>
+                </div>
             </b-tab>
         </b-tabs>
-    </b-container>
+    </div>
 </template>
 <script>
 import Citations from "./Citations";
@@ -192,7 +273,7 @@ export default {
             topicDistribution: [],
             simWordsByTopics: [],
             simWordsByCooc: [],
-            wordEvolution: null,
+            wordMovers: null,
             fields: [
                 { key: "name", label: "Topic", sortable: false },
                 { key: "description", label: "Top 10 tokens", sortable: false },
@@ -202,6 +283,7 @@ export default {
                     sortable: false,
                 },
             ],
+            periodPairs: [],
         };
     },
     created() {
@@ -252,7 +334,21 @@ export default {
                     `https://anomander.uchicago.edu/intertextual-hub-api/get_word_vectors/${this.$route.params.word}`
                 )
                 .then((response) => {
-                    this.wordEvolution = response.data;
+                    this.wordMovers = response.data.overall_movers;
+                    let periods = Object.keys(response.data.evolution);
+                    for (let i = 0; i < periods.length - 1; i += 1) {
+                        this.periodPairs.push({
+                            start: {
+                                period: periods[i],
+                                words: response.data.evolution[periods[i]],
+                            },
+                            end: {
+                                period: periods[i + 1],
+                                words: response.data.evolution[periods[i + 1]],
+                            },
+                            movers: response.data.movers[i],
+                        });
+                    }
                 })
                 .catch((error) => {
                     console.log(error);
@@ -273,6 +369,10 @@ export default {
             return joinedDistribution.slice(0, 5);
         },
         loadNewData() {
+            this.word = this.$route.params.word;
+            this.wordMovers = [];
+            this.periodPairs = [];
+            console.log(this.word);
             this.fetchData();
         },
         goToTopic(topic) {
@@ -283,11 +383,22 @@ export default {
 </script>
 
 <style scoped>
+.word-cloud {
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+}
+.word-cloud a {
+    display: inline-block;
+    padding: 5px;
+    cursor: pointer;
+}
 ::v-deep .nav-tabs {
     border-bottom-width: 0;
 }
 ::v-deep .nav-link {
-    background-color: rgba(230, 230, 230, 0.4) !important;
+    background-color: rgba(230, 230, 230, 0.6) !important;
     border-bottom: 1px solid #dee2e6;
     color: rgba(0, 0, 0, 0.6) !important;
     transition: all 250ms;
