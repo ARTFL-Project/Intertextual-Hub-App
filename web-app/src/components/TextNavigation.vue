@@ -281,17 +281,17 @@
             title="Documents similar to highlighted passage"
         >
             <div v-if="passageSimilarDocs">
-                <h6 class="pt-2 px-2">10 most similar documents:</h6>
+                <h6 class="pt-2 px-2">20 most similar documents:</h6>
                 <ul>
                     <li
-                        v-for="simDoc in similarDocs"
+                        v-for="simDoc in passageSimilarDocs"
                         :key="`${simDoc.philo_db}${simDoc.metadata.philo_id}`"
                     >
                         <citations :docPair="simDoc.metadata" :philo-db="simDoc.philo_db"></citations>
                         {{simDoc.score}}
                     </li>
                 </ul>
-            </div>>
+            </div>
         </b-modal>
     </div>
 </template>
@@ -406,6 +406,7 @@ export default {
     methods: {
         fetchPassage() {
             console.log(this.$route.params, this.$route.query);
+            this.$bvModal.hide("similar-docs");
             this.text = null;
             this.docMetadata = null;
             this.docsCited = [];
