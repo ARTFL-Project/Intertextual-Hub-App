@@ -3,6 +3,8 @@ from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 import aligner
 import search
+import similarity
+from similarity import similar_docs
 from words import get_word_evolution
 from typing import List, Optional, Dict
 
@@ -182,3 +184,15 @@ def search_texts(request: Request):
 def get_word_vectors(word: str):
     word_evolution, word_movers, overall_movers = get_word_evolution(word)
     return {"evolution": word_evolution, "movers": word_movers, "overall_movers": overall_movers}
+
+
+@app.get("/get_similar_docs/{philo_db}")
+def get_similar_docs(philo_db: str, philo_id: str):
+    similar_docs = similarity.retrieve_similar_docs(philo_db, philo_id)
+    return similar_docs
+
+
+@app.post("/submit_passage")
+def submit_passage(passage: Dict[str, str]):
+    similar_docs = similarity.submit_passage(passage["passage"])
+    return similar_docs

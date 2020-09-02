@@ -18,7 +18,7 @@
                 <router-link :to="`${topicLink}`">Explore topic distribution</router-link>
             </b-list-group-item>
             <b-list-group-item>
-                <a :href="philoLink" target="_blank">Read document in PhiloLogic</a>
+                <router-link :to="philoLink">Read document in PhiloLogic</router-link>
             </b-list-group-item>
         </b-list-group>
     </b-popover>
@@ -43,11 +43,7 @@ export default {
             return this.philoId.split(" ").slice(0, 3).join("/");
         },
         philoLink: function () {
-            if (this.philoType == "doc") {
-                return `${this.philoUrl}/navigate/${this.objectId}/table-of-contents/`;
-            } else {
-                return `${this.philoUrl}/navigate/${this.objectId}/`;
-            }
+            return `/navigate/${this.philoDb}/${this.objectId}`;
         },
         topicLink: function () {
             return `/document/${this.philoDb}/${this.objectId}/`;

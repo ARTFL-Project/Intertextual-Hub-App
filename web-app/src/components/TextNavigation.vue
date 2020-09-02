@@ -1,191 +1,299 @@
 <template>
-    <b-card class="shadow mt-4">
-        <h5 class="text-center mb-4">
-            <citations
-                :docPair="docMetadata"
-                :direction="direction"
-                :philo-db="philoDb"
-                v-if="docMetadata"
-            ></citations>
-        </h5>
-        <b-tabs>
-            <b-tab title="Similar documents" :active="!intertextual">
-                <h6
-                    class="p-2"
-                    v-if="similarDocs.length>0"
-                >These documents were found to use similar vocabulary:</h6>
-                <h6 class="p-2" v-else>No similar docs were found.</h6>
-            </b-tab>
-            <b-tab title="Text reuses" :active="intertextual == 'true'">
-                <div id="direction-toggle">
-                    <b-form-group @change.native="toggleDirection">
-                        <b-form-radio
-                            v-model="direction"
-                            name="direction"
-                            value="target"
-                        >View reuses from earlier texts</b-form-radio>
-                        <b-form-radio
-                            v-model="direction"
-                            name="direction"
-                            value="source"
-                        >View reuses in later texts</b-form-radio>
-                    </b-form-group>
-                </div>
-                <div v-if="docsCited">
-                    <h6 class="pt-4">Reuses from these documents:</h6>
-                    <ul style="padding-inline-start: 2rem">
-                        <li v-for="(doc, docIndex) in docsCited" :key="docIndex">
-                            <span
-                                v-if="doc.doc_metadata[`${doc.direction}_author`]"
-                            >{{doc.doc_metadata[`${doc.direction}_author`]}}&nbsp;&#9679;&nbsp;</span>
-                            <i>{{doc.doc_metadata[`${doc.direction}_title`]}}</i>
-                            {{doc.doc_metadata[`${doc.direction}_date`]}}
-                        </li>
-                    </ul>
-                </div>
-                <div class="p-2" v-else>No reuses were found.</div>
-            </b-tab>
-        </b-tabs>
-        <hr class="my-4 pb-2" style="width:50%; color:#ddd" />
-        <b-row id="toc-wrapper" class="text-center mt-4" v-if="loading === false">
-            <div id="toc-top-bar">
-                <div id="nav-buttons" v-scroll="handleScroll">
-                    <b-button id="back-to-top" size="sm" @click="backToTop()">
-                        <span class="d-xs-none d-sm-inline-block">Back to top</span>
-                        <span class="d-xs-inline-block d-sm-none">Top</span>
-                    </b-button>
-                    <b-button-group size="sm" style="pointer-events: all">
-                        <b-button
-                            disabled="disabled"
-                            id="prev-obj"
-                            variant="primary"
-                            @click="goToTextObject(prev)"
-                        >&lt;</b-button>
-                        <b-button
-                            id="show-toc"
-                            disabled="disabled"
-                            variant="primary"
-                            @click="toggleTableOfContents()"
-                        >Table of contents</b-button>
-                        <b-button
-                            disabled="disabled"
-                            id="next-obj"
-                            variant="primary"
-                            @click="goToTextObject(next)"
-                        >&gt;</b-button>
-                    </b-button-group>
-                </div>
-                <div id="toc">
-                    <div id="toc-titlebar" class="d-none">
-                        <b-button id="hide-toc" @click="toggleTableOfContents()">X</b-button>
-                    </div>
-                    <transition name="slide-fade">
-                        <b-card
-                            no-body
-                            id="toc-content"
-                            class="p-3 shadow"
-                            :style="tocHeight"
-                            :scroll-to="tocPosition"
-                            v-if="tocOpen"
-                        >
-                            <div class="toc-more before" v-if="start !== 0">
-                                <b-button size="sm" variant="primary" @click="loadBefore()"></b-button>
-                            </div>
-                            <div
-                                v-for="(element, tocIndex) in tocElementsToDisplay"
-                                :key="tocIndex"
+    <div class="my-4">
+        <b-card class="shadow-sm mt-4">
+            <h5 class="text-center mb-4">
+                <citations
+                    :docPair="docMetadata"
+                    :direction="direction"
+                    :philo-db="philoDb"
+                    v-if="docMetadata"
+                ></citations>
+            </h5>
+            <b-tabs>
+                <b-tab title="Similar documents" :active="!intertextual">
+                    <div v-if="similarDocs.length > 0">
+                        <h6 class="pt-2 px-2">10 most similar documents:</h6>
+                        <ul>
+                            <li
+                                v-for="simDoc in similarDocs"
+                                :key="`${simDoc.philo_db}${simDoc.metadata.philo_id}`"
                             >
-                                <div
-                                    :id="element.philo_id"
-                                    :class="'toc-' + element.philo_type"
-                                    @click="textObjectSelection(element.philo_id, tocIndex)"
-                                >
-                                    <span :class="'bullet-point-' + element.philo_type"></span>
-                                    <a
-                                        :class="{ 'current-obj': element.philo_id === currentPhiloId }"
-                                        href
-                                    >
-                                        {{
-                                        element.label
-                                        }}
-                                    </a>
+                                <citations :docPair="simDoc.metadata" :philo-db="simDoc.philo_db"></citations>
+                                {{simDoc.score}}
+                            </li>
+                        </ul>
+                    </div>
+                    <h6 class="p-2" v-else>No similar docs were found.</h6>
+                </b-tab>
+                <b-tab title="Text reuses" :active="intertextual == 'true'">
+                    <div id="direction-toggle">
+                        <b-form-group @change.native="toggleDirection">
+                            <b-form-radio
+                                v-model="direction"
+                                name="direction"
+                                value="target"
+                            >View reuses from earlier texts</b-form-radio>
+                            <b-form-radio
+                                v-model="direction"
+                                name="direction"
+                                value="source"
+                            >View reuses in later texts</b-form-radio>
+                        </b-form-group>
+                    </div>
+                    <div v-if="docsCited">
+                        <h6 class="pt-4">Reuses from these documents:</h6>
+                        <ul style="padding-inline-start: 2rem">
+                            <li v-for="(doc, docIndex) in docsCited" :key="docIndex">
+                                <span
+                                    v-if="doc.doc_metadata[`${doc.direction}_author`]"
+                                >{{doc.doc_metadata[`${doc.direction}_author`]}}&nbsp;&#9679;&nbsp;</span>
+                                <i>{{doc.doc_metadata[`${doc.direction}_title`]}}</i>
+                                {{doc.doc_metadata[`${doc.direction}_date`]}}
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="p-2" v-else>
+                        No reuses from
+                        <span v-if="direction == 'source'">later</span>
+                        <span v-if="direction == 'target'">earlier</span> texts were found.
+                    </div>
+                </b-tab>
+            </b-tabs>
+            <hr class="my-4 pb-2" style="width:50%; color:#ddd" />
+        </b-card>
+        <b-card no-body class="mt-4 pt-3 shadow-sm">
+            <div
+                style="font-size: 80%; text-align: center;"
+            >To look up a word in a dictionary, select the word and press 'd' on your keyboard.</div>
+            <div
+                style="font-size: 80%; text-align: center;"
+            >To find a similar passage inside the text, select the passage and press 's' on your keyboard.</div>
+            <b-row id="toc-wrapper" class="text-center mt-1" v-if="loading === false">
+                <div id="toc-top-bar">
+                    <div id="nav-buttons" v-scroll="handleScroll">
+                        <b-button id="back-to-top" size="sm" @click="backToTop()">
+                            <span class="d-xs-none d-sm-inline-block">Back to top</span>
+                            <span class="d-xs-inline-block d-sm-none">Top</span>
+                        </b-button>
+                        <b-button-group size="sm" style="pointer-events: all">
+                            <b-button
+                                disabled="disabled"
+                                id="prev-obj"
+                                variant="primary"
+                                @click="goToTextObject(prev)"
+                            >&lt;</b-button>
+                            <b-button
+                                id="show-toc"
+                                disabled="disabled"
+                                variant="primary"
+                                @click="toggleTableOfContents()"
+                            >Table of contents</b-button>
+                            <b-button
+                                disabled="disabled"
+                                id="next-obj"
+                                variant="primary"
+                                @click="goToTextObject(next)"
+                            >&gt;</b-button>
+                        </b-button-group>
+                    </div>
+                    <div id="toc">
+                        <div id="toc-titlebar" class="d-none">
+                            <b-button id="hide-toc" @click="toggleTableOfContents()">X</b-button>
+                        </div>
+                        <transition name="slide-fade">
+                            <b-card
+                                no-body
+                                id="toc-content"
+                                class="p-3 shadow"
+                                :style="tocHeight"
+                                :scroll-to="tocPosition"
+                                v-if="tocOpen"
+                            >
+                                <div class="toc-more before" v-if="start !== 0">
+                                    <b-button size="sm" variant="primary" @click="loadBefore()"></b-button>
                                 </div>
-                            </div>
-                            <div class="toc-more after" v-if="end < tocElements.length">
-                                <b-button
-                                    type="button"
-                                    size="sm"
-                                    variant="primary"
-                                    @click="loadAfter()"
-                                ></b-button>
-                            </div>
-                        </b-card>
-                    </transition>
+                                <div
+                                    v-for="(element, tocIndex) in tocElementsToDisplay"
+                                    :key="tocIndex"
+                                >
+                                    <div
+                                        :id="element.philo_id"
+                                        :class="'toc-' + element.philo_type"
+                                        @click="textObjectSelection(element.philo_id, tocIndex)"
+                                    >
+                                        <span :class="'bullet-point-' + element.philo_type"></span>
+                                        <a
+                                            :class="{ 'current-obj': element.philo_id === currentPhiloId }"
+                                            href
+                                        >
+                                            {{
+                                            element.label
+                                            }}
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="toc-more after" v-if="end < tocElements.length">
+                                    <b-button
+                                        type="button"
+                                        size="sm"
+                                        variant="primary"
+                                        @click="loadAfter()"
+                                    ></b-button>
+                                </div>
+                            </b-card>
+                        </transition>
+                    </div>
                 </div>
+            </b-row>
+            <b-card-text class="mt-2 p-3 text-justify">
+                <div id="previous-pages" v-if="beforeObjImgs">
+                    <span class="xml-pb-image">
+                        <a
+                            :href="img[0]"
+                            :large-img="img[1]"
+                            class="page-image-link"
+                            v-for="(img, imageIndex) in beforeObjImgs"
+                            :key="imageIndex"
+                            data-gallery
+                        ></a>
+                    </span>
+                </div>
+                <div id="previous-graphics" v-if="beforeGraphicsImgs">
+                    <a
+                        :href="img[0]"
+                        :large-img="img[1]"
+                        class="inline-img"
+                        v-for="(img, beforeIndex) in beforeGraphicsImgs"
+                        :key="beforeIndex"
+                        data-gallery
+                    ></a>
+                </div>
+                <div
+                    id="main-text"
+                    class="text"
+                    v-html="text"
+                    @keydown="lookUp($event, docMetadata)"
+                    tabindex="0"
+                ></div>
+                <div id="next-pages" v-if="afterObjImgs">
+                    <span class="xml-pb-image">
+                        <a
+                            :href="img[0]"
+                            :large-img="img[1]"
+                            class="page-image-link"
+                            v-for="(img, afterIndex) in afterObjImgs"
+                            :key="afterIndex"
+                            data-gallery
+                        ></a>
+                    </span>
+                </div>
+                <div id="next-graphics" v-if="afterGraphicsImgs">
+                    <a
+                        :href="img[0]"
+                        :large-img="img[1]"
+                        class="inline-img"
+                        v-for="(img, afterGraphIndex) in afterGraphicsImgs"
+                        :key="afterGraphIndex"
+                        data-gallery
+                    ></a>
+                </div>
+            </b-card-text>
+            <b-modal
+                id="text-reuse"
+                size="xl"
+                centered
+                scrollable
+                hide-footer
+                title="Intertextual Links"
+            >
+                <div v-if="intertextualPassages">
+                    <passage-pair
+                        v-for="passage in intertextualPassages"
+                        :key="passage.passageid"
+                        :passage="passage"
+                        :source-philo-id="passage.metadata.source_philo_id"
+                        :source-philo-db="passage.metadata.source_philo_db"
+                        :target-philo-id="passage.metadata.target_philo_id"
+                        :target-philo-db="passage.metadata.target_philo_db"
+                        message="all reuses of current text"
+                        :pairid="pairid || passage.pairid"
+                    ></passage-pair>
+                </div>
+            </b-modal>
+            <div
+                :id="`intertextual-metadata-${groupIndex}`"
+                class="shadow px-2 pt-2 d-none"
+                v-for="(_, groupIndex) in intertextualMetadata"
+                :key="groupIndex"
+            >
+                <div v-if="intertextualMetadata">
+                    <h6 class="mb-3">
+                        <strong>Passage found in:</strong>
+                    </h6>
+                    <div
+                        class="px-2"
+                        v-for="(metadata, index) in intertextualMetadata[groupIndex]"
+                        :key="index"
+                    >
+                        <citations
+                            :docPair="metadata"
+                            direction="source"
+                            :philo-db="metadata.source_philo_db"
+                            v-if="direction == 'target'"
+                            nolink
+                        >-</citations>
+                        <citations
+                            :docPair="metadata"
+                            direction="target"
+                            :philo-db="metadata.target_philo_db"
+                            nolink
+                            v-else
+                        ></citations>
+                        <hr class="m-2" v-if="index != intertextualMetadata[groupIndex].length-1" />
+                    </div>
+                </div>
+                <p class="mt-3 mb-0">
+                    <strong>Click on passage to see reuse.</strong>
+                </p>
             </div>
-        </b-row>
-        <b-card-text class="mt-4">
-            <div id="main-text" class="text" v-html="text"></div>
-        </b-card-text>
+        </b-card>
+        <div
+            id="blueimp-gallery"
+            class="blueimp-gallery blueimp-gallery-controls"
+            data-full-screen="true"
+            data-continuous="false"
+            style="display: none"
+        >
+            <div class="slides"></div>
+            <h3 class="title"></h3>
+            <a class="prev img-buttons">&lt;</a>
+            <a class="next img-buttons">&gt;</a>
+            <a id="full-size-image" class="img-buttons">&nearr;</a>
+            <a class="close img-buttons">&#10005;</a>
+            <ol class="indicator"></ol>
+        </div>
         <b-modal
-            id="text-reuse"
+            id="similar-docs"
             size="xl"
             centered
             scrollable
             hide-footer
-            title="Intertextual Links"
+            title="Documents similar to highlighted passage"
         >
-            <div v-if="intertextualPassages">
-                <passage-pair
-                    v-for="passage in intertextualPassages"
-                    :key="passage.passageid"
-                    :passage="passage"
-                    :source-philo-id="passage.metadata.source_philo_id"
-                    :source-philo-db="passage.metadata.source_philo_db"
-                    :target-philo-id="passage.metadata.target_philo_id"
-                    :target-philo-db="passage.metadata.target_philo_db"
-                    message="all reuses of current text"
-                    :pairid="pairid || passage.pairid"
-                ></passage-pair>
-            </div>
+            <div v-if="passageSimilarDocs">
+                <h6 class="pt-2 px-2">10 most similar documents:</h6>
+                <ul>
+                    <li
+                        v-for="simDoc in similarDocs"
+                        :key="`${simDoc.philo_db}${simDoc.metadata.philo_id}`"
+                    >
+                        <citations :docPair="simDoc.metadata" :philo-db="simDoc.philo_db"></citations>
+                        {{simDoc.score}}
+                    </li>
+                </ul>
+            </div>>
         </b-modal>
-        <div
-            :id="`intertextual-metadata-${groupIndex}`"
-            class="shadow px-2 pt-2 d-none"
-            v-for="(_, groupIndex) in intertextualMetadata"
-            :key="groupIndex"
-        >
-            <div v-if="intertextualMetadata">
-                <h6 class="mb-3">
-                    <strong>Passage found in:</strong>
-                </h6>
-                <div
-                    class="px-2"
-                    v-for="(metadata, index) in intertextualMetadata[groupIndex]"
-                    :key="index"
-                >
-                    <citations
-                        :docPair="metadata"
-                        direction="source"
-                        :philo-db="metadata.source_philo_db"
-                        v-if="direction == 'target'"
-                        nolink
-                    >-</citations>
-                    <citations
-                        :docPair="metadata"
-                        direction="target"
-                        :philo-db="metadata.target_philo_db"
-                        nolink
-                        v-else
-                    ></citations>
-                    <hr class="m-2" v-if="index != intertextualMetadata[groupIndex].length-1" />
-                </div>
-            </div>
-            <p class="mt-3 mb-0">
-                <strong>Click on passage to see reuse.</strong>
-            </p>
-        </div>
-    </b-card>
+    </div>
 </template>
 <script>
 import PassagePair from "./PassagePair.vue";
@@ -240,11 +348,11 @@ export default {
             prev: null,
             next: null,
             similarDocs: [],
+            passageSimilarDocs: [],
         };
     },
     computed: {
         dbPrefix: function () {
-            console.log(this.direction);
             if (this.direction) {
                 return `${this.direction}_`;
             } else {
@@ -300,6 +408,7 @@ export default {
             console.log(this.$route.params, this.$route.query);
             this.text = null;
             this.docMetadata = null;
+            this.docsCited = [];
             this.alreadyScrolled = false;
             this.$bvModal.hide("text-reuse");
             let philoId = this.$route.params.doc.split("/").join(" ");
@@ -343,6 +452,18 @@ export default {
                             this.updateInit();
                         });
                     }
+                });
+            this.$http
+                .get(
+                    `https://anomander.uchicago.edu/intertextual-hub-api/get_similar_docs/${this.$route.params.philoDb}`,
+                    {
+                        params: {
+                            philo_id: philoId,
+                        },
+                    }
+                )
+                .then((response) => {
+                    this.similarDocs = response.data;
                 });
         },
         showPassage(element) {
@@ -762,16 +883,31 @@ export default {
                 }
             }
         },
-        dicoLookup(event, year) {
+        lookUp(event, value) {
+            let selection = window.getSelection().toString();
             if (event.key === "d") {
-                let selection = window.getSelection().toString();
+                let year = value[`${this.dbPrefix}date`].split("-")[0];
                 let century = parseInt(year.slice(0, year.length - 2));
                 let range = `${century.toString()}00-${String(century + 1)}00`;
+                console.log(selection, century, range);
                 if (range == "NaN00-NaN00") {
                     range = "";
                 }
-                let link = `${this.philoConfig.dictionary_lookup}?docyear=${range}&strippedhw=${selection}`;
+                let link = `https://artflsrv03.uchicago.edu/cgi-bin/quickdict.pl?docyear=${range}&strippedhw=${selection}`;
                 window.open(link);
+            } else if (event.key == "s") {
+                console.log(selection);
+                this.$http
+                    .post(
+                        "https://anomander.uchicago.edu/intertextual-hub-api/submit_passage",
+                        {
+                            passage: selection,
+                        }
+                    )
+                    .then((response) => {
+                        this.passageSimilarDocs = response.data;
+                        this.$bvModal.show("similar-docs");
+                    });
             }
         },
     },
