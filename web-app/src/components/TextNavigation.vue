@@ -48,11 +48,12 @@
                                     v-if="doc.doc_metadata[`${doc.direction}_author`]"
                                 >{{doc.doc_metadata[`${doc.direction}_author`]}}&nbsp;&#9679;&nbsp;</span>
                                 <i>{{doc.doc_metadata[`${doc.direction}_title`]}}</i>
+                                &nbsp;&#9679;&nbsp;
                                 {{doc.doc_metadata[`${doc.direction}_date`]}}
                             </li>
                         </ul>
                     </div>
-                    <div class="p-2" v-else>
+                    <div class="p-2" v-if="intertextual && !docsCited">
                         No reuses from
                         <span v-if="direction == 'source'">later</span>
                         <span v-if="direction == 'target'">earlier</span> texts were found.

@@ -1,6 +1,6 @@
 <template>
     <div class="mt-4">
-        <b-card class="shadow-sm mb-4">
+        <b-card class="shadow-sm mb-4" style="position:relative">
             Input terms:
             <b>{{ searchTerms }}</b>
             <br />Bibliographic search criteria:
@@ -16,11 +16,24 @@
                 <b>Date:</b>
                 {{ date }}
             </span>
-            <br />Your query returned
-            <b v-if="results">{{ results.length }} results.</b>
-            <br />Number of documents with this search term:
-            <b>{{ docCount }}</b>
-            <br />Top 20 Author and Title Frequencies at bottom.
+            <span v-if="!author && !title && !date">None</span>
+            <div
+                v-if="loading"
+                class="text-center"
+                style="position:absolute; left:0; right:0; z-index: 10"
+            >
+                <b-spinner
+                    label="Loading..."
+                    style="width: 5rem; height: 5rem; color: rgba(143, 57, 49, 0.8)"
+                ></b-spinner>
+            </div>
+            <div style="margin-top: -1rem" v-else>
+                <br />Your query returned
+                <b v-if="results">{{ results.length }} results.</b>
+                <br />Number of documents with this search term:
+                <b>{{ docCount }}</b>
+                <br />Top 20 Author and Title Frequencies at bottom.
+            </div>
         </b-card>
         <b-card
             class="position-relative mb-2 shadow-sm"
@@ -67,6 +80,7 @@ export default {
             results: null,
             docCount: null,
             sectionsDisplay: [],
+            loading: false,
         };
     },
     created() {
@@ -82,6 +96,7 @@ export default {
         fetchResults() {
             EventBus.$emit("hideForms");
             this.results = null;
+            this.loading = true;
             this.$http
                 .get(
                     `https://anomander.uchicago.edu//intertextual-hub-api/search_texts?${this.paramsToUrlString(
@@ -89,6 +104,7 @@ export default {
                     )}`
                 )
                 .then((response) => {
+                    this.loading = false;
                     this.results = response.data.results;
                     this.sectionsDisplay = this.results.map(() => {
                         return false;

@@ -4,21 +4,18 @@
             <span style="font-variant: small-caps;">Choose between:</span>
         </template>
         <b-list-group flush>
-            <b-list-group-item>
-                <router-link
-                    :to="`${navLink}&direction=source`"
-                >Read document with reuses from later texts</router-link>
+            <b-list-group-item class="px-1 py-2">
+                <router-link :to="philoLink">Read document</router-link>
             </b-list-group-item>
-            <b-list-group-item>
-                <router-link
-                    :to="`${navLink}&direction=target`"
-                >Read document with reuses from earlier texts</router-link>
+            <b-list-group-item class="px-1 py-2">
+                Read document with reuses:
+                <br />-
+                <router-link :to="`${navLink}&direction=target`">from earlier texts</router-link>
+                <br />-
+                <router-link :to="`${navLink}&direction=source`">from later texts</router-link>
             </b-list-group-item>
-            <b-list-group-item>
+            <b-list-group-item class="px-1 py-2">
                 <router-link :to="`${topicLink}`">Explore topic distribution</router-link>
-            </b-list-group-item>
-            <b-list-group-item>
-                <router-link :to="philoLink">Read document in PhiloLogic</router-link>
             </b-list-group-item>
         </b-list-group>
     </b-popover>

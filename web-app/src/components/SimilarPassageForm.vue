@@ -117,7 +117,7 @@ export default {
     methods: {
         search() {
             delete this.formValues.direction;
-            let formValues = {};
+            let formValues = { start: "0" };
             for (let value in this.formValues) {
                 if (value.startsWith("source") || value.startsWith("target")) {
                     formValues[value] = this.formValues[value];
@@ -136,6 +136,7 @@ export default {
                 formValues.target_date = `${this.dateRange.target.from}<=>${this.dateRange.target.to}`;
             }
             let route = this.paramsToRoute(formValues, "/seq-pair/search");
+            console.log(formValues, route);
             this.$router.push(route);
         },
         clearForm() {

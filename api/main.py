@@ -5,7 +5,7 @@ import aligner
 import search
 import similarity
 from similarity import similar_docs
-from words import get_word_evolution
+from words import get_word_evolution, retrieve_associated_words
 from typing import List, Optional, Dict
 
 
@@ -115,7 +115,7 @@ def navigate(
 @app.get("/search_alignments")
 def search_alignments(request: Request):
     results = aligner.search_alignments(**request.query_params)
-    return results[:50]
+    return results
 
 
 @app.get("/search_alignments2")
@@ -196,3 +196,9 @@ def get_similar_docs(philo_db: str, philo_id: str):
 def submit_passage(passage: Dict[str, str]):
     similar_docs = similarity.submit_passage(passage["passage"])
     return similar_docs
+
+
+@app.get("/get_associated_words/{word}")
+def get_associated_words(word: str):
+    associated_words = retrieve_associated_words(word)
+    return associated_words

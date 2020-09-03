@@ -1,13 +1,15 @@
 <template>
     <div class="mt-4">
-        <h5 v-if="results">Showing results 1-{{ results.length }}</h5>
+        <h5
+            v-if="results"
+        >Showing matches {{currentStart+1}}-{{currentStart+results.length}} of {{count}}</h5>
         <b-card
             class="mt-4 mb-4 shadow-sm"
             no-body
             v-for="(documentPair, resultsIndex) in results"
             :key="documentPair.pairid"
         >
-            <span class="count">{{ resultsIndex + 1 }}</span>
+            <span class="count">{{ resultsIndex + 1 + currentStart}}</span>
             <b-row class="px-3">
                 <b-col sm="3" md="3" lg="2" align-self="center">
                     <h6
@@ -91,6 +93,17 @@
                 </div>
             </transition>
         </b-card>
+        <div class="overflow-auto">
+            <b-pagination-nav
+                align="center"
+                first-text="First"
+                last-text="Last"
+                limit="10"
+                :link-gen="pages"
+                :number-of-pages="pageCount"
+                use-router
+            ></b-pagination-nav>
+        </div>
     </div>
 </template>
 <script>
@@ -106,6 +119,8 @@ export default {
             results: null,
             passages: [],
             passageTogglerMessages: null,
+            currentStart: 0,
+            pageCount: 1,
         };
     },
     watch: {
@@ -142,6 +157,7 @@ export default {
         },
         fetchResults() {
             EventBus.$emit("hideForms");
+            this.results = [];
             this.$http
                 .get(
                     `https://anomander.uchicago.edu//intertextual-hub-api/search_alignments?${this.paramsToUrlString(
@@ -149,10 +165,18 @@ export default {
                     )}`
                 )
                 .then((response) => {
-                    this.passageTogglerMessages = response.data.map(
+                    this.passageTogglerMessages = response.data.results.map(
                         () => "Show passage"
                     );
-                    this.results = response.data;
+                    this.count = parseInt(response.data.count);
+                    let pageCount = this.count / 50;
+                    if (this.count % 50 != 0) {
+                        pageCount += 1;
+                    }
+                    this.pageCount = pageCount;
+                    this.results = response.data.results;
+                    this.currentStart = parseInt(this.$route.query.start);
+                    console.log(this.currentStart, this.$route.query);
                     this.passages = new Array(this.results.length).fill(
                         [],
                         0,
@@ -184,6 +208,11 @@ export default {
                 this.passageTogglerMessages[index] = "Show passage";
                 this.$set(this.passages, index, {});
             }
+        },
+        pages(value) {
+            let currentQuery = this.copyObject(this.$route.query);
+            currentQuery.start = ((value - 1) * 50).toString();
+            return `/seq-pair/search?${this.paramsToUrlString(currentQuery)}`;
         },
     },
 };

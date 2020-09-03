@@ -18,10 +18,6 @@ ALIGNMENTS_TABLE = db_config["alignments_table"]
 PASSAGES_TABLE = db_config["passages_table"]
 
 GROUP_BY_DOC = db_config["group_by_doc"]
-# with open("../web-app/src/appConfig.json") as db_config_file:
-#     app_config = json.load(db_config_file)
-# GROUP_BY_LEVELS = app_config["groupByLevels"]
-# OBJECT_LEVELS = {db: value["object_type"] for db, value in app_config["philoDBs"].items()}
 
 
 FIELD_TYPES = {
@@ -171,15 +167,20 @@ def search_alignments(**query_params):
         user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
     ) as conn:
         cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        offset = query_params["start"]
+        del query_params["start"]
         sql_fields, sql_values = query_builder(query_params)
-        query = f"SELECT {', '.join(FIELD_TYPES.keys())} FROM {ALIGNMENTS_TABLE} WHERE {sql_fields}"
+        query = f"SELECT {', '.join(FIELD_TYPES.keys())} FROM {ALIGNMENTS_TABLE} WHERE {sql_fields} OFFSET {offset} LIMIT 50"
         cursor.execute(query, sql_values)
         results = []
         for row in cursor:
             metadata = {field: row[field] for field in FIELD_TYPES if field != "passages"}
             metadata["passage_number"] = len(row["passages"])
             results.append(metadata)
-    return results
+        total_query = f"SELECT COUNT(*) FROM {ALIGNMENTS_TABLE} WHERE {sql_fields}"
+        cursor.execute(total_query, sql_values)
+        count = cursor.fetchone()[0]
+    return {"count": count, "results": results}
 
 
 def search_alignments2(**query_params):
@@ -354,6 +355,7 @@ def get_passage_by_philo_id(
             "doc_metadata": {
                 f"{opposite_direction}_author": metadata[0][f"{opposite_direction}_author"],
                 f"{opposite_direction}_title": metadata[0][f"{opposite_direction}_title"],
+                f"{opposite_direction}_date": str(metadata[0][f"{opposite_direction}_date"]).split("-")[0],
             },
             "metadata": metadata,
             "direction": opposite_direction,

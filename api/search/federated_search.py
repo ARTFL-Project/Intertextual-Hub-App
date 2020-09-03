@@ -135,7 +135,6 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
             query_stmt = select_stmt + "'" + match_stmt + "' " + order_by
         fullcount_query = 'SELECT COUNT(*) from {0} where {0} MATCH "{1}"'.format(TABLE_NAME, searchwords)
 
-        print(query_stmt, file=sys.stderr)
         cursor.execute(query_stmt,)
         results_list = []
         count = 0

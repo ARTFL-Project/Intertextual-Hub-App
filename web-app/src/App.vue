@@ -5,71 +5,79 @@
                 <b-navbar-brand to="/">Intertextual Hub</b-navbar-brand>
             </b-navbar-nav>
         </b-navbar>
+
+        <b-tabs fill id="main-tabs" class="shadow-sm">
+            <b-tab
+                :active="activeTab == 'intro'"
+                title="Introduction &amp; Collections"
+                @click="selectModule('home')"
+            >
+                <transition name="slide-fade">
+                    <b-card style="border-top-width: 0" v-if="show">
+                        <p class="py-2 px-3" style="text-align: justify; max-width:1000px">
+                            The Intertextual Hub is a pilot project to develop a model that will allow scholars of 18th century France to bridge
+                            the gap between distant and close reading when conducting research on large, heterogeneous digital text collections.
+                        </p>
+                        <h5>Here are the collections included in the Intertextual Hub:</h5>
+                        <b-list-group style="width: fit-content;">
+                            <b-list-group-item v-for="philoDb in philoDbs" :key="philoDb.name">
+                                <a :href="philoDb.url" target="_blank">{{philoDb.name}}</a>
+                                :
+                                <span v-html="philoDb.description"></span>
+                            </b-list-group-item>
+                        </b-list-group>
+                    </b-card>
+                </transition>
+            </b-tab>
+            <b-tab
+                :active="activeTab == 'search'"
+                title="Search and Retrieval"
+                @click="selectModule('search')"
+            >
+                <transition name="slide-fade">
+                    <search-form v-if="show"></search-form>
+                </transition>
+            </b-tab>
+            <b-tab
+                :active="activeTab == 'textpair'"
+                title="Explore text reuse"
+                @click="selectModule('SeqPairResultsSummary')"
+            >
+                <transition name="slide-fade">
+                    <similar-passage-form v-if="show"></similar-passage-form>
+                </transition>
+            </b-tab>
+            <b-tab
+                :active="activeTab == 'topics'"
+                title="Explore Topics"
+                @click="selectModule('topicModeling')"
+            >
+                <div class="mt-2 p-2" v-if="show">
+                    Click on any topic to explore its usage across the
+                    corpus
+                </div>
+                <topic-distributions v-if="show"></topic-distributions>
+            </b-tab>
+
+            <b-tab
+                :active="activeTab == 'wordUse'"
+                title="Explore word usage"
+                @click="selectModule('wordUse')"
+            >
+                <transition name="slide-fade">
+                    <word-search></word-search>
+                </transition>
+            </b-tab>
+        </b-tabs>
+        <transition name="fade">
+            <div
+                id="show"
+                class="px-3"
+                v-if="!show"
+                @click="showOptions()"
+            >Click tab to show navigation options</div>
+        </transition>
         <b-container fluid>
-            <b-tabs fill id="main-tabs" class="shadow-sm">
-                <b-tab
-                    :active="activeTab == 'intro'"
-                    title="Intro to the HUB"
-                    @click="selectModule('home')"
-                >
-                    <transition name="slide-fade">
-                        <b-card style="border-top-width: 0" v-if="show">
-                            <p style="text-align: justify; max-width:1000px">
-                                The Intertextual Hub is a pilot project to develop a model that will allow scholars of 18th century France to bridge
-                                the gap between distant and close reading when conducting research on large, heterogeneous digital text collections.
-                            </p>
-                        </b-card>
-                    </transition>
-                </b-tab>
-                <b-tab
-                    :active="activeTab == 'search'"
-                    title="Search and Retrieval"
-                    @click="selectModule('search')"
-                >
-                    <transition name="slide-fade">
-                        <search-form v-if="show"></search-form>
-                    </transition>
-                </b-tab>
-                <b-tab
-                    :active="activeTab == 'textpair'"
-                    title="Explore text reuse"
-                    @click="selectModule('SeqPairResultsSummary')"
-                >
-                    <transition name="slide-fade">
-                        <similar-passage-form v-if="show"></similar-passage-form>
-                    </transition>
-                </b-tab>
-                <b-tab
-                    :active="activeTab == 'topics'"
-                    title="Explore Topics"
-                    @click="selectModule('topicModeling')"
-                >
-                    <div class="mt-2 p-2" v-if="show">
-                        Click on any topic to explore its usage across the
-                        corpus
-                    </div>
-                    <topic-distributions v-if="show"></topic-distributions>
-                </b-tab>
-
-                <b-tab
-                    :active="activeTab == 'wordUse'"
-                    title="Explore word usage"
-                    @click="selectModule('wordUse')"
-                >
-                    <transition name="slide-fade">
-                        <word-search></word-search>
-                    </transition>
-                </b-tab>
-            </b-tabs>
-            <transition name="fade">
-                <div
-                    id="show"
-                    class="px-3"
-                    v-if="!show"
-                    @click="showOptions()"
-                >Click tab to show navigation options</div>
-            </transition>
-
             <router-view name="SeqPairResultsSummary"></router-view>
             <router-view name="topicModeling"></router-view>
             <router-view name="Search"></router-view>
@@ -99,13 +107,13 @@ export default {
             report: this.$route.name,
             show: true,
             word: "",
+            philoDbs: this.$appConfig.philoDBs,
         };
     },
     created() {
         this.selectModule(this.report);
         EventBus.$on("hideForms", () => {
             this.show = false;
-            // this.activeTab = "";
         });
     },
     methods: {

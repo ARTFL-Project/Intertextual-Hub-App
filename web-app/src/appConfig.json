@@ -4,6 +4,7 @@
             "name": "French Revolutionary Pamphlets",
             "path": "/var/www/html/intertextual_hub/philologic/frc/",
             "url": "https://anomander.uchicago.edu/intertextual_hub/philologic/frc",
+            "description": "25,935 pamphlets from the French Revolutionary period",
             "object_type": "doc",
             "citation_fields": ["author", "title", "date"],
             "search_fields": ["author", "title", "year"]
@@ -12,6 +13,7 @@
             "name": "Archives Parlementaires",
             "path": "/var/www/html/intertextual_hub/philologic/ap/",
             "url": "https://anomander.uchicago.edu/intertextual_hub/philologic/ap",
+            "description": "Parliamentary debates during the first years of the French Revolution (1789-1792)",
             "object_type": "div2",
             "citation_fields": ["title", "idno", "pub_date", "head", "date"],
             "search_fields": ["year", "head", "type", "who", "div_date"]
@@ -20,6 +22,7 @@
             "name": "Revolutionary Laws",
             "path": "/var/www/html/intertextual_hub/philologic/revlawallhub/",
             "url": "https://anomander.uchicago.edu/intertextual_hub/philologic/revlawallhub",
+            "description": "Laws enacted during the French Revolution",
             "object_type": "div1",
             "citation_fields": ["author", "title", "period", "head", "div_date", "date"],
             "search_fields": ["period", "year", "div_date", "div_revdate", "head", "title", "type", "text_form"]
@@ -28,14 +31,16 @@
             "name": "18th Century French Literature",
             "path": "/var/www/html/intertextual_hub/philologic/hub18thcfrench/",
             "url": "https://anomander.uchicago.edu/intertextual_hub/philologic/hub18thcfrench",
+            "description": "Literary and Philosophical works from the French 18th century",
             "object_type": "div1",
             "citation_fields": ["author", "title", "head", "date"],
             "search_fields": ["author", "title", "head", "year"]
         },
         "Gldsmth18cfr": {
-            "name": "Goldsmith 18th Century",
+            "name": "Goldsmith-Kress 18th Century",
             "path": "/var/www/html/intertextual_hub/philologic/Gldsmth18cfr/",
             "url": "https://anomander.uchicago.edu/intertextual_hub/philologic/Gldsmth18cfr",
+            "description": "Political Economy works from the French 18th century",
             "object_type": "div1",
             "citation_fields": ["author", "title", "head", "date"],
             "search_fields": ["author", "title", "year"]
@@ -44,6 +49,7 @@
             "name": "Journaux de Marat",
             "path": "/var/www/html/intertextual_hub/philologic/marat/",
             "url": "https://anomander.uchicago.edu/intertextual_hub/philologic/marat/",
+            "description": "Marat's newspapers which include <i>L'Ami du peuple</i> and <i>Le Journal de la République française</i>",
             "object_type": "div1",
             "citation_fields": ["author", "title", "head", "idno", "date"],
             "search_fields": ["pub_date", "year", "title", "head", "idno"]
@@ -52,6 +58,7 @@
             "name": "French ECCO",
             "path": "/var/www/html/intertextual_hub/philologic/hubeccofr/",
             "url": "https://anomander.uchicago.edu/intertextual_hub/philologic/hubeccofr",
+            "description": "Literary and Philosophical works from the French 18th century published in the UK",
             "object_type": "div1",
             "citation_fields": ["author", "title", "head", "date"],
             "search_fields": ["author", "title", "head", "year"]

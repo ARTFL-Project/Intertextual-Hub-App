@@ -1,7 +1,14 @@
 from typing import Dict, List, Union, Tuple
 import psycopg2
+import json
 from psycopg2.extras import DictCursor
 import numpy as np
+
+with open("./db_config.json") as db_config_file:
+    db_config = json.load(db_config_file)
+DB_USER = db_config["database_user"]
+DB_NAME = db_config["database_name"]
+DB_PWD = db_config["database_password"]
 
 
 def get_word_evolution(
@@ -95,3 +102,12 @@ def get_word_evolution(
 
     return colored_periods, word_moves_recap, overall_movers
 
+
+def retrieve_associated_words(word: str) -> Dict[str, str]:
+    with psycopg2.connect(
+        user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
+    ) as conn:
+        cursor = conn.cursor(cursor_factory=DictCursor)
+        cursor.execute("SELECT words FROM global_word_vectors WHERE word=%s", (word,))
+        words: Dict[str, str] = cursor.fetchone()["words"]
+    return words

@@ -274,12 +274,12 @@ export default {
             } else {
                 this.$http
                     .get(
-                        `${this.$appConfig.topologic.api}/get_word_data/${this.$appConfig.topologic.dbname}/${this.formValues.words}`
+                        `https://anomander.uchicago.edu/intertextual-hub-api/get_associated_words/${this.formValues.words}`
                     )
                     .then((response) => {
                         this.formValues.words = `${
                             this.formValues.words
-                        } ${response.data.similar_words_by_topic
+                        } ${response.data
                             .map((word) => {
                                 return word.word;
                             })

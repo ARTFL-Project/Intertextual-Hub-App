@@ -185,7 +185,7 @@ export default {
 }
 .source-passage,
 .target-passage {
-    color: dodgerblue;
+    color: indianred;
 }
 .diff-btn {
     display: inline-block;
@@ -200,11 +200,11 @@ export default {
     background-color: #f8f8f8;
 }
 ::v-deep .added {
-    color: darkblue;
+    color: maroon;
     font-weight: 700;
 }
 ::v-deep .removed {
-    color: green;
+    color: seagreen;
     font-weight: 700;
     text-decoration: line-through;
 }
