@@ -1,5 +1,5 @@
 <template>
-    <div class="mt-4">
+    <div class="my-4">
         <b-card class="shadow-sm mb-4" style="position:relative">
             Input terms:
             <b>{{ searchTerms }}</b>
@@ -27,11 +27,17 @@
                     style="width: 5rem; height: 5rem; color: rgba(143, 57, 49, 0.8)"
                 ></b-spinner>
             </div>
-            <div style="margin-top: -1rem" v-else>
-                <br />Your query returned
-                <b v-if="results">{{ results.length }} results.</b>
-                <br />Number of documents with this search term:
-                <b>{{ docCount }}</b>
+            <div class="mt-2" v-else>
+                <span v-if="results">
+                    Number of documents with this search term:
+                    <b>{{ docCount }}</b>
+                    <span v-if="results.length == 100">
+                        <br />Displaying first 100 results:
+                        &nbsp;use search filters to narrow search results
+                    </span>
+                </span>
+                <span v-else>no results.</span>
+
                 <br />Top 20 Author and Title Frequencies at bottom.
             </div>
         </b-card>

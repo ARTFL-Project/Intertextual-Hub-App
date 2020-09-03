@@ -1,5 +1,5 @@
 <template>
-    <b-card class="mb-4 border-top-0">
+    <b-card class="my-4 border-top-0">
         <b-row>
             <b-col sm="12" lg="8" xl="7">
                 <b-form @submit.stop.prevent="search" @reset="clearForm">
@@ -103,40 +103,8 @@
             </b-col>
             <b-col class="d-xs-none d-md-none d-lg-block">
                 <p>
-                    Term queries run from this form return a list of ranked
-                    revelancy citations with links to all of the Philo4 powered
-                    versions of the
-                    <a
-                        href="https://anomander.uchicago.edu/intertextual_hub/philologic/frc/"
-                    >Newberry French Revolution Collection</a>
-                    (25,935 documents), the
-                    <a
-                        href="https://anomander.uchicago.edu/intertextual_hub/philologic/revlawallhub/"
-                    >French Revolutionary Laws</a>
-                    (56,035 divs), the
-                    <a
-                        href="https://anomander.uchicago.edu/intertextual_hub/philologic/marat/"
-                    >Journaux de Marat</a>
-                    (932 documents), the
-                    <a
-                        href="https://anomander.uchicago.edu/intertextual_hub/philologic/ap/"
-                    >Archives Parlementaires</a>
-                    (4,650 divs),
-                    <a
-                        href="https://anomander.uchicago.edu/intertextual_hub/philologic/hub18thcfrench/"
-                    >18th Century French</a>
-                    (31,313 divs, 1,822 documents),
-                    <a
-                        href="https://anomander.uchicago.edu/intertextual_hub/philologic/Gldsmth18cfr/"
-                    >
-                        Selected 18th century documents of the Goldsmith-Kress
-                        Collection
-                    </a>
-                    (201,000 divs, 5,855 documents), and
-                    <a
-                        href="https://anomander.uchicago.edu/intertextual_hub/philologic/hubeccofr/"
-                    >ECCOFrench</a>
-                    some duplicates removed (85,000 divs, 3,621 documents).
+                    Term queries run from this form return a list of documents ranked
+                    by revelance.
                 </p>
                 <p>
                     Queries can be executed just with search terms or can be
