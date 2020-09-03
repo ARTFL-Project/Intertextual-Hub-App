@@ -115,6 +115,9 @@ export default {
         EventBus.$on("hideForms", () => {
             this.show = false;
         });
+        if (this.$route.path != "/") {
+            this.show = false;
+        }
     },
     methods: {
         selectModule(report) {
