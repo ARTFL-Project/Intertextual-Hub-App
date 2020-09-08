@@ -53,7 +53,7 @@
             <div v-if="biblioQuery && result.sections.length > 0">
                 <h6
                     class="mt-1"
-                    style="cursor:pointer"
+                    style="color: rgb(143, 57, 49); cursor:pointer"
                     @click="showSections(index)"
                 >See all chapters or sections</h6>
                 <transition name="slide-fade">

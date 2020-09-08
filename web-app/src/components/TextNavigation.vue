@@ -12,16 +12,20 @@
             <b-tabs>
                 <b-tab title="Similar documents" :active="!intertextual">
                     <div v-if="similarDocs.length > 0">
-                        <h6 class="pt-2 px-2">10 most similar documents:</h6>
-                        <ul>
+                        <h6 class="pt-2 px-2">20 most similar documents (top 5 displayed):</h6>
+                        <ul class="mb-1">
                             <li
-                                v-for="simDoc in similarDocs"
+                                v-for="simDoc in simDocsToDisplay"
                                 :key="`${simDoc.philo_db}${simDoc.metadata.philo_id}`"
                             >
                                 <citations :docPair="simDoc.metadata" :philo-db="simDoc.philo_db"></citations>
-                                {{simDoc.score}}
                             </li>
                         </ul>
+                        <span
+                            style="diplay: inline-block; color: rgb(143, 57, 49); cursor:pointer;"
+                            v-if="!showAllSimDocs"
+                            @click="toggleSimDocs()"
+                        >View all</span>
                     </div>
                     <h6 class="p-2" v-else>No similar docs were found.</h6>
                 </b-tab>
@@ -60,7 +64,6 @@
                     </div>
                 </b-tab>
             </b-tabs>
-            <hr class="my-4 pb-2" style="width:50%; color:#ddd" />
         </b-card>
         <b-card no-body class="mt-4 pt-3 shadow-sm">
             <div
@@ -350,6 +353,7 @@ export default {
             next: null,
             similarDocs: [],
             passageSimilarDocs: [],
+            showAllSimDocs: false,
         };
     },
     computed: {
@@ -371,6 +375,13 @@ export default {
         },
         tocHeight() {
             return `max-height: ${window.innerHeight - 200}`;
+        },
+        simDocsToDisplay() {
+            if (!this.showAllSimDocs) {
+                return this.similarDocs.slice(0, 5);
+            } else {
+                return this.similarDocs;
+            }
         },
     },
     watch: {
@@ -898,7 +909,6 @@ export default {
                 let link = `https://artflsrv03.uchicago.edu/cgi-bin/quickdict.pl?docyear=${range}&strippedhw=${selection}`;
                 window.open(link);
             } else if (event.key == "s") {
-                console.log(selection);
                 this.$http
                     .post(
                         "https://anomander.uchicago.edu/intertextual-hub-api/submit_passage",
@@ -911,6 +921,9 @@ export default {
                         this.$bvModal.show("similar-docs");
                     });
             }
+        },
+        toggleSimDocs() {
+            this.showAllSimDocs = true;
         },
     },
 };

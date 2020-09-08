@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 
 import json
-from typing import Dict, Union
+import pickle
+from typing import Dict, Union, List
 from philologic.runtime.DB import DB
 from philologic.runtime.get_text import get_text
 from text_preprocessing import PreProcessor
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 from annoy import AnnoyIndex
-from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+
+# from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
 with open("./db_config.json") as app_config:
     APP_CONFIG = json.load(app_config)
@@ -27,16 +30,18 @@ PREPROC = PreProcessor(
     stopwords="/var/www/html/intertextual_hub/config/stopwords.txt",
 )
 
-INDEX = AnnoyIndex(1000, "angular")
-INDEX.load("/shared/NEH_intertextual_hub/doc2vec-annoy/SEPT02clovis.annoy")
+INDEX = AnnoyIndex(2130, "angular")
+INDEX.load("/shared/NEH_intertextual_hub/doc2vec-annoy/tf_idf_index.annoy")
 
-DOC2VEC_MODEL = Doc2Vec.load("/shared/NEH_intertextual_hub/doc2vec-annoy/SEPT01mvo03.model")
+# DOC2VEC_MODEL = Doc2Vec.load("/shared/NEH_intertextual_hub/doc2vec-annoy/SEPT01mvo03.model")
+with open("/shared/NEH_intertextual_hub/doc2vec-annoy/tf_idf_vectorizer.pickle", "rb") as vectorizer:
+    TF_IDF_VECTORIZER: TfidfVectorizer = pickle.load(vectorizer)
 
 
-def process_annoy_results(newsims):
+def process_annoy_results(newsims) -> List[Dict[str, Union[str, Dict[str, str]]]]:
     simscores = list(newsims[1])
     matchdocs = list(newsims[0])
-    results = []
+    results: List[Dict[str, Union[str, Dict[str, str]]]] = []
     db_cache = {philo_db: DB(f'{config["path"]}/data') for philo_db, config in APP_CONFIG["philo_dbs"].items()}
     for doc, score in zip(matchdocs, simscores):
         doc_id = ANNOY_TO_PHILO_ID[str(doc)]
@@ -57,7 +62,7 @@ def process_annoy_results(newsims):
     return results
 
 
-def retrieve_similar_docs(philo_db: str, philo_id: str, num: int = 10):
+def retrieve_similar_docs(philo_db: str, philo_id: str, num: int = 20):
     philo_id = philo_id.strip()
     try:
         annoy_id = int(PHILO_ID_TO_ANNOY[philo_db][philo_id])
@@ -74,10 +79,13 @@ def retrieve_similar_docs(philo_db: str, philo_id: str, num: int = 10):
 
 
 def submit_passage(passage: str, num: int = 20):
-    processed_passage = " ".join(PREPROC.process_string(passage, keep_all=False)).split()
-    search_vector = TaggedDocument(processed_passage, 0)
-    inferred_vector = DOC2VEC_MODEL.infer_vector(search_vector[0])
-    new_sims = INDEX.get_nns_by_vector(inferred_vector, num, include_distances=True)
+    # processed_passage = " ".join(PREPROC.process_string(passage, keep_all=False)).split()
+    # search_vector = TaggedDocument(processed_passage, 0)
+    # inferred_vector = DOC2VEC_MODEL.infer_vector(search_vector[0])
+    # new_sims = INDEX.get_nns_by_vector(inferred_vector, num, include_distances=True)
+    processed_passage = " ".join(PREPROC.process_string(passage, keep_all=False))
+    passage_vector = TF_IDF_VECTORIZER.transform([processed_passage]).toarray()[0]
+    new_sims = INDEX.get_nns_by_vector(passage_vector, num, include_distances=True)
     results = process_annoy_results(new_sims)
     return results
 
