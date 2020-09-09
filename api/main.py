@@ -1,3 +1,4 @@
+from philologic.runtime.HitWrapper import TEXT_OBJECT_LEVELS
 import requests
 from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
@@ -30,6 +31,9 @@ def navigate(
     byte: Optional[str] = None,
 ):
     text_object_id: List[str] = philo_id.split()
+    while text_object_id[-1] == "0":
+        text_object_id.pop()
+    text_object_type = PHILO_TYPE[len(text_object_id)]
     if pairid is not None:
         passage_data = aligner.get_passage_byte_offsets(pairid, direction)
         while text_object_id[-1] == "0":
@@ -49,10 +53,11 @@ def navigate(
             "doc_metadata": {
                 field: value for field, value in passage_data["metadata"].items() if field.startswith(direction)
             },
+            "object_type": text_object_type,
         }
     elif intertextual is True:
         passage_data, metadata_list, doc_metadata, docs_cited = aligner.get_passage_by_philo_id(
-            text_object_id, direction, philo_db
+            text_object_id, philo_db, direction=direction
         )
         if passage_data is None:
             philologic_response = requests.post(
@@ -71,6 +76,7 @@ def navigate(
                     **{f"{direction}_{field}": value for field, value in philo_text_object["metadata_fields"].items()},
                 },
                 "intertextual_metadata": [],
+                "object_type": text_object_type,
             }
         philologic_response = requests.post(
             f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py",
@@ -86,6 +92,7 @@ def navigate(
             "intertextual_metadata": metadata_list,
             "doc_metadata": doc_metadata,
             "docs_cited": docs_cited,
+            "object_type": text_object_type,
         }
     else:
         philologic_response = requests.post(
@@ -93,6 +100,7 @@ def navigate(
             params={"philo_id": " ".join(text_object_id), "byte": byte},
         )
         philo_text_object = philologic_response.json()
+        print(philo_text_object["metadata_fields"])
         if direction is not None:
             prefix = f"{direction}_"
         else:
@@ -109,6 +117,7 @@ def navigate(
                 **{f"{prefix}{field}": value for field, value in philo_text_object["metadata_fields"].items()},
             },
             "intertextual_metadata": [],
+            "object_type": text_object_type,
         }
 
 

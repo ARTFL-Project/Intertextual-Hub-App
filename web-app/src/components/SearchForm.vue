@@ -199,8 +199,18 @@ export default {
                     formValues[value] = this.formValues[value];
                 }
             }
-            if (this.dateType == "range" && this.dateRange.from.length > 0) {
-                formValues.date = `${this.dateRange.from}<=>${this.dateRange.to}`;
+            if (this.dateType == "range") {
+                if (this.dateRange.from || this.dateRange.to) {
+                    if (!this.dateRange.from) {
+                        this.dateRange.from = 1700;
+                    }
+                    if (!this.dateRange.to) {
+                        this.dateRange.to = 1800;
+                    }
+                    formValues.date = `${this.dateRange.from}<=>${this.dateRange.to}`;
+                } else {
+                    this.dateType = "exact";
+                }
             }
             if (this.collectionSelected) {
                 formValues.collections = this.collectionSelected;
@@ -227,6 +237,9 @@ export default {
         },
         dropSelect(selection) {
             this.dateType = selection;
+            if (this.dateType == "exact") {
+                this.formValues.date = "";
+            }
         },
         selectTopic(topic) {
             let words = topic.replace(/,/g, "");

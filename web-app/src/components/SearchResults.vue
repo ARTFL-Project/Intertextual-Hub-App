@@ -2,7 +2,8 @@
     <div class="my-4">
         <b-card class="shadow-sm mb-4" style="position:relative">
             Input terms:
-            <b>{{ searchTerms }}</b>
+            <b v-if="binding == 'OR'">{{ searchTerms.split(" ").join(" OR ") }}</b>
+            <b v-else>{{ searchTerms }}</b>
             <br />Bibliographic search criteria:
             <span v-if="author">
                 <b>Author:</b>
@@ -29,7 +30,7 @@
             </div>
             <div class="mt-2" v-else>
                 <span v-if="results">
-                    Number of documents with this search term:
+                    Number of documents with {{ "this search term" | pluralize(searchTerms.split(" ").length) }}:
                     <b>{{ docCount }}</b>
                     <span v-if="results.length == 100">
                         <br />Displaying first 100 results:
@@ -37,8 +38,7 @@
                     </span>
                 </span>
                 <span v-else>no results.</span>
-
-                <br />Top 20 Author and Title Frequencies at bottom.
+                <!-- <br />Top 20 Author and Title Frequencies at bottom. -->
             </div>
         </b-card>
         <b-card
@@ -82,12 +82,23 @@ export default {
             biblioQuery: false,
             title: this.$route.query.title,
             author: this.$route.query.author,
-            date: this.$route.query.date,
+
             results: null,
             docCount: null,
             sectionsDisplay: [],
             loading: false,
         };
+    },
+    computed: {
+        date() {
+            if (this.$route.query.date) {
+                return this.$route.query.date.replace(/<=>/, "-");
+            }
+            return null;
+        },
+        binding() {
+            return this.$route.query.binding;
+        },
     },
     created() {
         if (!("words" in this.$route.query)) {
@@ -122,7 +133,6 @@ export default {
             this.searchTerms = this.$route.query.words;
             this.title = this.$route.query.title;
             this.author = this.$route.query.author;
-            this.date = this.$route.query.date;
             this.results = null;
             this.docCount = null;
             if (!("words" in this.$route.query)) {

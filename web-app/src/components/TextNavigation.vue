@@ -29,8 +29,8 @@
                     </div>
                     <h6 class="p-2" v-else>No similar docs were found.</h6>
                 </b-tab>
-                <b-tab title="Text reuses" :active="intertextual == 'true'">
-                    <div id="direction-toggle">
+                <b-tab title="Text reuses" :active="intertextual == 'true'" @click="reUseTab()">
+                    <div id="direction-toggle" v-if="reusesComputed">
                         <b-form-group @change.native="toggleDirection">
                             <b-form-radio
                                 v-model="direction"
@@ -43,6 +43,10 @@
                                 value="source"
                             >View reuses in later texts</b-form-radio>
                         </b-form-group>
+                    </div>
+                    <div class="p-2" v-else>
+                        Reuses have
+                        <b>NOT</b> been computed for this document section. Select a higher level or lower level section from the table of contents.
                     </div>
                     <div v-if="docsCited">
                         <h6 class="pt-4">Reuses from these documents:</h6>
@@ -219,7 +223,7 @@
                         :source-philo-db="passage.metadata.source_philo_db"
                         :target-philo-id="passage.metadata.target_philo_id"
                         :target-philo-db="passage.metadata.target_philo_db"
-                        message="all reuses of current text"
+                        message="all reuses in current text"
                         :pairid="pairid || passage.pairid"
                     ></passage-pair>
                 </div>
@@ -346,7 +350,6 @@ export default {
             tocPosition: 0,
             navButtonPosition: 0,
             navBarVisible: false,
-            timeToRender: 0,
             gallery: null,
             tocElements: [],
             prev: null,
@@ -354,6 +357,7 @@ export default {
             similarDocs: [],
             passageSimilarDocs: [],
             showAllSimDocs: false,
+            objectType: null,
         };
     },
     computed: {
@@ -382,6 +386,18 @@ export default {
             } else {
                 return this.similarDocs;
             }
+        },
+        reusesComputed() {
+            console.log(this.$appConfig.philoDBs[this.$route.params.philoDb]);
+            if (!this.objectType) {
+                return true;
+            } else if (
+                this.$appConfig.philoDBs[this.$route.params.philoDb]
+                    .object_type != this.objectType
+            ) {
+                return false;
+            }
+            return true;
         },
     },
     watch: {
@@ -424,7 +440,8 @@ export default {
             this.docsCited = [];
             this.alreadyScrolled = false;
             this.$bvModal.hide("text-reuse");
-            let philoId = this.$route.params.doc.split("/").join(" ");
+            let philoId = this.getPhiloId();
+            this.pairid = this.$route.query.pairid;
             this.$http
                 .get(
                     `https://anomander.uchicago.edu/intertextual-hub-api/navigate/${this.$route.params.philoDb}`,
@@ -440,6 +457,7 @@ export default {
                 )
                 .then((response) => {
                     this.text = response.data.text;
+                    this.objectType = response.data.object_type;
                     this.direction = this.$route.query.direction;
                     if (this.$route.query.direction) {
                         this.philoDb =
@@ -478,6 +496,16 @@ export default {
                 .then((response) => {
                     this.similarDocs = response.data;
                 });
+        },
+        getPhiloId() {
+            let philoId = [];
+            for (let id of this.$route.params.doc.split("/")) {
+                if (id == "0") {
+                    break;
+                }
+                philoId.push(id);
+            }
+            return philoId.join(" ");
         },
         showPassage(element) {
             if (!element.id.startsWith("end-passage")) {
@@ -562,6 +590,11 @@ export default {
                     this.intertextualPassages = intertextualPassages;
                     this.$bvModal.show("text-reuse");
                 });
+        },
+        reUseTab() {
+            if (this.pairid) {
+                this.direction = null;
+            }
         },
         toggleDirection() {
             this.reload = true;
@@ -929,6 +962,50 @@ export default {
 };
 </script>
 <style scoped>
+.toc-div1 > a,
+.toc-div2 > a,
+.toc-div3 > a {
+    padding: 5px 5px 5px 0px;
+}
+.bullet-point-div1,
+.bullet-point-div2,
+.bullet-point-div3 {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+.bullet-point-div1 {
+    border: solid 1px;
+}
+.bullet-point-div2 {
+    border: solid 2px;
+}
+.bullet-point-div3 {
+    border: solid 1px;
+}
+.toc-div1,
+.toc-div2,
+.toc-div3 {
+    text-indent: -0.9em;
+    /*Account for the bullet point*/
+    margin-bottom: 5px;
+}
+.toc-div1 {
+    padding-left: 0.9em;
+}
+.toc-div2 {
+    padding-left: 1.9em;
+}
+.toc-div3 {
+    padding-left: 2.9em;
+}
+.toc-div1:hover,
+.toc-div2:hover,
+.toc-div3:hover {
+    cursor: pointer;
+}
 ::v-deep .nav-tabs {
     border-bottom-width: 0;
 }

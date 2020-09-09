@@ -79,9 +79,10 @@ Vue.directive('scroll', {
 Vue.filter('pluralize', (word, count) => {
     if (count == '1') {
         return word
-    }
-    if (word == "this") {
+    } else if (word == "this") {
         return `these ${count}`
+    } else if (word.match(/this /)) {
+        return `these ${word.split(" ")[1]} ${word.split(" ")[2]}s`
     }
     return `${word}s`
 })

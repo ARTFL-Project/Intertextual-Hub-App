@@ -4,7 +4,7 @@ import re
 
 import psycopg2
 import psycopg2.extras
-from typing import List, Dict, Union, Tuple
+from typing import List, Dict, Union, Tuple, Optional
 from dataclasses import dataclass
 import rapidjson as json
 from datetime import datetime
@@ -274,7 +274,7 @@ def get_passages(pairid: str):
 
 
 def get_passage_by_philo_id(
-    object_id: List[str], direction: str, philo_db: str
+    object_id: List[str], philo_db: str, direction: Optional[str]=None
 ) -> Union[
     Tuple[
         List[Dict[str, int]],
@@ -365,7 +365,7 @@ def get_passage_by_philo_id(
     return passage_groups, metadata_list, doc_metadata, docs_cited
 
 
-def get_passage_byte_offsets(pairid: str, direction: str):
+def get_passage_byte_offsets(pairid: str, direction: Optional[str]):
     """Get passage byte offsets by pairid"""
     with psycopg2.connect(
         user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
