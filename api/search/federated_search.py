@@ -175,7 +175,6 @@ def metadata_search(author, title, start_date, end_date, collections, periods):
         query_stmt = select_stmt + where_likes
     query_stmt += " GROUP BY author, title ORDER BY date, filename"
 
-    print(query_stmt, file=sys.stderr)
     with sqlite3.connect("../intertextual_hub_federated.db") as conn:
         conn.text_factory = str
         conn.row_factory = sqlite3.Row
@@ -191,6 +190,7 @@ def metadata_search(author, title, start_date, end_date, collections, periods):
                 count += 1
                 philo_db = row["philo_db"]
                 sections = []
+                print(OBJECT_LEVELS[philo_db], GROUP_BY_LEVELS[philo_db])
                 if OBJECT_LEVELS[philo_db] != GROUP_BY_LEVELS[philo_db]:
                     sections = retrieve_section_names(secondary_cursor, row["filename"], philo_db)
                 results_list.append(
@@ -204,7 +204,5 @@ def metadata_search(author, title, start_date, end_date, collections, periods):
                         "score": 0,
                     }
                 )
-            doc_count = 0
-
-    return results_list, doc_count
+    return results_list, count
 

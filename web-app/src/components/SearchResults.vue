@@ -1,9 +1,11 @@
 <template>
     <div class="my-4">
         <b-card class="shadow-sm mb-4" style="position:relative">
-            Input terms:
-            <b v-if="binding == 'OR'">{{ searchTerms.split(" ").join(" OR ") }}</b>
-            <b v-else>{{ searchTerms }}</b>
+            <span v-if="searchTerms">
+                Input terms:
+                <b v-if="binding == 'OR'">{{ searchTerms.split(" ").join(" OR ") }}</b>
+                <b v-else>{{ searchTerms }}</b>
+            </span>
             <br />Bibliographic search criteria:
             <span v-if="author">
                 <b>Author:</b>
@@ -30,8 +32,12 @@
             </div>
             <div class="mt-2" v-else>
                 <span v-if="results">
-                    Number of documents with {{ "this search term" | pluralize(searchTerms.split(" ").length) }}:
+                    Number of documents
+                    <span
+                        v-if="searchTerms"
+                    >with {{ "this search term" | pluralize(searchTerms.split(" ").length) }}</span>:
                     <b>{{ docCount }}</b>
+
                     <span v-if="results.length == 100">
                         <br />Displaying first 100 results:
                         &nbsp;use search filters to narrow search results

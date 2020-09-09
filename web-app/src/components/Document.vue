@@ -19,7 +19,7 @@
             </h5>
 
             <b-row class="mb-4 mt-4">
-                <b-col cols="9">
+                <b-col cols="12" md="6" lg="7" xl="8">
                     <b-card no-body header="Top 10 Topics">
                         <div class="pl-2 pr-2">
                             <b-table
@@ -41,7 +41,7 @@
                         </div>
                     </b-card>
                 </b-col>
-                <b-col cols="3">
+                <b-col cols="12" md="6" lg="5" xl="4">
                     <b-card
                         no-body
                         style="height: 100%"

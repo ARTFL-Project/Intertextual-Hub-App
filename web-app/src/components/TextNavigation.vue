@@ -17,6 +17,7 @@
                             <li
                                 v-for="simDoc in simDocsToDisplay"
                                 :key="`${simDoc.philo_db}${simDoc.metadata.philo_id}`"
+                                style="padding: 0.15rem 0;"
                             >
                                 <citations :docPair="simDoc.metadata" :philo-db="simDoc.philo_db"></citations>
                             </li>
@@ -294,9 +295,9 @@
                     <li
                         v-for="simDoc in passageSimilarDocs"
                         :key="`${simDoc.philo_db}${simDoc.metadata.philo_id}`"
+                        style="padding: 0.15rem 0"
                     >
                         <citations :docPair="simDoc.metadata" :philo-db="simDoc.philo_db"></citations>
-                        {{simDoc.score}}
                     </li>
                 </ul>
             </div>
@@ -401,11 +402,10 @@ export default {
         },
     },
     watch: {
-        $route: "fetchPassage",
+        $route: "fetchData",
     },
     created() {
-        this.fetchPassage();
-        this.fetchToC();
+        this.fetchData();
     },
     mounted() {
         let tocButton = document.querySelector("#show-toc");
@@ -432,6 +432,10 @@ export default {
         this.tippyInstances.length = 0;
     },
     methods: {
+        fetchData() {
+            this.fetchPassage();
+            this.fetchToC();
+        },
         fetchPassage() {
             console.log(this.$route.params, this.$route.query);
             this.$bvModal.hide("similar-docs");
@@ -439,6 +443,7 @@ export default {
             this.docMetadata = null;
             this.docsCited = [];
             this.alreadyScrolled = false;
+            this.showAllSimDocs = false;
             this.$bvModal.hide("text-reuse");
             let philoId = this.getPhiloId();
             this.pairid = this.$route.query.pairid;

@@ -5,7 +5,7 @@
                 <b-button
                     href="#"
                     tabindex="0"
-                    class="link"
+                    class="link d-inline"
                     :id="`${philoDb}_${philoId}-${index}`"
                 >{{ citation.field || 'Unnamed section' }}</b-button>
                 <doc-link

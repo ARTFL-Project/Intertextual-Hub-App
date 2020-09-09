@@ -274,7 +274,7 @@ def get_passages(pairid: str):
 
 
 def get_passage_by_philo_id(
-    object_id: List[str], philo_db: str, direction: Optional[str]=None
+    object_id: List[str], philo_db: str, direction: Optional[str] = None
 ) -> Union[
     Tuple[
         List[Dict[str, int]],
