@@ -16,7 +16,8 @@
             "description": "Parliamentary debates during the first years of the French Revolution (1789-1792)",
             "object_type": "div2",
             "citation_fields": ["title", "idno", "pub_date", "head", "date"],
-            "search_fields": ["year", "head", "type", "who", "div_date"]
+            "search_fields": ["year", "head", "type", "who", "div_date"],
+            "page_images_url_root": "https://artflsrv03.uchicago.edu/images/archivesparlementaires/"
         },
         "revlawallhub": {
             "name": "Revolutionary Laws",

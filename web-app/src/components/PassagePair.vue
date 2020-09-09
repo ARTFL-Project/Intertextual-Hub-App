@@ -130,9 +130,9 @@ export default {
             sourcePassageLength,
             targetPassageLength
         ) {
-            if (sourcePassageLength > 10000 || targetPassageLength > 10000) {
+            if (sourcePassageLength > 50000 || targetPassageLength > 50000) {
                 alert(
-                    "Passage of 10000 words or more may take up a long time to compare"
+                    "Passage of 50000 words or more may take up a long time to compare"
                 );
             }
 
@@ -194,6 +194,7 @@ export default {
     border: solid 1px #ddd;
     cursor: pointer;
     font-size: 90%;
+    text-decoration: none !important;
 }
 .diff-btn:hover {
     color: #565656 !important;

@@ -275,10 +275,10 @@
         >
             <div class="slides"></div>
             <h3 class="title"></h3>
-            <a class="prev img-buttons">&lt;</a>
-            <a class="next img-buttons">&gt;</a>
+            <a class="prev img-buttons"></a>
+            <a class="next img-buttons"></a>
             <a id="full-size-image" class="img-buttons">&nearr;</a>
-            <a class="close img-buttons">&#10005;</a>
+            <a class="close img-buttons"></a>
             <ol class="indicator"></ol>
         </div>
         <b-modal
@@ -308,6 +308,7 @@
 import PassagePair from "./PassagePair.vue";
 import Citations from "./Citations.vue";
 import Gallery from "blueimp-gallery";
+import "blueimp-gallery/css/blueimp-gallery.min.css";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light-border.css";
@@ -389,7 +390,6 @@ export default {
             }
         },
         reusesComputed() {
-            console.log(this.$appConfig.philoDBs[this.$route.params.philoDb]);
             if (!this.objectType) {
                 return true;
             } else if (
@@ -414,6 +414,25 @@ export default {
         });
     },
     updated() {
+        if (this.gallery) {
+            this.$nextTick(() => {
+                for (let imageType of [
+                    "page-image-link",
+                    "inline-img",
+                    "external-img",
+                ]) {
+                    document
+                        .getElementById("full-size-image")
+                        .removeEventListener("click", () => {
+                            let imageIndex = this.gallery.getIndex();
+                            let img = Array.from(
+                                document.getElementsByClassName(imageType)
+                            )[imageIndex].getAttribute("large-img");
+                            window.open(img);
+                        });
+                }
+            });
+        }
         this.updateInit();
     },
     destroyed() {
@@ -430,6 +449,9 @@ export default {
             instance.destroy();
         });
         this.tippyInstances.length = 0;
+        if (this.gallery) {
+            this.gallery.close();
+        }
     },
     methods: {
         fetchData() {
@@ -483,6 +505,9 @@ export default {
                     this.prev = response.data.prev;
                     this.next = response.data.next;
                     this.setUpNavBar();
+                    this.$nextTick(() => {
+                        this.setUpGallery();
+                    });
                     if (this.reload) {
                         this.$nextTick(() => {
                             this.updateInit();
@@ -663,13 +688,25 @@ export default {
                     if (currentObjImgs.indexOf(img[0]) === -1) {
                         if (img.length == 2) {
                             this.beforeObjImgs.push([
-                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
-                                `${this.philoConfig.page_images_url_root}/${img[1]}`,
+                                `${
+                                    this.$appConfig.philoDBs[this.philoDb]
+                                        .page_images_url_root
+                                }/${img[0]}`,
+                                `${
+                                    this.$appConfig.philoDBs[this.philoDb]
+                                        .page_images_url_root
+                                }/${img[1]}`,
                             ]);
                         } else {
                             this.beforeObjImgs.push([
-                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
-                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
+                                `${
+                                    this.$appConfig.philoDBs[this.philoDb]
+                                        .page_images_url_root
+                                }/${img[0]}`,
+                                `${
+                                    this.$appConfig.philoDBs[this.philoDb]
+                                        .page_images_url_root
+                                }/${img[0]}`,
                             ]);
                         }
                     } else {
@@ -682,13 +719,25 @@ export default {
                     if (currentObjImgs.indexOf(img[0]) === -1) {
                         if (img.length == 2) {
                             this.afterObjImgs.push([
-                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
-                                `${this.philoConfig.page_images_url_root}/${img[1]}`,
+                                `${
+                                    this.$appConfig.philoDBs[this.philoDb]
+                                        .page_images_url_root
+                                }/${img[0]}`,
+                                `${
+                                    this.$appConfig.philoDBs[this.philoDb]
+                                        .page_images_url_root
+                                }/${img[1]}`,
                             ]);
                         } else {
                             this.afterObjImgs.push([
-                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
-                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
+                                `${
+                                    this.$appConfig.philoDBs[this.philoDb]
+                                        .page_images_url_root
+                                }/${img[0]}`,
+                                `${
+                                    this.$appConfig.philoDBs[this.philoDb]
+                                        .page_images_url_root
+                                }/${img[0]}`,
                             ]);
                         }
                     }
@@ -708,13 +757,25 @@ export default {
                     if (currentObjImgs.indexOf(img[0]) === -1) {
                         if (img.length == 2) {
                             this.beforeGraphicsImgs.push([
-                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
-                                `${this.philoConfig.page_images_url_root}/${img[1]}`,
+                                `${
+                                    this.$appConfig.philoDBs[this.philoDb]
+                                        .page_images_url_root
+                                }/${img[0]}`,
+                                `${
+                                    this.$appConfig.philoDBs[this.philoDb]
+                                        .page_images_url_root
+                                }/${img[1]}`,
                             ]);
                         } else {
                             this.beforeGraphicsImgs.push([
-                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
-                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
+                                `${
+                                    this.$appConfig.philoDBs[this.philoDb]
+                                        .page_images_url_root
+                                }/${img[0]}`,
+                                `${
+                                    this.$appConfig.philoDBs[this.philoDb]
+                                        .page_images_url_root
+                                }/${img[0]}`,
                             ]);
                         }
                     } else {
@@ -727,13 +788,25 @@ export default {
                     if (currentObjImgs.indexOf(img[0]) === -1) {
                         if (img.length == 2) {
                             this.afterGraphicsImgs.push([
-                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
-                                `${this.philoConfig.page_images_url_root}/${img[1]}`,
+                                `${
+                                    this.$appConfig.philoDBs[this.philoDb]
+                                        .page_images_url_root
+                                }/${img[0]}`,
+                                `${
+                                    this.$appConfig.philoDBs[this.philoDb]
+                                        .page_images_url_root
+                                }/${img[1]}`,
                             ]);
                         } else {
                             this.afterGraphicsImgs.push([
-                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
-                                `${this.philoConfig.page_images_url_root}/${img[0]}`,
+                                `${
+                                    this.$appConfig.philoDBs[this.philoDb]
+                                        .page_images_url_root
+                                }/${img[0]}`,
+                                `${
+                                    this.$appConfig.philoDBs[this.philoDb]
+                                        .page_images_url_root
+                                }/${img[0]}`,
                             ]);
                         }
                     }
@@ -784,6 +857,7 @@ export default {
         },
         setUpGallery() {
             // Image Gallery handling
+            console.log("called");
             for (let imageType of [
                 "page-image-link",
                 "inline-img",
@@ -1461,5 +1535,30 @@ body {
 /* .slide-fade-leave-active below version 2.1.8 */ {
     transform: translateY(-30px);
     opacity: 0;
+}
+
+/* Image button styling */
+.img-buttons {
+    font-size: 45px !important;
+    color: #fff !important;
+    /* background-image: initial; */
+}
+#full-size-image {
+    right: 90px;
+    font-weight: 700 !important;
+    font-size: 20px !important;
+    left: auto;
+    margin: -15px;
+    text-decoration: none;
+    cursor: pointer;
+    position: absolute;
+    top: 28px;
+    color: #fff;
+    opacity: 0.8;
+    border: 3px solid;
+    padding: 0 0.25rem;
+}
+#full-size-image:hover {
+    opacity: 1;
 }
 </style>

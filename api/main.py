@@ -1,11 +1,9 @@
-from philologic.runtime.HitWrapper import TEXT_OBJECT_LEVELS
 import requests
 from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 import aligner
 import search
 import similarity
-from similarity import similar_docs
 from words import get_word_evolution, retrieve_associated_words
 from typing import List, Optional, Dict
 
