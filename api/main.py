@@ -19,6 +19,11 @@ HUB_URL = "https://anomander.uchicago.edu/intertextual_hub/"
 PHILO_TYPE = {1: "doc", 2: "div1", 3: "div2"}
 
 
+@app.get("/")
+def home():
+    return None
+
+
 @app.get("/navigate/{philo_db}")
 def navigate(
     philo_db: str,
@@ -98,7 +103,6 @@ def navigate(
             params={"philo_id": " ".join(text_object_id), "byte": byte},
         )
         philo_text_object = philologic_response.json()
-        print(philo_text_object["metadata_fields"])
         if direction is not None:
             prefix = f"{direction}_"
         else:

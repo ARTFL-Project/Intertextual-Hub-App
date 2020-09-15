@@ -31,10 +31,10 @@ PREPROC = PreProcessor(
 )
 
 INDEX = AnnoyIndex(2130, "angular")
-INDEX.load("/shared/NEH_intertextual_hub/doc2vec-annoy/tf_idf_index.annoy")
+INDEX.load(APP_CONFIG["annoy_index"])
 
 # DOC2VEC_MODEL = Doc2Vec.load("/shared/NEH_intertextual_hub/doc2vec-annoy/SEPT01mvo03.model")
-with open("/shared/NEH_intertextual_hub/doc2vec-annoy/tf_idf_vectorizer.pickle", "rb") as vectorizer:
+with open(APP_CONFIG["tfidf_model"], "rb") as vectorizer:
     TF_IDF_VECTORIZER: TfidfVectorizer = pickle.load(vectorizer)
 
 
@@ -79,10 +79,6 @@ def retrieve_similar_docs(philo_db: str, philo_id: str, num: int = 20):
 
 
 def submit_passage(passage: str, num: int = 20):
-    # processed_passage = " ".join(PREPROC.process_string(passage, keep_all=False)).split()
-    # search_vector = TaggedDocument(processed_passage, 0)
-    # inferred_vector = DOC2VEC_MODEL.infer_vector(search_vector[0])
-    # new_sims = INDEX.get_nns_by_vector(inferred_vector, num, include_distances=True)
     processed_passage = " ".join(PREPROC.process_string(passage, keep_all=False))
     passage_vector = TF_IDF_VECTORIZER.transform([processed_passage]).toarray()[0]
     new_sims = INDEX.get_nns_by_vector(passage_vector, num, include_distances=True)

@@ -36,7 +36,6 @@ def get_word_evolution(
             local_array[word_map[word["word"]]] = word["weight"]
         period_arrays.append({"period": period, "array": local_array})
     word_moves_recap: List[Dict[str, str]] = []
-    print(len(period_arrays))
     for pos in range(len(periods)):
         current_array = period_arrays[pos]["array"]
         try:

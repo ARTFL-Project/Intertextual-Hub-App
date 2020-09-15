@@ -3,7 +3,10 @@
         <b-card class="shadow-sm mb-4" style="position:relative">
             <span v-if="searchTerms">
                 Input terms:
-                <b v-if="binding == 'OR'">{{ searchTerms.split(" ").join(" OR ") }}</b>
+                <b
+                    v-if="binding == 'OR'"
+                    v-html="searchTerms.split(' ').join(`<tt style='font-size: 140%; font-weight: normal;'> OR </tt>`)"
+                ></b>
                 <b v-else>{{ searchTerms }}</b>
             </span>
             <br />Bibliographic search criteria:

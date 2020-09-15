@@ -138,7 +138,7 @@
                         <b>{{word}}</b> over time
                     </span>
                 </template>
-                <b-row class="mt-4" no-gutters align-h="center" v-if="wordMovers">
+                <b-row class="mt-4" no-gutters align-h="center" v-if="wordMovers && !singlePeriod">
                     <b-col cols="2" offset-md="4" align-self="center">
                         <h4 class="pl-3">Overall evolution:</h4>
                     </b-col>
@@ -151,6 +151,7 @@
                             <word-link
                                 :target="`${wordMovers.max_up}-overall`"
                                 :word="wordMovers.max_up"
+                                :extraLink="{link: `/search?words=${word}%20OR%20${wordMovers.max_up}`, text: `Find most relevant documents for <b>${word}</b> and <b>${wordMovers.max_up}</b>`}"
                             ></word-link>moved up the most
                         </h5>
                         <h5>
@@ -161,10 +162,16 @@
                             <word-link
                                 :target="`${wordMovers.max_down}-overall`"
                                 :word="wordMovers.max_down"
+                                :extraLink="{link: `/search?words=${word}%20OR%20${wordMovers.max_down}`, text: `Find most relevant documents for <b>${word}</b> and <b>${wordMovers.max_down}</b>`}"
                             ></word-link>moved down the most
                         </h5>
                     </b-col>
                 </b-row>
+                <div class="mt-4" v-else>
+                    The term
+                    <b>{{word}}</b>
+                    only occurs in {{singlePeriod}}
+                </div>
                 <div class="mt-4" v-if="periodPairs">
                     <b-row
                         v-for="periodPair in periodPairs"
@@ -190,6 +197,7 @@
                                             <word-link
                                                 :target="`${weightedWord.word}-${periodPair.start.period}`"
                                                 :word="weightedWord.word"
+                                                :extraLink="{link: `/search?words=${word}%20OR%20${weightedWord.word}&date=${periodPair.start.period}<%3D>${(parseInt(periodPair.start.period) + 24)}`, text: `Find most relevant documents for <b>${word}</b> and <b>${weightedWord.word}</b>`}"
                                             ></word-link>
                                         </span>
                                     </div>
@@ -208,6 +216,7 @@
                                     <word-link
                                         :target="`${periodPair.movers.max_up}-${periodPair.start.period}-movers`"
                                         :word="periodPair.movers.max_up"
+                                        :extraLink="{link: `/search?words=${word}%20OR%20${periodPair.movers.max_up}`, text: `Find most relevant documents for <b>${word}</b> and <b>${periodPair.movers.max_up}</b>`}"
                                     ></word-link>
                                 </span>
                                 <br />
@@ -221,6 +230,7 @@
                                     <word-link
                                         :target="`${periodPair.movers.max_down}-${periodPair.start.period}-movers`"
                                         :word="periodPair.movers.max_down"
+                                        :extraLink="{link: `/search?words=${word}%20OR%20${periodPair.movers.max_down}`, text: `Find most relevant documents for <b>${word}</b> and <b>${periodPair.movers.max_down}</b>`}"
                                     ></word-link>
                                 </span>
                             </div>
@@ -245,6 +255,7 @@
                                             <word-link
                                                 :target="`${weightedWord.word}-${periodPair.end.period}`"
                                                 :word="weightedWord.word"
+                                                :extraLink="{link: `/search?words=${word}%20OR%20${weightedWord.word}&date=${periodPair.end.period}<%3D>${(parseInt(periodPair.end.period) + 24)}`, text: `Find most relevant documents for <b>${word}</b> and <b>${weightedWord.word}</b>`}"
                                             ></word-link>
                                         </span>
                                     </div>
@@ -266,13 +277,13 @@ export default {
     components: { Citations, WordLink },
     data() {
         return {
-            word: "",
             localTopics: null,
             notFound: false,
             documents: [],
             topicDistribution: [],
             simWordsByTopics: [],
             simWordsByCooc: [],
+            singlePeriod: null,
             wordMovers: null,
             fields: [
                 { key: "name", label: "Topic", sortable: false },
@@ -285,6 +296,11 @@ export default {
             ],
             periodPairs: [],
         };
+    },
+    computed: {
+        word: function () {
+            return this.$route.params.word;
+        },
     },
     created() {
         this.$http
@@ -309,7 +325,6 @@ export default {
                     `${this.$appConfig.topologic.api}/get_word_data/${this.$appConfig.topologic.dbname}/${this.$route.params.word}`
                 )
                 .then((response) => {
-                    this.word = response.data.word;
                     if (response.data.documents.length > 0) {
                         this.documents = response.data.documents.slice(0, 10);
                         this.topicDistribution = this.build_topic_distribution(
@@ -326,7 +341,6 @@ export default {
                 })
                 .catch((error) => {
                     console.log(error);
-                    this.word = this.$route.params.word;
                     this.notFound = true;
                 });
             this.$http
@@ -349,6 +363,11 @@ export default {
                             movers: response.data.movers[i],
                         });
                     }
+                    if (this.periodPairs.length === 0) {
+                        this.singlePeriod = `${periods[0]}-${
+                            parseInt(periods[0]) + 25
+                        }`;
+                    }
                 })
                 .catch((error) => {
                     console.log(error);
@@ -369,7 +388,7 @@ export default {
             return joinedDistribution.slice(0, 5);
         },
         loadNewData() {
-            this.word = this.$route.params.word;
+            // this.word = this.$route.params.word;
             this.wordMovers = [];
             this.periodPairs = [];
             console.log(this.word);

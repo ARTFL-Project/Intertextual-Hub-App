@@ -190,7 +190,6 @@ def metadata_search(author, title, start_date, end_date, collections, periods):
                 count += 1
                 philo_db = row["philo_db"]
                 sections = []
-                print(OBJECT_LEVELS[philo_db], GROUP_BY_LEVELS[philo_db])
                 if OBJECT_LEVELS[philo_db] != GROUP_BY_LEVELS[philo_db]:
                     sections = retrieve_section_names(secondary_cursor, row["filename"], philo_db)
                 results_list.append(

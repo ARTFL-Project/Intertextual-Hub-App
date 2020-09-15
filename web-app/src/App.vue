@@ -1,7 +1,7 @@
 <template>
     <div id="app">
         <b-navbar type="light" variant="light" class="shadow">
-            <b-navbar-nav>
+            <b-navbar-nav align="center" style="width: 100%">
                 <b-navbar-brand to="/">Intertextual Hub</b-navbar-brand>
             </b-navbar-nav>
         </b-navbar>
@@ -165,6 +165,13 @@ a:not([href]) {
 a:not([href]):hover {
     color: $link-color;
     text-decoration: underline;
+}
+.navbar-brand {
+    color: $link-color !important;
+    font-variant: small-caps;
+    font-weight: 700;
+    font-size: 1.8rem;
+    padding: 0;
 }
 .link {
     cursor: pointer;

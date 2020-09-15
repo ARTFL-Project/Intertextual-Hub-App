@@ -4,6 +4,9 @@
             <span style="font-variant: small-caps;">{{ word }}</span>
         </template>
         <b-list-group flush>
+            <b-list-group-item v-if="extraLink">
+                <a :href="extraLink.link" v-html="extraLink.text"></a>
+            </b-list-group-item>
             <b-list-group-item>
                 <router-link :to="`/word/${word}`">Explore usage in corpus</router-link>
             </b-list-group-item>
@@ -17,7 +20,7 @@
 <script>
 export default {
     name: "WordLink",
-    props: ["target", "metadata", "word"],
+    props: ["target", "metadata", "word", "extraLink"],
     data() {
         return {
             philoUrl: null,
