@@ -11,6 +11,9 @@ with open("../web-app/src/appConfig.json") as db_config_file:
 GROUP_BY_LEVELS = app_config["groupByLevels"]
 OBJECT_LEVELS = {db: value["object_type"] for db, value in app_config["philoDBs"].items()}
 
+with open("./db_config.json") as db_config_file:
+    db_config = json.load(db_config_file)
+DB_FILE = db_config["federated_search_index"]
 
 TABLE_NAME = "intertextual_hub_federated"
 
@@ -110,7 +113,7 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
     where_stmt_list = []
     fullcount_query = 0
 
-    with sqlite3.connect("../intertextual_hub_federated.db") as conn:
+    with sqlite3.connect(DB_FILE) as conn:
         conn.text_factory = str
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
@@ -175,11 +178,11 @@ def metadata_search(author, title, start_date, end_date, collections, periods):
         query_stmt = select_stmt + where_likes
     query_stmt += " GROUP BY author, title ORDER BY date, filename"
 
-    with sqlite3.connect("../intertextual_hub_federated.db") as conn:
+    with sqlite3.connect(DB_FILE) as conn:
         conn.text_factory = str
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        with sqlite3.connect("../intertextual_hub_federated.db") as secondary_conn:
+        with sqlite3.connect(DB_FILE) as secondary_conn:
             secondary_conn.text_factory = str
             secondary_conn.row_factory = sqlite3.Row
             secondary_cursor = secondary_conn.cursor()

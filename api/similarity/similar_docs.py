@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import os
 import pickle
 from typing import Dict, Union, List
 from philologic.runtime.DB import DB
@@ -15,11 +16,12 @@ from annoy import AnnoyIndex
 with open("./db_config.json") as app_config:
     APP_CONFIG = json.load(app_config)
 
-with open("../philo_to_annoy.json") as input_file:
-    PHILO_ID_TO_ANNOY: Dict[str, Dict[str, str]] = json.load(input_file)
-
-with open("../annoy_to_philo.json") as input_file:
-    ANNOY_TO_PHILO_ID: Dict[str, Dict[str, str]] = json.load(input_file)
+with open("./db_config.json") as db_config_file:
+    db_config = json.load(db_config_file)
+    with open(os.path.join(db_config["doc_id_mapping"], "../philo_to_annoy.json")) as input_file:
+        PHILO_ID_TO_ANNOY: Dict[str, Dict[str, str]] = json.load(input_file)
+    with open(os.path.join(db_config["doc_id_mapping"], "../annoy_to_philo.json")) as input_file:
+        ANNOY_TO_PHILO_ID: Dict[str, Dict[str, str]] = json.load(input_file)
 
 PREPROC = PreProcessor(
     modernize=True,
