@@ -20,8 +20,7 @@
         "vue-apexcharts": "^1.6.0",
         "vue-router": "^3.4.3",
         "vue-scrollto": "^2.18.2",
-        "worker-loader": "^3.0.2",
-        "worker-plugin": "^5.0.0"
+        "worker-loader": "^3.0.2"
     },
     "devDependencies": {
         "@vue/cli-plugin-babel": "^4.5.6",
