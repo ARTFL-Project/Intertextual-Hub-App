@@ -471,7 +471,7 @@ export default {
             this.pairid = this.$route.query.pairid;
             this.$http
                 .get(
-                    `https://anomander.uchicago.edu/intertextual-hub-api/navigate/${this.$route.params.philoDb}`,
+                    `https://anomander.uchicago.edu/intertextual-hub-api/get_text/${this.$route.params.philoDb}`,
                     {
                         params: {
                             philo_id: philoId,

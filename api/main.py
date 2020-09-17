@@ -1,5 +1,8 @@
+import json
 import requests
 from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 import aligner
 import search
@@ -14,18 +17,40 @@ app.add_middleware(
     CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"],
 )
 
-HUB_URL = "https://anomander.uchicago.edu/intertextual_hub/"
+app.mount("/css", StaticFiles(directory="../web-app/dist/intertextual-hub/css"), name="css")
+app.mount("/js", StaticFiles(directory="../web-app/dist/intertextual-hub/js"), name="js")
+
+
+with open("./db_config.json") as db_config_file:
+    db_config = json.load(db_config_file)
+    PHILO_URLS = {dbname: values["url"] for dbname, values in db_config["philo_dbs"].items()}
 
 PHILO_TYPE = {1: "doc", 2: "div1", 3: "div2"}
+
+with open("../web-app/dist/index.html") as html:
+    INDEX_HTML = html.read()
 
 
 @app.get("/")
 def home():
-    return None
+    return HTMLResponse(INDEX_HTML)
 
 
-@app.get("/navigate/{philo_db}")
-def navigate(
+@app.get("/search")
+def intertextual_hub(request: Request):
+    return HTMLResponse(INDEX_HTML)
+
+
+@app.get("/navigate/{philo_db}/{doc}")
+@app.get("/navigate/{philo_db}/{doc}/{div1}")
+@app.get("/navigate/{philo_db}/{doc}/{div1}/{div2}")
+@app.get("/navigate/{philo_db}/{doc}/{div1}/{div2}/{div3}")
+def navigate(request: Request):
+    return HTMLResponse(INDEX_HTML)
+
+
+@app.get("/get_text/{philo_db}")
+def get_text(
     philo_db: str,
     philo_id: str,
     direction: Optional[str] = None,
@@ -42,7 +67,7 @@ def navigate(
         while text_object_id[-1] == "0":
             text_object_id.pop()
         philologic_response = requests.post(
-            f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py",
+            f"{PHILO_URLS[philo_db]}/reports/navigation.py",
             params={"philo_id": " ".join(text_object_id)},
             json={"passages": passage_data["passages"]},
         )
@@ -64,7 +89,7 @@ def navigate(
         )
         if passage_data is None:
             philologic_response = requests.post(
-                f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py", params={"philo_id": " ".join(text_object_id)},
+                f"{PHILO_URLS[philo_db]}/reports/navigation.py", params={"philo_id": " ".join(text_object_id)},
             )
             philo_text_object = philologic_response.json()
             return {
@@ -82,7 +107,7 @@ def navigate(
                 "object_type": text_object_type,
             }
         philologic_response = requests.post(
-            f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py",
+            f"{PHILO_URLS[philo_db]}/reports/navigation.py",
             params={"philo_id": " ".join(text_object_id)},
             json={"passages": passage_data},
         )
@@ -99,7 +124,7 @@ def navigate(
         }
     else:
         philologic_response = requests.post(
-            f"{HUB_URL}/philologic/{philo_db}/reports/navigation.py",
+            f"{PHILO_URLS[philo_db]}/reports/navigation.py",
             params={"philo_id": " ".join(text_object_id), "byte": byte},
         )
         philo_text_object = philologic_response.json()
