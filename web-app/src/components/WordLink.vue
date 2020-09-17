@@ -5,14 +5,14 @@
         </template>
         <b-list-group flush>
             <b-list-group-item v-if="extraLink">
-                <a :href="extraLink.link" v-html="extraLink.text"></a>
+                <router-link :to="extraLink.link" v-html="extraLink.text"></router-link>
             </b-list-group-item>
             <b-list-group-item>
                 <router-link :to="`/word/${word}`">Explore usage in corpus</router-link>
             </b-list-group-item>
             <b-list-group-item>
-                <a :href="link" v-if="metadata && philoUrl">See all occurrences in document</a>
-                <a :href="`/search?words=${word}`" v-else>Find most relevant documents</a>
+                <router-link :to="link" v-if="metadata && philoUrl">See all occurrences in document</router-link>
+                <router-link :to="`/search?words=${word}`" v-else>Find most relevant documents</router-link>
             </b-list-group-item>
         </b-list-group>
     </b-popover>

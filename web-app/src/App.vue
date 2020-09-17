@@ -10,7 +10,7 @@
             <b-tab
                 :active="activeTab == 'intro'"
                 title="Introduction &amp; Collections"
-                @click="selectModule('home')"
+                @click="selectModule('home', true)"
             >
                 <transition name="slide-fade">
                     <b-card style="border-top-width: 0" v-if="show">
@@ -32,7 +32,7 @@
             <b-tab
                 :active="activeTab == 'search'"
                 title="Search and Retrieval"
-                @click="selectModule('search')"
+                @click="selectModule('search', true)"
             >
                 <transition name="slide-fade">
                     <search-form v-if="show"></search-form>
@@ -41,7 +41,7 @@
             <b-tab
                 :active="activeTab == 'textpair'"
                 title="Explore text reuse"
-                @click="selectModule('SeqPairResultsSummary')"
+                @click="selectModule('SeqPairResultsSummary', true)"
             >
                 <transition name="slide-fade">
                     <similar-passage-form v-if="show"></similar-passage-form>
@@ -50,7 +50,7 @@
             <b-tab
                 :active="activeTab == 'topics'"
                 title="Explore Topics"
-                @click="selectModule('topicModeling')"
+                @click="selectModule('topicModeling', true)"
             >
                 <div class="mt-2 p-2" v-if="show">
                     Click on any topic to explore its usage across the
@@ -62,10 +62,10 @@
             <b-tab
                 :active="activeTab == 'wordUse'"
                 title="Explore word usage"
-                @click="selectModule('wordUse')"
+                @click="selectModule('wordUse', true)"
             >
                 <transition name="slide-fade">
-                    <word-search></word-search>
+                    <word-search v-if="show"></word-search>
                 </transition>
             </b-tab>
         </b-tabs>
@@ -110,8 +110,11 @@ export default {
             philoDbs: this.$appConfig.philoDBs,
         };
     },
+    watch: {
+        $route: "handleRouteChange",
+    },
     created() {
-        this.selectModule(this.report);
+        this.selectModule(this.report, true);
         EventBus.$on("hideForms", () => {
             this.show = false;
         });
@@ -120,20 +123,24 @@ export default {
         }
     },
     methods: {
-        selectModule(report) {
+        selectModule(report, show) {
             this.report = report;
             if (report == "SeqPairResultsSummary") {
                 this.activeTab = "textpair";
-            } else if (report == "topicModeling") {
+            } else if (report == "topicModeling" || report == "Document") {
                 this.activeTab = "topics";
-            } else if (report == "search") {
+            } else if (report == "Search") {
                 this.activeTab = "search";
             } else if (report == "intro") {
                 this.activeTab = "intro";
             } else if (report == "wordUse") {
                 this.activeTab = "wordUse";
             }
-            this.show = true;
+            this.show = show;
+            console.log(this.activeTab, this.show);
+        },
+        handleRouteChange(to) {
+            this.selectModule(to.name, false);
         },
         showOptions() {
             this.show = true;

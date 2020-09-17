@@ -389,11 +389,9 @@ export default {
             this.$router.push(`/topic/${topic.name}`);
         },
         makeCoocLink(word, weightedWord, periodPair) {
-            return `/intertextual-hub/search?words=${word}%20OR%20${
-                weightedWord.word
-            }&date=${periodPair.start.period}<%3D>${
-                parseInt(periodPair.start.period) + 24
-            }`;
+            return `/search?words=${word}%20OR%20${weightedWord.word}&date=${
+                periodPair.start.period
+            }<%3D>${parseInt(periodPair.start.period) + 24}`;
         },
     },
 };
