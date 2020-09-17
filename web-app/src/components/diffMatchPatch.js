@@ -54,12 +54,11 @@ diff_match_patch.prototype.diff_compute_ = function(a, b, c, d) {
             ]),
             a.length > b.length && (c[0][0] = c[2][0] = DIFF_DELETE),
             c) :
-        1 == f.length ?
-        [
+        1 == f.length ? [
             [DIFF_DELETE, a],
             [DIFF_INSERT, b],
         ] :
-        (e = this.diff_halfMatch_(a, b)) ?
+        (e == this.diff_halfMatch_(a, b)) ?
         ((b = e[1]),
             (f = e[3]),
             (a = e[4]),
@@ -184,8 +183,7 @@ diff_match_patch.prototype.diff_linesToChars_ = function(a, b) {
             g = a.indexOf("\n", c); -
             1 == g && (g = a.length - 1);
             var l = a.substring(c, g + 1);
-            (e.hasOwnProperty ?
-                e.hasOwnProperty(l) :
+            (e.hasOwnProperty ? {}.hasOwnProperty.call(e, l) :
                 void 0 !== e[l]) ?
             (b += String.fromCharCode(e[l])) :
             (h == f && ((l = a.substring(c)), (g = a.length)),
@@ -203,7 +201,11 @@ diff_match_patch.prototype.diff_linesToChars_ = function(a, b) {
         g = c(a);
     f = 65535;
     var h = c(b);
-    return { chars1: g, chars2: h, lineArray: d };
+    return {
+        chars1: g,
+        chars2: h,
+        lineArray: d
+    };
 };
 diff_match_patch.prototype.diff_charsToLines_ = function(a, b) {
     for (var c = 0; c < a.length; c++) {

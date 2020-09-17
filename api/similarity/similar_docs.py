@@ -18,9 +18,9 @@ with open("./db_config.json") as app_config:
 
 with open("./db_config.json") as db_config_file:
     db_config = json.load(db_config_file)
-    with open(os.path.join(db_config["doc_id_mapping"], "../philo_to_annoy.json")) as input_file:
+    with open(os.path.join(db_config["doc_id_mapping"], "philo_to_annoy.json")) as input_file:
         PHILO_ID_TO_ANNOY: Dict[str, Dict[str, str]] = json.load(input_file)
-    with open(os.path.join(db_config["doc_id_mapping"], "../annoy_to_philo.json")) as input_file:
+    with open(os.path.join(db_config["doc_id_mapping"], "annoy_to_philo.json")) as input_file:
         ANNOY_TO_PHILO_ID: Dict[str, Dict[str, str]] = json.load(input_file)
 
 PREPROC = PreProcessor(
