@@ -197,7 +197,7 @@
                                             <word-link
                                                 :target="`${weightedWord.word}-${periodPair.start.period}`"
                                                 :word="weightedWord.word"
-                                                :extraLink="{link: `/search?words=${word}%20OR%20${weightedWord.word}&date=${periodPair.start.period}<%3D>${(parseInt(periodPair.start.period) + 24)}`, text: `Find most relevant documents for <b>${word}</b> and <b>${weightedWord.word}</b>`}"
+                                                :extraLink="{link: makeCoocLink(word, weightedWord, periodPair), text: `Find most relevant documents for <b>${word}</b> and <b>${weightedWord.word}</b>`}"
                                             ></word-link>
                                         </span>
                                     </div>
@@ -396,6 +396,13 @@ export default {
         },
         goToTopic(topic) {
             this.$router.push(`/topic/${topic.name}`);
+        },
+        makeCoocLink(word, weightedWord, periodPair) {
+            return `/intertextual-hub/search?words=${word}%20OR%20${
+                weightedWord.word
+            }&date=${periodPair.start.period}<%3D>${
+                parseInt(periodPair.start.period) + 24
+            }`;
         },
     },
 };
