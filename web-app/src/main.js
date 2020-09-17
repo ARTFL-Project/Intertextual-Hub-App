@@ -4,7 +4,6 @@ import router from "./router";
 import vueScrollTo from "vue-scrollto";
 import VueApexCharts from "vue-apexcharts";
 import appConfig from "./appConfig.json";
-import hubConfig from "../../../config/intertextual_hub_config.json";
 
 import {
     BootstrapVue,
@@ -22,7 +21,6 @@ Vue.component("apexchart", VueApexCharts);
 Vue.prototype.$http = axios;
 Vue.prototype.$scrollTo = vueScrollTo.scrollTo;
 Vue.prototype.$appConfig = appConfig;
-Vue.prototype.$hubConfig = hubConfig;
 Vue.prototype.$report = "";
 export const EventBus = new Vue(); // To pass messages between components
 

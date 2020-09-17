@@ -125,7 +125,9 @@ export default {
             this.loading = true;
             this.$http
                 .get(
-                    `https://anomander.uchicago.edu//intertextual-hub-api/search_texts?${this.paramsToUrlString(
+                    `${
+                        this.$appConfig.apiServer
+                    }/intertextual-hub-api/search_texts?${this.paramsToUrlString(
                         this.$route.query
                     )}`
                 )

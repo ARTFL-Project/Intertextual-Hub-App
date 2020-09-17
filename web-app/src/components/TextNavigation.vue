@@ -471,7 +471,7 @@ export default {
             this.pairid = this.$route.query.pairid;
             this.$http
                 .get(
-                    `https://anomander.uchicago.edu/intertextual-hub-api/get_text/${this.$route.params.philoDb}`,
+                    `${this.$appConfig.apiServer}/intertextual-hub-api/get_text/${this.$route.params.philoDb}`,
                     {
                         params: {
                             philo_id: philoId,
@@ -516,7 +516,7 @@ export default {
                 });
             this.$http
                 .get(
-                    `https://anomander.uchicago.edu/intertextual-hub-api/get_similar_docs/${this.$route.params.philoDb}`,
+                    `${this.$appConfig.apiServer}/intertextual-hub-api/get_similar_docs/${this.$route.params.philoDb}`,
                     {
                         params: {
                             philo_id: philoId,
@@ -576,7 +576,7 @@ export default {
         getAlignment(data) {
             this.$http
                 .get(
-                    `https://anomander.uchicago.edu/intertextual-hub-api/retrieve_passage/${this.$route.query.pairid}`,
+                    `${this.$appConfig.apiServer}/intertextual-hub-api/retrieve_passage/${this.$route.query.pairid}`,
                     {
                         params: {
                             start_byte: data.offsets[0],
@@ -600,7 +600,7 @@ export default {
         getAlignments(pairids, passageids, passagesMetadata) {
             this.$http
                 .post(
-                    "https://anomander.uchicago.edu/intertextual-hub-api/retrieve_passages_all/",
+                    `${this.$appConfig.apiServer}/intertextual-hub-api/retrieve_passages_all/`,
                     {
                         pairids: pairids,
                         passageids: passageids,
@@ -1023,7 +1023,7 @@ export default {
             } else if (event.key == "s") {
                 this.$http
                     .post(
-                        "https://anomander.uchicago.edu/intertextual-hub-api/submit_passage",
+                        `${this.$appConfig.apiServer}/intertextual-hub-api/submit_passage`,
                         {
                             passage: selection,
                         }

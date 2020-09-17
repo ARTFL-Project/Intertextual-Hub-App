@@ -1,4 +1,5 @@
 {
+    "apiServer": "https://anomander.uchicago.edu",
     "philoDBs": {
         "frc": {
             "name": "French Revolutionary Pamphlets",

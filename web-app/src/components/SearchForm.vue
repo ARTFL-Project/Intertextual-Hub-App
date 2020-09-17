@@ -245,7 +245,7 @@ export default {
             } else {
                 this.$http
                     .get(
-                        `https://anomander.uchicago.edu/intertextual-hub-api/get_associated_words/${this.formValues.words}`
+                        `${this.$appConfig.apiServer}/intertextual-hub-api/get_associated_words/${this.formValues.words}`
                     )
                     .then((response) => {
                         this.formValues.words = `${

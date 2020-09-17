@@ -336,7 +336,7 @@ export default {
                 });
             this.$http
                 .get(
-                    `https://anomander.uchicago.edu/intertextual-hub-api/get_word_vectors/${this.$route.params.word}`
+                    `${this.$appConfig.apiServer}/intertextual-hub-api/get_word_vectors/${this.$route.params.word}`
                 )
                 .then((response) => {
                     this.wordMovers = response.data.overall_movers;

@@ -160,7 +160,9 @@ export default {
             this.results = [];
             this.$http
                 .get(
-                    `https://anomander.uchicago.edu//intertextual-hub-api/search_alignments?${this.paramsToUrlString(
+                    `${
+                        this.$appConfig.apiServer
+                    }/intertextual-hub-api/search_alignments?${this.paramsToUrlString(
                         this.$route.query
                     )}`
                 )
@@ -188,7 +190,7 @@ export default {
             if (this.passageTogglerMessages[index].startsWith("Show")) {
                 this.$http
                     .get(
-                        `https://anomander.uchicago.edu//intertextual-hub-api/retrieve_passages/${pairID}`
+                        `${this.$appConfig.apiServer}/intertextual-hub-api/retrieve_passages/${pairID}`
                     )
                     .then((response) => {
                         response.data[0].metadata = {
