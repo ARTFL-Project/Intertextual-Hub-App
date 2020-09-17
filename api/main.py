@@ -32,20 +32,19 @@ with open("../web-app/dist/index.html") as html:
 
 
 @app.get("/")
-def home():
-    return HTMLResponse(INDEX_HTML)
-
-
-@app.get("/search")
-def intertextual_hub(request: Request):
-    return HTMLResponse(INDEX_HTML)
-
-
 @app.get("/navigate/{philo_db}/{doc}")
 @app.get("/navigate/{philo_db}/{doc}/{div1}")
 @app.get("/navigate/{philo_db}/{doc}/{div1}/{div2}")
 @app.get("/navigate/{philo_db}/{doc}/{div1}/{div2}/{div3}")
-def navigate(request: Request):
+@app.get("/seq-pair/search")
+@app.get("/search")
+@app.get("/topic/{topic}")
+@app.get("/document/{db}/{doc}")
+@app.get("/document/{db}/{doc}/{div1}")
+@app.get("/document/{db}/{doc}/{div1}/{div2}")
+@app.get("/document/{db}/{doc}/{div1}/{div2}/{div3}")
+@app.get("/word/{word}")
+def home():
     return HTMLResponse(INDEX_HTML)
 
 
