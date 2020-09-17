@@ -277,7 +277,7 @@ export default {
     components: { Citations, WordLink },
     data() {
         return {
-            localTopics: null,
+            localTopics: this.$topicModelData.topics_words,
             notFound: false,
             documents: [],
             topicDistribution: [],
@@ -301,15 +301,6 @@ export default {
         word: function () {
             return this.$route.params.word;
         },
-    },
-    created() {
-        this.$http
-            .get(
-                `${this.$appConfig.topologic.api}/get_config/${this.$appConfig.topologic.dbname}?full_config=True`
-            )
-            .then((response) => {
-                this.localTopics = response.data.topics_words;
-            });
     },
     mounted() {
         this.fetchData();

@@ -39,17 +39,8 @@ export default {
     data() {
         return {
             routeName: this.$route.name,
-            localTopics: null,
+            localTopics: this.$topicModelData.topics_words,
         };
-    },
-    created() {
-        this.$http
-            .get(
-                `${this.$appConfig.topologic.api}/get_config/${this.$appConfig.topologic.dbname}?full_config=True`
-            )
-            .then((response) => {
-                this.localTopics = response.data.topics_words;
-            });
     },
     mounted() {
         document

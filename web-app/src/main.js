@@ -87,12 +87,19 @@ Vue.filter('pluralize', (word, count) => {
     return `${word}s`
 })
 
-new Vue({
-    el: "#app",
-    router,
-    template: "<App/>",
-    components: {
-        App,
-    },
-    render: (h) => h(App),
-});
+axios.get(
+        `${appConfig.topologic.api}/get_config/${appConfig.topologic.dbname}?full_config=True`
+    )
+    .then((response) => {
+        Vue.prototype.$topicModelData = response.data;
+
+        new Vue({
+            el: "#app",
+            router,
+            template: "<App/>",
+            components: {
+                App,
+            },
+            render: (h) => h(App),
+        });
+    });

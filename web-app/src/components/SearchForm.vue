@@ -154,7 +154,7 @@ export default {
             ],
             periodSelected: null,
             formValues: {},
-            topics: [],
+            topics: this.$topicModelData.topics_words,
         };
     },
     created() {
@@ -176,19 +176,9 @@ export default {
             if ("periods" in this.$route.query) {
                 this.periodSelected = this.$route.query.periods;
             }
-            this.getTopics();
         }
     },
     methods: {
-        getTopics() {
-            this.$http
-                .get(
-                    `${this.$appConfig.topologic.api}/get_config/${this.$appConfig.topologic.dbname}?full_config=True`
-                )
-                .then((response) => {
-                    this.topics = response.data.topics_words;
-                });
-        },
         search() {
             let formValues = {};
             for (let value in this.formValues) {

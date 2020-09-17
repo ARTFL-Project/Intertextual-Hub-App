@@ -131,9 +131,9 @@ export default {
     },
     data() {
         return {
-            timeSeriesConfig: null,
-            topicData: null,
-            year_interval: 0,
+            timeSeriesConfig: this.$topicModelData.appConfig.timeSeriesConfig,
+            topicData: this.$topicModelData.topics_words,
+            year_interval: this.$topicModelData.topic_over_time_interval,
             wordDistributionLabels: [],
             documents: [],
             similarTopics: [],
@@ -333,131 +333,107 @@ export default {
     methods: {
         fetchData() {
             EventBus.$emit("hideForms");
+
             this.$http
                 .get(
-                    `${this.$appConfig.topologic.api}/get_config/${this.$appConfig.topologic.dbname}?full_config=True`
+                    `${this.$appConfig.topologic.api}/get_topic_data/${this.$appConfig.topologic.dbname}/${this.$route.params.topic}`
                 )
                 .then((response) => {
-                    this.timeSeriesConfig =
-                        response.data.appConfig.timeSeriesConfig;
-                    this.year_interval =
-                        response.data.topics_over_time_interval;
-                    this.topicData = response.data.topics_words;
-                    this.$http
-                        .get(
-                            `${this.$appConfig.topologic.api}/get_topic_data/${this.$appConfig.topologic.dbname}/${this.$route.params.topic}`
-                        )
-                        .then((response) => {
-                            this.topic = this.$route.params.topic;
-                            this.documents = response.data.documents;
-                            this.frequency = (
-                                response.data.frequency * 100
-                            ).toFixed(4);
-                            this.similarTopics = response.data.similar_topics;
-                            this.buildWordDistribution(
-                                response.data.word_distribution
-                            );
-                            let startIndex = response.data.topic_evolution.labels.indexOf(
-                                this.timeSeriesConfig.startDate
-                            );
-                            let endIndex =
-                                response.data.topic_evolution.labels.length;
-                            for (
-                                let index = 0;
-                                index <
-                                response.data.topic_evolution.labels.length;
-                                index += 1
-                            ) {
-                                if (
-                                    response.data.topic_evolution.labels[
-                                        index
-                                    ] > this.timeSeriesConfig.endDate
-                                ) {
-                                    endIndex = index + 1;
-                                    break;
-                                }
-                            }
-                            this.year = `${
-                                response.data.topic_evolution.labels[startIndex]
-                            }-${
-                                response.data.topic_evolution.labels[
-                                    endIndex - 1
-                                ]
-                            }`;
-                            this.buildTopicEvolution(
-                                response.data.topic_evolution,
+                    this.topic = this.$route.params.topic;
+                    this.documents = response.data.documents;
+                    this.frequency = (response.data.frequency * 100).toFixed(4);
+                    this.similarTopics = response.data.similar_topics;
+                    this.buildWordDistribution(response.data.word_distribution);
+                    let startIndex = response.data.topic_evolution.labels.indexOf(
+                        this.timeSeriesConfig.startDate
+                    );
+                    let endIndex = response.data.topic_evolution.labels.length;
+                    for (
+                        let index = 0;
+                        index < response.data.topic_evolution.labels.length;
+                        index += 1
+                    ) {
+                        if (
+                            response.data.topic_evolution.labels[index] >
+                            this.timeSeriesConfig.endDate
+                        ) {
+                            endIndex = index + 1;
+                            break;
+                        }
+                    }
+                    this.year = `${
+                        response.data.topic_evolution.labels[startIndex]
+                    }-${response.data.topic_evolution.labels[endIndex - 1]}`;
+                    this.buildTopicEvolution(
+                        response.data.topic_evolution,
+                        startIndex,
+                        endIndex
+                    );
+
+                    this.similarEvolutionSeries = [
+                        ...response.data.similar_topics
+                            .slice(0, 5)
+                            .map((topic) => ({
+                                data: topic.topic_evolution.data.slice(
+                                    startIndex,
+                                    endIndex
+                                ),
+                                name: topic.topic.toString(),
+                                type: "line",
+                            })),
+                        {
+                            name: this.topic,
+                            data: response.data.topic_evolution.data.slice(
                                 startIndex,
                                 endIndex
-                            );
-
-                            this.similarEvolutionSeries = [
-                                ...response.data.similar_topics
-                                    .slice(0, 5)
-                                    .map((topic) => ({
-                                        data: topic.topic_evolution.data.slice(
-                                            startIndex,
-                                            endIndex
-                                        ),
-                                        name: topic.topic.toString(),
-                                        type: "line",
-                                    })),
-                                {
-                                    name: this.topic,
-                                    data: response.data.topic_evolution.data.slice(
-                                        startIndex,
-                                        endIndex
-                                    ),
-                                    type: "area",
-                                },
-                            ];
-                            this.similarEvolutionOptions = {
-                                ...this.similarEvolutionOptions,
-                                ...{
-                                    xaxis: {
-                                        categories: response.data.similar_topics[0].topic_evolution.labels.slice(
-                                            startIndex,
-                                            endIndex
-                                        ),
-                                    },
-                                    fill: {
-                                        opacity: [
-                                            ...response.data.similar_topics,
-                                            this.topic,
-                                        ]
-                                            .slice(startIndex, endIndex)
-                                            .map((topic) => {
-                                                if (
-                                                    topic.topic !=
-                                                    this.$route.params.topic
-                                                ) {
-                                                    return 1;
-                                                } else {
-                                                    return 0.1;
-                                                }
-                                            }),
-                                    },
-                                    colors: [
-                                        "#2E93fA",
-                                        "#66DA26",
-                                        "#546E7A",
-                                        "#E91E63",
-                                        "#FF9800",
-                                        "rgba(51, 178, 223, 0.09)",
-                                    ],
-                                },
-                            };
-                            this.$nextTick(function () {
-                                let selectedYear = document.querySelector(
-                                    "path[selected='true']"
-                                );
-                                if (selectedYear != null) {
-                                    selectedYear.setAttribute(
-                                        "selected",
-                                        "false"
-                                    );
-                                }
-                            });
-                        });
+                            ),
+                            type: "area",
+                        },
+                    ];
+                    this.similarEvolutionOptions = {
+                        ...this.similarEvolutionOptions,
+                        ...{
+                            xaxis: {
+                                categories: response.data.similar_topics[0].topic_evolution.labels.slice(
+                                    startIndex,
+                                    endIndex
+                                ),
+                            },
+                            fill: {
+                                opacity: [
+                                    ...response.data.similar_topics,
+                                    this.topic,
+                                ]
+                                    .slice(startIndex, endIndex)
+                                    .map((topic) => {
+                                        if (
+                                            topic.topic !=
+                                            this.$route.params.topic
+                                        ) {
+                                            return 1;
+                                        } else {
+                                            return 0.1;
+                                        }
+                                    }),
+                            },
+                            colors: [
+                                "#2E93fA",
+                                "#66DA26",
+                                "#546E7A",
+                                "#E91E63",
+                                "#FF9800",
+                                "rgba(51, 178, 223, 0.09)",
+                            ],
+                        },
+                    };
+                    this.$nextTick(function () {
+                        let selectedYear = document.querySelector(
+                            "path[selected='true']"
+                        );
+                        if (selectedYear != null) {
+                            selectedYear.setAttribute("selected", "false");
+                        }
+                    });
                 });
         },
         sumArray: function (arr) {

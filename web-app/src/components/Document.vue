@@ -146,7 +146,7 @@ export default {
         return {
             noResults: true,
             mainDoc: null,
-            topicData: null,
+
             text: "",
             words: [],
             fields: [
@@ -164,6 +164,7 @@ export default {
             philoUrl: `${
                 this.$appConfig.philoDBs[this.$route.params.philoDb].url
             }/navigate/${this.$route.params.doc}`,
+            topicData: this.$topicModelData.topics_words,
         };
     },
 
@@ -178,38 +179,29 @@ export default {
         fetchData() {
             let philo_id = this.$route.params.doc.split("/").join(" ");
             this.text = "";
+
             this.$http
                 .get(
-                    `${this.$appConfig.topologic.api}/get_config/${this.$appConfig.topologic.dbname}?full_config=True`
+                    `${this.$appConfig.topologic.api}/get_doc_data/${this.$appConfig.topologic.dbname}/${this.$route.params.philoDb}?philo_id=${philo_id}`
                 )
                 .then((response) => {
-                    this.topicData = response.data.topics_words;
-                    this.$http
-                        .get(
-                            `${this.$appConfig.topologic.api}/get_doc_data/${this.$appConfig.topologic.dbname}/${this.$route.params.philoDb}?philo_id=${philo_id}`
-                        )
-                        .then((response) => {
-                            if (!response.data.metadata) {
-                                this.noResults = true;
-                            } else {
-                                this.noResults = false;
-                                this.words = response.data.words;
-                                this.vectorSimDocs =
-                                    response.data.vector_sim_docs;
-                                this.topicSimDocs =
-                                    response.data.topic_sim_docs;
-                                this.mainDoc = {
-                                    metadata: response.data.metadata,
-                                    doc_id: "",
-                                    philo_id: response.data.metadata.philo_id,
-                                    philo_type:
-                                        response.data.metadata.philo_type,
-                                };
-                                this.topicDistribution = this.buildTopicDistribution(
-                                    response.data.topic_distribution
-                                );
-                            }
-                        });
+                    if (!response.data.metadata) {
+                        this.noResults = true;
+                    } else {
+                        this.noResults = false;
+                        this.words = response.data.words;
+                        this.vectorSimDocs = response.data.vector_sim_docs;
+                        this.topicSimDocs = response.data.topic_sim_docs;
+                        this.mainDoc = {
+                            metadata: response.data.metadata,
+                            doc_id: "",
+                            philo_id: response.data.metadata.philo_id,
+                            philo_type: response.data.metadata.philo_type,
+                        };
+                        this.topicDistribution = this.buildTopicDistribution(
+                            response.data.topic_distribution
+                        );
+                    }
                 });
         },
         buildTopicDistribution(topicDistribution) {
