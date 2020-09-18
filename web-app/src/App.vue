@@ -9,15 +9,11 @@
         <b-tabs fill id="main-tabs" class="shadow-sm">
             <b-tab
                 :active="activeTab == 'intro'"
-                title="Introduction &amp; Collections"
+                title="Collections"
                 @click="selectModule('home', true)"
             >
                 <transition name="slide-fade">
                     <b-card style="border-top-width: 0" v-if="show">
-                        <p class="py-2 px-3" style="text-align: justify; max-width:1000px">
-                            The Intertextual Hub is a pilot project to develop a model that will allow scholars of 18th century France to bridge
-                            the gap between distant and close reading when conducting research on large, heterogeneous digital text collections.
-                        </p>
                         <h5>Here are the collections included in the Intertextual Hub:</h5>
                         <b-list-group style="width: fit-content;">
                             <b-list-group-item v-for="philoDb in philoDbs" :key="philoDb.name">
@@ -72,7 +68,7 @@
         <transition name="fade">
             <div
                 id="show"
-                class="px-3"
+                class="p-2"
                 v-if="!show"
                 @click="showOptions()"
             >Click tab to show navigation options</div>
@@ -127,7 +123,7 @@ export default {
             this.report = report;
             if (report == "SeqPairResultsSummary") {
                 this.activeTab = "textpair";
-            } else if (report == "topicModeling" || report == "Document") {
+            } else if (report == "Topic" || report == "Document") {
                 this.activeTab = "topics";
             } else if (report == "Search") {
                 this.activeTab = "search";
@@ -140,6 +136,7 @@ export default {
             console.log(this.activeTab, this.show);
         },
         handleRouteChange(to) {
+            console.log(to);
             this.selectModule(to.name, false);
         },
         showOptions() {
@@ -202,7 +199,7 @@ a:not([href]):hover {
     cursor: pointer;
     color: #111;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
 }
 .slide-fade-enter-active {
     transition: all 0.3s ease-out;

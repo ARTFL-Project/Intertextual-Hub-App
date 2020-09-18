@@ -8,13 +8,6 @@
                 <router-link :to="philoLink">Read document</router-link>
             </b-list-group-item>
             <b-list-group-item class="px-1 py-2">
-                Read document with reuses:
-                <br />-
-                <router-link :to="`${navLink}&direction=target`">from earlier texts</router-link>
-                <br />-
-                <router-link :to="`${navLink}&direction=source`">from later texts</router-link>
-            </b-list-group-item>
-            <b-list-group-item class="px-1 py-2">
                 <router-link :to="`${topicLink}`">Explore topic distribution</router-link>
             </b-list-group-item>
         </b-list-group>
