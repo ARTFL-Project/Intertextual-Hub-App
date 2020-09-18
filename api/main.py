@@ -27,9 +27,6 @@ with open("./db_config.json") as db_config_file:
 
 PHILO_TYPE = {1: "doc", 2: "div1", 3: "div2"}
 
-with open("../web-app/dist/index.html") as html:
-    INDEX_HTML = html.read()
-
 
 @app.get("/")
 @app.get("/navigate/{philo_db}/{doc}")
@@ -51,7 +48,9 @@ with open("../web-app/dist/index.html") as html:
 @app.get("/document/{db}/{doc}/{div1}/{div2}/{div3}/{para}/{sent}/{word}")
 @app.get("/word/{word}")
 def home():
-    return HTMLResponse(INDEX_HTML)
+    with open("../web-app/dist/index.html") as html:
+        index_html = html.read()
+    return HTMLResponse(index_html)
 
 
 @app.get("/get_text/{philo_db}")
