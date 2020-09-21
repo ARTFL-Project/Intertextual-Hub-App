@@ -42,30 +42,30 @@
                     </b-card>
                 </b-col>
                 <b-col cols="12" md="6" lg="5" xl="4">
-                    <b-card
-                        no-body
-                        style="height: 100%"
-                        header="Vector Representation (up to 50 tokens shown)"
-                    >
-                        <div
-                            style="display: flex; height: 100%; justify-content: center; align-items: center;"
-                            class="card-text"
-                        >
+                    <b-card no-body style="height: 100%">
+                        <template v-slot:header>
+                            <h6
+                                id="distinctive-words"
+                                class="mb-0"
+                                v-b-popover.hover.top="`Distinctiveness is computed using the Term Frequency - Inverse Document Frequency algorithm (TF-IDF)`"
+                            >
+                                Most distinctive words
+                                <span
+                                    v-if="words.length == 50"
+                                >(up to 50 shown)</span>
+                            </h6>
+                        </template>
+                        <div id="word-cloud" class="card-text">
                             <div>
                                 <span v-for="weightedWord in words" :key="weightedWord[2]">
-                                    <a
-                                        :id="`${weightedWord[2]}`"
-                                        :style="
-                                        `display:inline-block; padding: 5px; cursor: pointer; font-size: ${1 +
-                                            weightedWord[1]}rem; color: ${
-                                            weightedWord[3]
-                                        }`
-                                    "
-                                    >{{ weightedWord[0] }}</a>
                                     <word-link
                                         :target="weightedWord[2]"
                                         :metadata="mainDoc.metadata"
                                         :word="weightedWord[0]"
+                                        :style="`display:inline-block; padding: 5px; cursor: pointer; font-size: ${1 +
+                                            weightedWord[1]}rem; color: ${
+                                            weightedWord[3]
+                                        }`"
                                     ></word-link>
                                 </span>
                             </div>
@@ -83,7 +83,7 @@
                     >
                         <b-list-group flush>
                             <b-list-group-item
-                                v-for="doc in topicSimDocs.slice(0,20)"
+                                v-for="(doc, topIndex) in topicSimDocs.slice(0,20)"
                                 :key="doc.doc_id"
                                 class="list-group-item"
                                 style="border-radius: 0px; border-width: 1px 0px"
@@ -91,6 +91,7 @@
                                 <citations
                                     :docPair="doc.metadata"
                                     :philo-db="`${doc.metadata.philo_db}`"
+                                    :index="`top-${topIndex}`"
                                 ></citations>
                                 <b-badge
                                     variant="secondary"
@@ -110,7 +111,7 @@
                     >
                         <b-list-group flush>
                             <b-list-group-item
-                                v-for="doc in vectorSimDocs"
+                                v-for="(doc, vocIndex) in vectorSimDocs"
                                 :key="doc.doc_id"
                                 class="list-group-item"
                                 style="border-radius: 0px; border-width: 1px 0px"
@@ -118,6 +119,7 @@
                                 <citations
                                     :docPair="doc.metadata"
                                     :philo-db="`${doc.metadata.philo_db}`"
+                                    :index="`voc-${vocIndex}`"
                                 ></citations>
                                 <b-badge
                                     variant="secondary"
@@ -201,6 +203,10 @@ export default {
                         this.topicDistribution = this.buildTopicDistribution(
                             response.data.topic_distribution
                         );
+                        // tippy("#distinctive-words", {
+                        //     content:
+                        //         "Distinctiveness is computed using the Term Frequency - Inverse Document Frequency algorithm",
+                        // });
                     }
                 });
         },
@@ -245,7 +251,10 @@ export default {
 .popover {
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
 }
-::v-deep .popover-body {
-    padding: 0;
+#word-cloud {
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
 }
 </style>

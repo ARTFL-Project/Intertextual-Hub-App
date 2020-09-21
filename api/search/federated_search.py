@@ -28,7 +28,7 @@ def de_accent(searchwords):
 def build_where_likes(start_date, end_date, collectionlimit, periodlimit):
     where_stmt_parts = []
     if collectionlimit:
-        where_stmt_parts.append('philodbname = "{0}"'.format(collectionlimit))
+        where_stmt_parts.append('philo_db = "{0}"'.format(collectionlimit))
     if start_date:
         if end_date:
             where_stmt_parts.append('date BETWEEN "{0}" and "{1}"'.format(start_date, end_date))

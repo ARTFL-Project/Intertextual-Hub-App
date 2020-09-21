@@ -52,13 +52,8 @@
                                         <b-list-group-item
                                             v-for="word in simWordsByTopics"
                                             :key="word.word"
-                                            class="list-group-item"
-                                            style="border-radius: 0px; border-width: 1px 0px; font-size: 90%"
+                                            class="list-group-item word-sim"
                                         >
-                                            <a
-                                                :id="`${word.word}-topics`"
-                                                style="display:inline-block; cursor: pointer; "
-                                            >{{ word.word }}</a>
                                             <word-link
                                                 :target="`${word.word}-topics`"
                                                 :word="word.word"
@@ -81,13 +76,8 @@
                                         <b-list-group-item
                                             v-for="word in simWordsByCooc"
                                             :key="word.word"
-                                            class="list-group-item"
-                                            style="border-radius: 0px; border-width: 1px 0px; font-size: 90%"
+                                            class="list-group-item word-sim"
                                         >
-                                            <a
-                                                :id="`${word.word}-docs`"
-                                                style="display:inline-block; cursor: pointer; "
-                                            >{{ word.word }}</a>
                                             <word-link
                                                 :target="`${word.word}-docs`"
                                                 :word="word.word"
@@ -408,6 +398,11 @@ export default {
     display: inline-block;
     padding: 5px;
     cursor: pointer;
+}
+.word-sim {
+    border-radius: 0px;
+    border-width: 1px 0px;
+    font-size: 90%;
 }
 ::v-deep .nav-tabs {
     border-bottom-width: 0;
