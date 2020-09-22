@@ -660,14 +660,17 @@ export default {
             let wordHighlight = document.querySelector(".highlight");
             if (!this.alreadyScrolled && firstPassage != null) {
                 this.$nextTick(() => {
-                    this.$scrollTo(
-                        document.querySelector(".passage-marker"),
-                        1000,
-                        { easing: "ease-out", offset: -150 }
-                    );
+                    if (this.pairid) {
+                        this.$scrollTo(
+                            document.querySelector(".passage-marker"),
+                            1000,
+                            { easing: "ease-out", offset: -150 }
+                        );
+                    }
                     let passageMarkers = document.getElementsByClassName(
                         "passage-marker"
                     );
+
                     Array.from(passageMarkers).forEach((el) =>
                         this.showPassage(el)
                     );

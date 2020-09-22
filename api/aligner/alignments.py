@@ -156,9 +156,6 @@ def query_builder(query_args: dict):
                 sql_values.append(value)
         else:
             continue
-    # if other_args.banality != "":
-    #     sql_fields.append("banality=%s")
-    #     sql_values.append(other_args.banality)
     return " AND ".join(sql_fields), sql_values
 
 
