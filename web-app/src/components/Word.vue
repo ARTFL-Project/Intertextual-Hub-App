@@ -134,26 +134,20 @@
                     </b-col>
                     <b-col cols="6">
                         <h5>
-                            <a :id="`${wordMovers.max_up}-overall`">
-                                <b>&nearr;</b>
-                                {{ wordMovers.max_up }}
-                            </a>
+                            <b>&nearr;&nbsp;</b>
                             <word-link
                                 :target="`${wordMovers.max_up}-overall`"
                                 :word="wordMovers.max_up"
                                 :extraLink="{link: `/search?words=${word}%20OR%20${wordMovers.max_up}`, text: `Find most relevant documents for <b>${word}</b> and <b>${wordMovers.max_up}</b>`}"
-                            ></word-link>moved up the most
+                            ></word-link>&nbsp;moved up the most
                         </h5>
                         <h5>
-                            <a :id="`${wordMovers.max_down}-overall`">
-                                <b>&searr;</b>
-                                {{ wordMovers.max_down }}
-                            </a>
+                            <b>&searr;&nbsp;</b>
                             <word-link
                                 :target="`${wordMovers.max_down}-overall`"
                                 :word="wordMovers.max_down"
                                 :extraLink="{link: `/search?words=${word}%20OR%20${wordMovers.max_down}`, text: `Find most relevant documents for <b>${word}</b> and <b>${wordMovers.max_down}</b>`}"
-                            ></word-link>moved down the most
+                            ></word-link>&nbsp;moved down the most
                         </h5>
                     </b-col>
                 </b-row>
@@ -180,15 +174,13 @@
                                             v-for="weightedWord in periodPair.start.words"
                                             :key="weightedWord.word"
                                         >
-                                            <a
-                                                :id="`${weightedWord.word}-${periodPair.start.period}`"
-                                                :style="`font-size: ${1 + weightedWord.size}rem; color: ${weightedWord.color} !important`"
-                                            >{{ weightedWord.word }}</a>
+                                            &nbsp;
                                             <word-link
                                                 :target="`${weightedWord.word}-${periodPair.start.period}`"
                                                 :word="weightedWord.word"
                                                 :extraLink="{link: makeCoocLink(word, weightedWord, periodPair), text: `Find most relevant documents for <b>${word}</b> and <b>${weightedWord.word}</b>`}"
-                                            ></word-link>
+                                                :style="`font-size: ${1 + weightedWord.size}rem; color: ${weightedWord.color} !important; padding: 0 .5rem`"
+                                            ></word-link>&nbsp;
                                         </span>
                                     </div>
                                 </div>
@@ -197,12 +189,7 @@
                         <b-col cols="2" align-self="center">
                             <div>
                                 <span style="font-size: 1.25rem">
-                                    <a
-                                        :id="`${periodPair.movers.max_up}-${periodPair.start.period}-movers`"
-                                    >
-                                        <b>&nearr;</b>
-                                        {{ periodPair.movers.max_up }}
-                                    </a>
+                                    <b>&nearr;&nbsp;</b>
                                     <word-link
                                         :target="`${periodPair.movers.max_up}-${periodPair.start.period}-movers`"
                                         :word="periodPair.movers.max_up"
@@ -211,12 +198,7 @@
                                 </span>
                                 <br />
                                 <span style="font-size: 1.25rem">
-                                    <a
-                                        :id="`${periodPair.movers.max_down}-${periodPair.start.period}-movers`"
-                                    >
-                                        <b>&searr;</b>
-                                        {{ periodPair.movers.max_down }}
-                                    </a>
+                                    <b>&searr;&nbsp;</b>
                                     <word-link
                                         :target="`${periodPair.movers.max_down}-${periodPair.start.period}-movers`"
                                         :word="periodPair.movers.max_down"
@@ -238,13 +220,10 @@
                                             v-for="weightedWord in periodPair.end.words"
                                             :key="weightedWord.word"
                                         >
-                                            <a
-                                                :id="`${weightedWord.word}-${periodPair.end.period}`"
-                                                :style="`font-size: ${1 + weightedWord.size}rem; color: ${weightedWord.color} !important`"
-                                            >{{ weightedWord.word }}</a>
                                             <word-link
                                                 :target="`${weightedWord.word}-${periodPair.end.period}`"
                                                 :word="weightedWord.word"
+                                                :style="`font-size: ${1 + weightedWord.size}rem; color: ${weightedWord.color} !important; padding: 0 .5rem`"
                                                 :extraLink="{link: `/search?words=${word}%20OR%20${weightedWord.word}&date=${periodPair.end.period}<%3D>${(parseInt(periodPair.end.period) + 24)}`, text: `Find most relevant documents for <b>${word}</b> and <b>${weightedWord.word}</b>`}"
                                             ></word-link>
                                         </span>
@@ -391,8 +370,7 @@ export default {
 .word-cloud {
     display: flex;
     height: 100%;
-    justify-content: center;
-    align-items: center;
+    text-align: center;
 }
 .word-cloud a {
     display: inline-block;
