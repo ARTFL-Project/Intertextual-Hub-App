@@ -33,8 +33,6 @@ FIELD_TYPES = {
     "target_date": {"type": "DATE"},
     "source_philo_id": {"type": "TEXT"},
     "target_philo_id": {"type": "TEXT"},
-    # "source_philo_type": "TEXT",
-    # "target_philo_type": "TEXT",
     "pairid": {"type": "TEXT"},
     "passages": {"type": "JSONB"},
 }
@@ -89,6 +87,8 @@ def query_builder(query_args: dict):
     sql_fields = []
     sql_values = []
     for field, value in query_args.items():
+        if field == "banality_filter":
+            continue
         value = value.strip()
         field_type = FIELD_TYPES[field]["type"]
         query = ""
@@ -175,7 +175,14 @@ def search_alignments(**query_params):
         results = []
         for row in cursor:
             metadata = {field: row[field] for field in FIELD_TYPES if field != "passages"}
-            metadata["passage_number"] = len(row["passages"])
+            metadata["passage_number"] = 0
+            metadata["banality_count"] = 0
+            metadata["lengths"] = []
+            for passage in row["passages"]:
+                metadata["passage_number"] += 1
+                metadata["lengths"].append((passage["banality"], passage["source_passage_length"]))
+                if passage["banality"] == "true":
+                    metadata["banality_count"] += 1
             results.append(metadata)
         total_query = f"SELECT COUNT(*) FROM {ALIGNMENTS_TABLE} WHERE {sql_fields}"
         cursor.execute(total_query, sql_values)
@@ -280,7 +287,7 @@ def get_passage_by_philo_id(
         List[Dict[str, int]],
         List[List[Dict[str, Union[str, datetime]]]],
         Dict[str, Union[str, datetime]],
-        List[Union[Dict[str, Union[str, datetime]], str]],
+        List[Union[Dict[str, str], str]],
     ],
     Tuple[None, None, None, None],
 ]:
@@ -350,7 +357,7 @@ def get_passage_by_philo_id(
                 author_titles[author_title] = [doc]
             else:
                 author_titles[author_title].append(doc)
-    docs_cited: List[Union[Dict[str, Union[str, datetime]], str]] = [
+    docs_cited: List[Union[Dict[str, str], str]] = [
         {
             "doc_metadata": {
                 f"{opposite_direction}_author": metadata[0][f"{opposite_direction}_author"],
@@ -362,6 +369,7 @@ def get_passage_by_philo_id(
         }
         for metadata in author_titles.values()
     ]
+    docs_cited.sort(key=lambda x: int(x["doc_metadata"][f"{opposite_direction}_date"]))
     return passage_groups, metadata_list, doc_metadata, docs_cited
 
 

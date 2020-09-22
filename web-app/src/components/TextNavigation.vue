@@ -51,14 +51,37 @@
                     </div>
                     <div v-if="docsCited">
                         <h6 class="pt-4">Reuses from these documents:</h6>
-                        <ul style="padding-inline-start: 2rem">
-                            <li v-for="(doc, docIndex) in docsCited" :key="docIndex">
+                        <ul style="padding-inline-start: 2rem; line-height: 2rem;">
+                            <li
+                                v-for="(doc, docIndex) in docsCited"
+                                :key="docIndex"
+                                :id="`reuse-${docIndex}`"
+                            >
                                 <span
                                     v-if="doc.doc_metadata[`${doc.direction}_author`]"
                                 >{{doc.doc_metadata[`${doc.direction}_author`]}}&nbsp;&#9679;&nbsp;</span>
-                                <i>{{doc.doc_metadata[`${doc.direction}_title`]}}</i>
+                                <i
+                                    class="docs-cited"
+                                    @click="showHeads(docIndex)"
+                                >{{doc.doc_metadata[`${doc.direction}_title`]}}</i>
                                 &nbsp;&#9679;&nbsp;
                                 {{doc.doc_metadata[`${doc.direction}_date`]}}
+                                <ul style="display: none;">
+                                    <h6
+                                        style="margin-left: -2.5rem; padding-bottom:0;"
+                                    >Passages listed in order of occurrence in document:</h6>
+                                    <li
+                                        v-for="(metadata, metadataIndex) in doc.metadata"
+                                        :key="metadata.passageid"
+                                        @click="goToPassage(metadata.passageid)"
+                                        style="line-height: 1.5rem;"
+                                    >
+                                        {{metadata[`${doc.direction}_head`]}}:
+                                        <span
+                                            class="docs-cited-heads"
+                                        >passage {{metadataIndex+1}}</span>
+                                    </li>
+                                </ul>
                             </li>
                         </ul>
                     </div>
@@ -1037,10 +1060,50 @@ export default {
         toggleSimDocs() {
             this.showAllSimDocs = true;
         },
+        showHeads(docIndex) {
+            document.querySelector(`#reuse-${docIndex} ul`).style.display =
+                "block";
+        },
+        goToPassage(passageid) {
+            let n = 0;
+            outerLoop: for (let passageGroup of this.intertextualMetadata) {
+                for (let passage of passageGroup) {
+                    if (passage.passageid == passageid) {
+                        break outerLoop;
+                    }
+                }
+                n += 1;
+            }
+            this.$scrollTo(
+                document.querySelector(`.passage-marker[n='${n}']`),
+                1000,
+                {
+                    easing: "ease-out",
+                    offset: -150,
+                    onDone: () => {
+                        this.$nextTick(() => {
+                            document
+                                .querySelectorAll(`.passage-${n}`)
+                                .forEach((el) => {
+                                    el.classList.add("color-change");
+                                    setTimeout(() => {
+                                        el.classList.remove("color-change");
+                                    }, 500);
+                                });
+                        }, 1000);
+                    },
+                }
+            );
+            console.log(n);
+        },
     },
 };
 </script>
-<style scoped>
+<style scoped lang="scss">
+@import "../assets/theme.scss";
+@import "~bootstrap/scss/bootstrap.scss";
+@import "~bootstrap-vue/src/index.scss";
+
 .toc-div1 > a,
 .toc-div2 > a,
 .toc-div3 > a {
@@ -1162,9 +1225,6 @@ a.current-obj,
     pointer-events: none;
 }
 #direction-toggle {
-    /* position: absolute;
-    top: 0;
-    left: 0; */
     display: inline-block;
     padding: 0.5rem;
 }
@@ -1176,9 +1236,15 @@ a.current-obj,
 }
 ::v-deep [class*="passage-"] {
     color: indianred;
+    background-color: white;
+    transition: all 500ms ease;
 }
 ::v-deep [class*="passage-"]:hover {
     cursor: pointer;
+}
+::v-deep .color-change {
+    background-color: indianred;
+    color: #fff;
 }
 ::v-deep .passage-marker {
     display: inline-block;
@@ -1560,5 +1626,10 @@ body {
 }
 #full-size-image:hover {
     opacity: 1;
+}
+.docs-cited,
+.docs-cited-heads {
+    cursor: pointer;
+    color: $link-color;
 }
 </style>

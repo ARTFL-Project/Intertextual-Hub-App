@@ -15,7 +15,10 @@
                         v-for="field in metadataFields[direction]"
                         :key="field.label"
                     >
-                        <b-form-input v-model="formValues[field.value]"></b-form-input>
+                        <b-form-input
+                            :placeholder="field.placeholder"
+                            v-model="formValues[field.value]"
+                        ></b-form-input>
                     </b-input-group>
                     <b-input-group class="pb-3">
                         <template v-slot:prepend>
@@ -28,12 +31,13 @@
                         <b-form-input
                             v-model="formValues[`${direction}_date`]"
                             v-if="dateType[direction] == 'exact'"
+                            placeholder="e.g. 1750"
                         ></b-form-input>
                         <b-input-group
                             prepend="from"
                             v-if="dateType[direction] == 'range'"
                             class="d-inline-flex ml-3"
-                            style="width: auto"
+                            style="width: 11rem"
                         >
                             <b-form-input
                                 v-model="dateRange[direction].from"
@@ -43,8 +47,9 @@
                         <b-input-group
                             prepend="to"
                             v-if="dateType[direction] == 'range'"
+                            id="range-to"
                             class="d-inline-flex ml-3"
-                            style="width: auto"
+                            style="width: 11rem"
                         >
                             <b-form-input v-model="dateRange[direction].to" placeholder="e.g. 1799"></b-form-input>
                         </b-input-group>
@@ -68,20 +73,25 @@ export default {
                     {
                         label: "Author",
                         value: "source_author",
+                        placeholder: "e.g. Rousseau, Jean-Jacques",
                     },
                     {
                         label: "Title",
                         value: "source_title",
+                        placeholder: "e.g. Du contrat social",
                     },
                 ],
                 target: [
                     {
                         label: "Author",
                         value: "target_author",
+                        placeholder: "e.g. Robespierre, Maximilien",
                     },
                     {
                         label: "Title",
                         value: "target_title",
+                        placeholder:
+                            "e.g. Discours sur l'organisation des Gardes nationales",
                     },
                 ],
             },
@@ -93,6 +103,10 @@ export default {
             dateRange: {
                 source: { to: null, from: null },
                 target: { to: null, from: null },
+            },
+            banalitySelected: {
+                label: "do not filter",
+                value: "no",
             },
         };
     },
@@ -136,7 +150,6 @@ export default {
                 formValues.target_date = `${this.dateRange.target.from}<=>${this.dateRange.target.to}`;
             }
             let route = this.paramsToRoute(formValues, "/seq-pair/search");
-            console.log(formValues, route);
             this.$router.push(route);
         },
         clearForm() {
@@ -152,3 +165,11 @@ export default {
     },
 };
 </script>
+<style scoped>
+@media (max-width: 1115px) {
+    #range-to {
+        margin-top: 0.75rem;
+        margin-left: 9.6rem !important;
+    }
+}
+</style>

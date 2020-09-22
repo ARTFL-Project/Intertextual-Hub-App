@@ -12,9 +12,17 @@
             <span class="count">{{ resultsIndex + 1 + currentStart}}</span>
             <b-row class="px-3">
                 <b-col sm="3" md="3" lg="2" align-self="center">
-                    <h6
-                        class="text-center"
-                    >{{ documentPair.passage_number }} common {{'passage' | pluralize(documentPair.passage_number)}}</h6>
+                    <h6 class="text-center">
+                        {{ documentPair.passage_number }} common {{'passage' | pluralize(documentPair.passage_number)}}
+                        <span
+                            v-if="documentPair.banality_count > 0"
+                        >
+                            <br />
+                            {{documentPair.banality_count}} {{'banal passage' | pluralize(documentPair.banality_count)}}
+                        </span>
+                        <br />
+                        {{documentPair.lengths}}
+                    </h6>
                 </b-col>
                 <b-col align-self="stretch" style="border-left: solid 1px #ddd">
                     <b-row>
