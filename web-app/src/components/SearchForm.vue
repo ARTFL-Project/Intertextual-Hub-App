@@ -40,6 +40,17 @@
                         style="vertical-align: baseline"
                         @click="addAssociatedWords()"
                     >add 10 most associated words</b-button>
+                    <b-alert
+                        :show="dismissCountDown"
+                        @dismissed="dismissCountDown=0"
+                        @dismiss-count-down="countDownChanged"
+                        variant="danger"
+                        dismissible
+                        fade
+                    >
+                        The term
+                        <b>{{formValues.words}}</b> is not present in the associated words index
+                    </b-alert>
                     <b-input-group
                         :prepend="field.label"
                         class="pb-3"
@@ -95,7 +106,17 @@
                     <b-input-group prepend="Period" class="mb-3">
                         <b-form-select v-model="periodSelected" :options="periods"></b-form-select>
                     </b-input-group>
-                    <b-button-group>
+                    <b-input-group class="d-inline" prepend="Max results displayed"></b-input-group>
+                    <b-form-group class="d-inline-block">
+                        <b-form-radio-group
+                            v-model="formValues.limit"
+                            :options="[100, 250, 500]"
+                            buttons
+                            button-variant="outline-secondary"
+                            name="radios-btn-default"
+                        ></b-form-radio-group>
+                    </b-form-group>
+                    <b-button-group class="d-block mt-3">
                         <b-button variant="primary" type="submit">Search</b-button>
                         <b-button type="reset" variant="outline-primary">Reset</b-button>
                     </b-button-group>
@@ -153,14 +174,15 @@ export default {
                 ...this.$appConfig.periods,
             ],
             periodSelected: null,
-            formValues: {},
+            formValues: { limit: 100 },
             topics: this.$topicModelData.topics_words,
+            showError: false,
+            dismissCountDown: 0,
         };
     },
     created() {
-        if (this.$route.query || Object.keys(this.$route.query).length > 0) {
+        if (Object.keys(this.$route.query).length > 0) {
             this.formValues = this.copyObject(this.$route.query);
-
             if (
                 "date" in this.$route.query &&
                 this.$route.query["date"].match("<=>")
@@ -259,8 +281,18 @@ export default {
                             "#words input"
                         ).value = this.formValues.words;
                         this.formValues.binding = "OR";
+                    })
+                    .catch(() => {
+                        // alert("word is not present in associated word index");
+                        this.showAlert();
                     });
             }
+        },
+        countDownChanged(dismissCountDown) {
+            this.dismissCountDown = dismissCountDown;
+        },
+        showAlert() {
+            this.dismissCountDown = 3;
         },
     },
 };

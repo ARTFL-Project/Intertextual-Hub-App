@@ -9,6 +9,7 @@ from dataclasses import dataclass
 import rapidjson as json
 from datetime import datetime
 
+
 with open("./db_config.json") as db_config_file:
     db_config = json.load(db_config_file)
 DB_USER = db_config["database_user"]
@@ -427,3 +428,24 @@ def get_passages_by_pairids_and_passageids(pairids: List[str], passageids: List[
                     break
     return passage_objects
 
+
+def check(philo_db: str, object_id: str):
+    zeros_to_add = " ".join(["0" for _ in range(7 - len(object_id.split()))])
+    philo_id: str = f"{' '.join(object_id.split())} {zeros_to_add}"
+    source_count = 0
+    target_count = 0
+    with psycopg2.connect(
+        user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
+    ) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"SELECT COUNT(*) FROM {ALIGNMENTS_TABLE} WHERE source_philo_db=%s AND source_philo_id=%s",
+            (philo_db, philo_id,),
+        )
+        source_count = cursor.fetchone()[0]
+        cursor.execute(
+            f"SELECT COUNT(*) FROM {ALIGNMENTS_TABLE} WHERE target_philo_db=%s AND target_philo_id=%s",
+            (philo_db, philo_id,),
+        )
+        target_count = cursor.fetchone()[0]
+    return {"source_count": source_count, "target_count": target_count}

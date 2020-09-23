@@ -5,6 +5,7 @@ from .alignments import (
     get_passages,
     get_passage_by_philo_id,
     get_passages_by_pairids_and_passageids,
+    check,
     search_alignments2,
 )
 

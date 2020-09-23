@@ -9,7 +9,7 @@
                     v-if="docMetadata"
                 ></citations>
             </h5>
-            <b-tabs>
+            <b-tabs v-model="tabIndex">
                 <b-tab title="Similar documents" :active="!intertextual">
                     <div v-if="similarDocs.length > 0">
                         <h6 class="pt-2 px-2">20 most similar documents (top 5 displayed):</h6>
@@ -30,18 +30,25 @@
                     </div>
                     <h6 class="p-2" v-else>No similar docs were found.</h6>
                 </b-tab>
-                <b-tab title="Text reuses" :active="intertextual == 'true'" @click="reUseTab()">
+                <b-tab
+                    :title="sourceReuseCount > 0 || targetReuseCount > 0? 'Text reuses': 'No text reuses'"
+                    :active="intertextual == 'true'"
+                    :disabled="sourceReuseCount == 0 && targetReuseCount == 0"
+                    @click="reUseTab()"
+                >
                     <div id="direction-toggle" v-if="reusesComputed">
                         <b-form-group @change.native="toggleDirection">
                             <b-form-radio
                                 v-model="direction"
                                 name="direction"
                                 value="target"
+                                v-if="targetReuseCount > 0"
                             >View reuses from earlier texts</b-form-radio>
                             <b-form-radio
                                 v-model="direction"
                                 name="direction"
                                 value="source"
+                                v-if="sourceReuseCount > 0"
                             >View reuses in later texts</b-form-radio>
                         </b-form-group>
                     </div>
@@ -383,6 +390,9 @@ export default {
             passageSimilarDocs: [],
             showAllSimDocs: false,
             objectType: null,
+            sourceReuseCount: 0,
+            targetReuseCount: 0,
+            tabIndex: 0,
         };
     },
     computed: {
@@ -536,6 +546,19 @@ export default {
                             this.updateInit();
                         });
                     }
+                });
+            this.$http
+                .get(
+                    `${this.$appConfig.apiServer}/intertextual-hub-api/check_for_alignments/${this.$route.params.philoDb}`,
+                    {
+                        params: {
+                            philo_id: philoId,
+                        },
+                    }
+                )
+                .then((response) => {
+                    this.sourceReuseCount = response.data.source_count;
+                    this.targetReuseCount = response.data.target_count;
                 });
             this.$http
                 .get(
@@ -1155,16 +1178,16 @@ export default {
     border-bottom-width: 0;
 }
 ::v-deep .nav-link {
-    background-color: rgba(230, 230, 230, 0.6) !important;
+    background-color: $link-color;
     border-bottom: 1px solid #dee2e6;
-    color: rgba(0, 0, 0, 0.6) !important;
+    color: #fff;
     transition: all 250ms;
 }
 
 ::v-deep .nav-link.active {
-    background-color: rgba(230, 230, 230, 0.2) !important;
+    color: $link-color;
     border-bottom-color: transparent !important;
-    color: rgb(0, 0, 0) !important;
+    background-color: #fff;
 }
 .separator {
     padding: 5px;

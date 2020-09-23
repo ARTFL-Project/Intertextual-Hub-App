@@ -127,9 +127,11 @@ export default {
         }
     },
     methods: {
-        selectModule(report) {
+        selectModule(report, noShow) {
             let show;
-            if (!this.show) {
+            if (noShow === false) {
+                show = false;
+            } else if (!this.show) {
                 show = true;
             } else if (this.show && report != this.report) {
                 show = true;
@@ -151,7 +153,7 @@ export default {
             this.show = show;
         },
         handleRouteChange(to) {
-            this.selectModule(to.name);
+            this.selectModule(to.name, false);
         },
         showOptions() {
             this.show = true;

@@ -41,9 +41,13 @@
                     >with {{ "this search term" | pluralize(searchTerms.split(" ").length) }}</span>:
                     <b>{{ docCount }}</b>
 
-                    <span v-if="results.length == 100">
-                        <br />Displaying first 100 results:
+                    <span v-if="docCount > resultLimit">
+                        <br />
+                        Displaying first {{resultLimit}} results:
                         &nbsp;use search filters to narrow search results
+                        <span
+                            v-if="resultLimit != 500"
+                        >or increase the number of results displayed from search form</span>
                     </span>
                 </span>
                 <span v-else>no results.</span>
@@ -96,6 +100,7 @@ export default {
             docCount: null,
             sectionsDisplay: [],
             loading: false,
+            resultLimit: parseInt(this.$route.query.limit),
         };
     },
     computed: {
@@ -151,6 +156,7 @@ export default {
             } else {
                 this.biblioQuery = false;
             }
+            this.resultLimit = this.$route.query.limit;
             this.fetchResults();
         },
         showSections(index) {

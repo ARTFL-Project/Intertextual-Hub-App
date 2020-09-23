@@ -183,6 +183,12 @@ def retrieve_passages_all(passages: Dict[str, List[str]]):
     return passage_objects
 
 
+@app.get("/check_for_alignments/{philo_db}/")
+def check_for_alignments(philo_db: str, philo_id: str):
+    counts = aligner.check(philo_db, philo_id)
+    return counts
+
+
 @app.get("/search_texts")
 def search_texts(request: Request):
     author = ""
@@ -192,6 +198,7 @@ def search_texts(request: Request):
     collections = ""
     periods = ""
     opbind = ""
+    limit = 100
     if "author" in request.query_params:
         author = request.query_params["author"]
     if "title" in request.query_params:
@@ -208,15 +215,17 @@ def search_texts(request: Request):
             end_date = dates[1]
         except IndexError:
             pass
+    if "limit" in request.query_params:
+        limit = int(request.query_params["limit"])
     if "binding" in request.query_params:
         opbind = request.query_params["binding"]
     if "words" in request.query_params:
         searchwords = request.query_params["words"]
         results, doc_count = search.word_search(
-            searchwords, author, title, start_date, end_date, collections, periods, opbind
+            searchwords, author, title, start_date, end_date, collections, periods, opbind, limit
         )
     else:
-        results, doc_count = search.metadata_search(author, title, start_date, end_date, collections, periods)
+        results, doc_count = search.metadata_search(author, title, start_date, end_date, collections, periods, limit)
     return {"results": results, "doc_count": doc_count}
 
 

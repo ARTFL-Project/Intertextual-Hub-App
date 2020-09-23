@@ -88,7 +88,7 @@ def retrieve_section_names(cursor, filename, philo_db):
     return results
 
 
-def word_search(searchwords, author, title, start_date, end_date, collections, periods, opbind):
+def word_search(searchwords, author, title, start_date, end_date, collections, periods, opbind, limit):
 
     got_metadata_OR = 0
     got_author_OR = 0
@@ -124,7 +124,7 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
         )
         searchwords = de_accent(searchwords)
         query_stmt = ""
-        order_by = " order by bm25({0}) limit {1}".format(TABLE_NAME, 100)
+        order_by = " order by bm25({0}) limit {1}".format(TABLE_NAME, limit)
         if opbind:
             searchwords = searchwords.replace(" ", " OR ")
         match_stmt_list = build_match(searchwords, author, title)
@@ -162,7 +162,7 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
     return results_list, doc_count[0]
 
 
-def metadata_search(author, title, start_date, end_date, collections, periods):
+def metadata_search(author, title, start_date, end_date, collections, periods, limit):
     select_vals = "filename, author, title, date, philo_id, philo_db"
     match_stmt_list = build_match("", author, title)
     match_stmt = " AND ".join(match_stmt_list)
@@ -176,7 +176,7 @@ def metadata_search(author, title, start_date, end_date, collections, periods):
     else:
         select_stmt = "SELECT {0} FROM {1} WHERE ".format(select_vals, TABLE_NAME)
         query_stmt = select_stmt + where_likes
-    query_stmt += " GROUP BY author, title ORDER BY date, filename"
+    query_stmt += f" GROUP BY author, title ORDER BY date, filename LIMIT {limit}"
 
     with sqlite3.connect(DB_FILE) as conn:
         conn.text_factory = str
