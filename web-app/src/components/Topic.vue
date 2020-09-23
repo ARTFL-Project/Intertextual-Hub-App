@@ -320,7 +320,7 @@ export default {
         federatedSearch: function () {
             return `/search?words=${this.wordDistributionLabels
                 .slice(0, 10)
-                .join(" ")}`;
+                .join(" ")}&binding=OR`;
         },
     },
     mounted() {
@@ -333,7 +333,6 @@ export default {
     methods: {
         fetchData() {
             EventBus.$emit("hideForms");
-
             this.$http
                 .get(
                     `${this.$appConfig.topologic.api}/get_topic_data/${this.$appConfig.topologic.dbname}/${this.$route.params.topic}`
@@ -343,6 +342,8 @@ export default {
                     this.documents = response.data.documents;
                     this.frequency = (response.data.frequency * 100).toFixed(4);
                     this.similarTopics = response.data.similar_topics;
+                    this.wordDistributionLabels =
+                        response.data.word_distribution.labels;
                     this.buildWordDistribution(response.data.word_distribution);
                     let startIndex = response.data.topic_evolution.labels.indexOf(
                         this.timeSeriesConfig.startDate

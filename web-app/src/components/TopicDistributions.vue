@@ -1,5 +1,9 @@
 <template>
     <b-container fluid class="mt-4">
+        <div class="mt-2 p-2">
+            Click on any topic to explore its usage across the
+            corpus
+        </div>
         <b-card no-body class="mb-4">
             <h6
                 slot="header"

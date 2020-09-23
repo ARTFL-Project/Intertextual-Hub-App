@@ -1,5 +1,5 @@
 <template>
-    <b-card class="my-4 border-top-0">
+    <b-card class="border-top-0">
         <b-row>
             <b-col sm="12" lg="8" xl="7">
                 <b-form @submit.stop.prevent="search" @reset="clearForm">

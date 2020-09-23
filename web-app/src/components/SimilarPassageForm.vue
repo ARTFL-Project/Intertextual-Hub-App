@@ -1,6 +1,6 @@
 <template>
-    <b-form @submit.stop.prevent="search" @reset="clearForm">
-        <b-card class="mb-4 border-top-0">
+    <b-card class="border-top-0">
+        <b-form @submit.stop.prevent="search" @reset="clearForm">
             <b-row>
                 <b-col cols="6">
                     <h6 class="text-center pb-2">Source</h6>
@@ -60,8 +60,8 @@
                 <b-button type="submit" variant="primary">Search</b-button>
                 <b-button type="reset" variant="outline-primary">Reset</b-button>
             </b-button-group>
-        </b-card>
-    </b-form>
+        </b-form>
+    </b-card>
 </template>
 <script>
 export default {
