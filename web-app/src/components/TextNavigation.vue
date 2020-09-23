@@ -106,7 +106,7 @@
             >To look up a word in a dictionary, select the word and press 'd' on your keyboard.</div>
             <div
                 style="font-size: 80%; text-align: center;"
-            >To find a similar passage inside the text, select the passage and press 's' on your keyboard.</div>
+            >To find documents similar to a particular passage, select the passage and press 's' on your keyboard.</div>
             <b-row id="toc-wrapper" class="text-center mt-1" v-if="loading === false">
                 <div id="toc-top-bar">
                     <div id="nav-buttons" v-scroll="handleScroll">

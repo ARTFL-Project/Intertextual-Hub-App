@@ -79,7 +79,7 @@
                 class="p-2 position-absolute"
                 v-if="!show"
                 @click="showOptions()"
-            >Click tab to show navigation options</div>
+            >Click a tab to show navigation options</div>
         </transition>
         <b-container fluid style="margin-top: 3rem !important;">
             <router-view name="SeqPairResultsSummary"></router-view>
