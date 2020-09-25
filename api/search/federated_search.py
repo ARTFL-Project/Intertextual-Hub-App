@@ -25,7 +25,7 @@ def de_accent(searchwords):
     return sw2return
 
 
-def build_where_likes(start_date, end_date, collectionlimit, periodlimit):
+def build_where_likes(start_date, end_date, collectionlimit):
     where_stmt_parts = []
     if collectionlimit:
         where_stmt_parts.append('philo_db = "{0}"'.format(collectionlimit))
@@ -34,12 +34,11 @@ def build_where_likes(start_date, end_date, collectionlimit, periodlimit):
             where_stmt_parts.append('date BETWEEN "{0}" and "{1}"'.format(start_date, end_date))
         else:
             where_stmt_parts.append('date LIKE "{0}%"'.format(start_date))
-    if periodlimit:
-        where_stmt_parts.append('period = "{0}"'.format(periodlimit))
+
     return where_stmt_parts
 
 
-def build_match(searchwords, author, title):
+def build_match(searchwords, author, title, period):
     ## much formatting required to get column filtering syntax to work ##
     match_stmt_parts = []
     if searchwords:
@@ -74,6 +73,8 @@ def build_match(searchwords, author, title):
             match_stmt_parts.append("(title:NEAR({0}))".format(title))
         else:
             match_stmt_parts.append("(title:{0})".format(title))
+    if period:
+        match_stmt_parts.append(f"(period:{period})")
     return match_stmt_parts
 
 
@@ -127,9 +128,9 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
         order_by = " order by bm25({0}) limit {1}".format(TABLE_NAME, limit)
         if opbind:
             searchwords = searchwords.replace(" ", " OR ")
-        match_stmt_list = build_match(searchwords, author, title)
+        match_stmt_list = build_match(searchwords, author, title, periods)
         match_stmt = " AND ".join(match_stmt_list)
-        where_like_list = build_where_likes(start_date, end_date, collections, periods)
+        where_like_list = build_where_likes(start_date, end_date, collections)
         where_likes = " AND ".join(where_like_list)
         select_stmt = "SELECT {0} FROM {1} WHERE {1} MATCH ".format(select_vals, TABLE_NAME)
         if where_likes:
@@ -145,6 +146,7 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
             query_stmt = select_stmt + "'" + match_stmt + "' " + order_by
             fullcount_query = f"SELECT COUNT(*) FROM {TABLE_NAME} WHERE {TABLE_NAME} MATCH " + "'" + match_stmt + "' "
 
+        print(query_stmt)
         cursor.execute(query_stmt,)
         results_list = []
         count = 0

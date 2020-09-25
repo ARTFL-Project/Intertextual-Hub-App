@@ -1,11 +1,17 @@
 <template>
     <div class="my-4">
-        <b-card class="shadow-sm mb-4" style="position:relative">
+        <b-card class="shadow-sm mb-4" style="position: relative">
             <span v-if="searchTerms">
                 Input terms:
                 <b
                     v-if="binding == 'OR'"
-                    v-html="searchTerms.split(' ').join(`<tt style='font-size: 140%; font-weight: normal;'> OR </tt>`)"
+                    v-html="
+                        searchTerms
+                            .split(' ')
+                            .join(
+                                `<tt style='font-size: 140%; font-weight: normal;'> OR </tt>`
+                            )
+                    "
                 ></b>
                 <b v-else>{{ searchTerms }}</b>
             </span>
@@ -26,28 +32,36 @@
             <div
                 v-if="loading"
                 class="text-center"
-                style="position:absolute; left:0; right:0; z-index: 10"
+                style="position: absolute; left: 0; right: 0; z-index: 10"
             >
                 <b-spinner
                     label="Loading..."
-                    style="width: 5rem; height: 5rem; color: rgba(143, 57, 49, 0.8)"
+                    style="
+                        width: 5rem;
+                        height: 5rem;
+                        color: rgba(143, 57, 49, 0.8);
+                    "
                 ></b-spinner>
             </div>
             <div class="mt-2" v-else>
                 <span v-if="results">
                     Number of documents
-                    <span
-                        v-if="searchTerms"
-                    >with {{ "this search term" | pluralize(searchTerms.split(" ").length) }}</span>:
+                    <span v-if="searchTerms"
+                        >with
+                        {{
+                            "this search term"
+                                | pluralize(searchTerms.split(" ").length)
+                        }}</span
+                    >:
                     <b>{{ docCount }}</b>
 
                     <span v-if="docCount > resultLimit">
                         <br />
-                        Displaying first {{resultLimit}} results:
-                        &nbsp;use search filters to narrow search results
-                        <span
-                            v-if="resultLimit != 500"
-                        >or increase the number of results displayed from search form</span>
+                        Displaying first {{ resultLimit }} results: &nbsp;use
+                        search filters to narrow search results
+                        <span v-if="resultLimit != 500"
+                            >or increase max results displayed</span
+                        >
                     </span>
                 </span>
                 <span v-else>no results.</span>
@@ -60,19 +74,36 @@
             :key="result.philo_id"
         >
             <span class="count">{{ index + 1 }}</span>
-            <citations :docPair="result" :philo-db="`${result.philo_db}`"></citations>
-            <span class="pl-2" v-if="!biblioQuery">(score: {{ result.score }})</span>
-            <p class="mt-2 text" v-if="!biblioQuery" v-html="result.headline"></p>
+            <citations
+                :docPair="result"
+                :philo-db="`${result.philo_db}`"
+            ></citations>
+            <span class="pl-2" v-if="!biblioQuery"
+                >(score: {{ result.score }})</span
+            >
+            <p
+                class="mt-2 text"
+                v-if="!biblioQuery"
+                v-html="result.headline"
+            ></p>
             <div v-if="biblioQuery && result.sections.length > 0">
                 <h6
                     class="mt-1"
-                    style="color: rgb(143, 57, 49); cursor:pointer"
+                    style="color: rgb(143, 57, 49); cursor: pointer"
                     @click="showSections(index)"
-                >See all chapters or sections</h6>
+                >
+                    See all chapters or sections
+                </h6>
                 <transition name="slide-fade">
                     <ul v-if="sectionsDisplay[index]">
-                        <li v-for="section in result.sections" :key="section.philo_id">
-                            <citations :docPair="section" :philo-db="`${result.philo_db}`"></citations>
+                        <li
+                            v-for="section in result.sections"
+                            :key="section.philo_id"
+                        >
+                            <citations
+                                :docPair="section"
+                                :philo-db="`${result.philo_db}`"
+                            ></citations>
                         </li>
                     </ul>
                 </transition>
