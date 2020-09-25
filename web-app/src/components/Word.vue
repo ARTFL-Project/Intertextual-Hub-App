@@ -3,10 +3,8 @@
         <b-tabs justified content-class="mt-3" v-model="tabIndex">
             <b-tab active>
                 <template v-slot:title>
-                    <span style="font-size: 1.2rem">
-                        Distribution of
-                        <b>{{ word }}</b> in the corpus
-                    </span>
+                    Distribution of
+                    <b>{{ word }}</b> in the corpus
                 </template>
                 <div v-if="notFound" class="p-4">
                     <b>{{ word }}</b> not in vocabulary used for modeling. Try
@@ -154,10 +152,8 @@
             </b-tab>
             <b-tab>
                 <template v-slot:title>
-                    <span style="font-size: 1.2rem">
-                        Evolution of words associated with
-                        <b>{{ word }}</b> over time
-                    </span>
+                    Evolution of words associated with
+                    <b>{{ word }}</b> over time
                 </template>
                 <b-row
                     class="mt-4"
@@ -498,7 +494,7 @@ export default {
     border-width: 1px 0px;
     font-size: 90%;
 }
-::v-deep .nav-tabs {
+/* ::v-deep .nav-tabs {
     border-bottom-width: 0;
 }
 ::v-deep .nav-link {
@@ -512,5 +508,21 @@ export default {
     background-color: rgba(230, 230, 230, 0.2) !important;
     border-bottom-color: transparent !important;
     color: rgb(0, 0, 0) !important;
+} */
+::v-deep .nav-tabs {
+    border-bottom-width: 0;
+}
+::v-deep .nav-link {
+    background-color: rgba(143, 57, 49, 0.8);
+    border-color: rgba(143, 57, 49, 0.8);
+    border-bottom: 1px solid #dee2e6;
+    color: #fff;
+    transition: all 250ms;
+}
+
+::v-deep .nav-link.active {
+    color: rgb(143, 57, 49);
+    border-bottom-color: transparent !important;
+    background-color: #fff;
 }
 </style>

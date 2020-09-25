@@ -5,10 +5,21 @@
                 <b-col cols="6">
                     <h6 class="text-center pb-2">Source</h6>
                 </b-col>
-                <b-col cols="6" class="border border-top-0 border-right-0 border-bottom-0">
+                <b-col
+                    cols="6"
+                    class="border border-top-0 border-right-0 border-bottom-0"
+                >
                     <h6 class="text-center pb-2">Target</h6>
                 </b-col>
-                <b-col cols="6" v-for="direction in ['source', 'target']" :key="direction">
+                <b-col
+                    cols="6"
+                    v-for="direction in ['source', 'target']"
+                    :key="direction"
+                    :class="{
+                        'border border-top-0 border-right-0 border-bottom-0':
+                            direction == 'target',
+                    }"
+                >
                     <b-input-group
                         :prepend="field.label"
                         class="pb-3"
@@ -23,9 +34,18 @@
                     <b-input-group class="pb-3">
                         <template v-slot:prepend>
                             <b-input-group-text>Date</b-input-group-text>
-                            <b-dropdown :text="dateType[direction]" variant="outline-secondary">
-                                <b-dropdown-item @click="dropSelect('exact', direction)">exact</b-dropdown-item>
-                                <b-dropdown-item @click="dropSelect('range', direction)">range</b-dropdown-item>
+                            <b-dropdown
+                                :text="dateType[direction]"
+                                variant="outline-secondary"
+                            >
+                                <b-dropdown-item
+                                    @click="dropSelect('exact', direction)"
+                                    >exact</b-dropdown-item
+                                >
+                                <b-dropdown-item
+                                    @click="dropSelect('range', direction)"
+                                    >range</b-dropdown-item
+                                >
                             </b-dropdown>
                         </template>
                         <b-form-input
@@ -51,14 +71,19 @@
                             class="d-inline-flex ml-3"
                             style="width: 11rem"
                         >
-                            <b-form-input v-model="dateRange[direction].to" placeholder="e.g. 1799"></b-form-input>
+                            <b-form-input
+                                v-model="dateRange[direction].to"
+                                placeholder="e.g. 1799"
+                            ></b-form-input>
                         </b-input-group>
                     </b-input-group>
                 </b-col>
             </b-row>
             <b-button-group>
                 <b-button type="submit" variant="primary">Search</b-button>
-                <b-button type="reset" variant="outline-primary">Reset</b-button>
+                <b-button type="reset" variant="outline-primary"
+                    >Reset</b-button
+                >
             </b-button-group>
         </b-form>
     </b-card>
