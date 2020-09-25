@@ -1,14 +1,12 @@
 <template>
-    <b-container fluid class="mt-4">
+    <b-container fluid class="mt-2">
         <div class="mt-2 p-2">
-            Click on any topic to explore its usage across the
-            corpus
+            Click on any topic to explore its usage across the corpus
         </div>
         <b-card no-body class="mb-4">
-            <h6
-                slot="header"
-                class="mb-0 text-center"
-            >Topics and their relative distribution in corpus</h6>
+            <h6 slot="header" class="mb-0 text-center">
+                Topics and their relative distribution in corpus
+            </h6>
             <b-table
                 hover
                 :items="sortedTopicDistribution"
@@ -24,9 +22,9 @@
                     <span class="frequency-parent">{{ data.value }}</span>
                 </template>
                 <template v-slot:cell(frequency)="data">
-                    <span
-                        class="frequency-value pl-2"
-                    >{{ (data.value.toFixed(8) * 100).toFixed(4) }}%</span>
+                    <span class="frequency-value pl-2"
+                        >{{ (data.value.toFixed(8) * 100).toFixed(4) }}%</span
+                    >
                     <span
                         class="frequency-bar"
                         :style="`width: ${data.value * frequencyMultiplier}%;`"
