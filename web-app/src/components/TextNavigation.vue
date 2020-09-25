@@ -1,37 +1,51 @@
 <template>
     <div class="my-4">
-        <b-card class="shadow-sm mt-4">
-            <h5 class="text-center mb-4">
-                <citations
-                    :docPair="docMetadata"
-                    :direction="direction"
-                    :philo-db="philoDb"
-                    v-if="docMetadata"
-                ></citations>
-            </h5>
-            <b-tabs v-model="tabIndex">
+        <h5 class="text-center mb-4">
+            <citations
+                :docPair="docMetadata"
+                :direction="direction"
+                :philo-db="philoDb"
+                v-if="docMetadata"
+            ></citations>
+        </h5>
+        <b-card no-body class="shadow-sm mt-4">
+            <b-tabs card v-model="tabIndex">
                 <b-tab title="Similar documents" :active="!intertextual">
                     <div v-if="similarDocs.length > 0">
-                        <h6 class="pt-2 px-2">20 most similar documents (top 5 displayed):</h6>
+                        <h6 class="pt-2 px-2">
+                            20 most similar documents (top 5 displayed):
+                        </h6>
                         <ul class="mb-1">
                             <li
                                 v-for="simDoc in simDocsToDisplay"
                                 :key="`${simDoc.philo_db}${simDoc.metadata.philo_id}`"
-                                style="padding: 0.15rem 0;"
+                                style="padding: 0.15rem 0"
                             >
-                                <citations :docPair="simDoc.metadata" :philo-db="simDoc.philo_db"></citations>
+                                <citations
+                                    :docPair="simDoc.metadata"
+                                    :philo-db="simDoc.philo_db"
+                                ></citations>
                             </li>
                         </ul>
                         <span
-                            style="diplay: inline-block; color: rgb(143, 57, 49); cursor:pointer;"
+                            style="
+                                diplay: inline-block;
+                                color: rgb(143, 57, 49);
+                                cursor: pointer;
+                            "
                             v-if="!showAllSimDocs"
                             @click="toggleSimDocs()"
-                        >View all</span>
+                            >View all</span
+                        >
                     </div>
                     <h6 class="p-2" v-else>No similar docs were found.</h6>
                 </b-tab>
                 <b-tab
-                    :title="sourceReuseCount > 0 || targetReuseCount > 0? 'Text reuses': 'No text reuses'"
+                    :title="
+                        sourceReuseCount > 0 || targetReuseCount > 0
+                            ? 'Text reuses'
+                            : 'No text reuses'
+                    "
                     :active="intertextual == 'true'"
                     :disabled="sourceReuseCount == 0 && targetReuseCount == 0"
                     @click="reUseTab()"
@@ -43,50 +57,81 @@
                                 name="direction"
                                 value="target"
                                 v-if="targetReuseCount > 0"
-                            >View reuses from earlier texts</b-form-radio>
+                                >View reuses from earlier texts</b-form-radio
+                            >
                             <b-form-radio
                                 v-model="direction"
                                 name="direction"
                                 value="source"
                                 v-if="sourceReuseCount > 0"
-                            >View reuses in later texts</b-form-radio>
+                                >View reuses in later texts</b-form-radio
+                            >
                         </b-form-group>
                     </div>
                     <div class="p-2" v-else>
                         Reuses have
-                        <b>NOT</b> been computed for this document section. Select a higher level or lower level section from the table of contents.
+                        <b>NOT</b> been computed for this document section.
+                        Select a higher level or lower level section from the
+                        table of contents.
                     </div>
                     <div v-if="docsCited">
                         <h6 class="pt-4">Reuses from these documents:</h6>
-                        <ul style="padding-inline-start: 2rem; line-height: 2rem;">
+                        <ul
+                            style="
+                                padding-inline-start: 2rem;
+                                line-height: 2rem;
+                            "
+                        >
                             <li
                                 v-for="(doc, docIndex) in docsCited"
                                 :key="docIndex"
                                 :id="`reuse-${docIndex}`"
                             >
                                 <span
-                                    v-if="doc.doc_metadata[`${doc.direction}_author`]"
-                                >{{doc.doc_metadata[`${doc.direction}_author`]}}&nbsp;&#9679;&nbsp;</span>
+                                    v-if="
+                                        doc.doc_metadata[
+                                            `${doc.direction}_author`
+                                        ]
+                                    "
+                                    >{{
+                                        doc.doc_metadata[
+                                            `${doc.direction}_author`
+                                        ]
+                                    }}&nbsp;&#9679;&nbsp;</span
+                                >
                                 <i
                                     class="docs-cited"
                                     @click="showHeads(docIndex)"
-                                >{{doc.doc_metadata[`${doc.direction}_title`]}}</i>
+                                    >{{
+                                        doc.doc_metadata[
+                                            `${doc.direction}_title`
+                                        ]
+                                    }}</i
+                                >
                                 &nbsp;&#9679;&nbsp;
-                                {{doc.doc_metadata[`${doc.direction}_date`]}}
-                                <ul style="display: none;">
+                                {{ doc.doc_metadata[`${doc.direction}_date`] }}
+                                <ul style="display: none">
                                     <h6
-                                        style="margin-left: -2.5rem; padding-bottom:0;"
-                                    >Passages listed in order of occurrence in document:</h6>
+                                        style="
+                                            margin-left: -2.5rem;
+                                            padding-bottom: 0;
+                                        "
+                                    >
+                                        Passages listed in order of occurrence
+                                        in document:
+                                    </h6>
                                     <li
-                                        v-for="(metadata, metadataIndex) in doc.metadata"
+                                        v-for="(metadata,
+                                        metadataIndex) in doc.metadata"
                                         :key="metadata.passageid"
                                         @click="goToPassage(metadata.passageid)"
-                                        style="line-height: 1.5rem;"
+                                        style="line-height: 1.5rem"
                                     >
-                                        {{metadata[`${doc.direction}_head`]}}:
-                                        <span
-                                            class="docs-cited-heads"
-                                        >passage {{metadataIndex+1}}</span>
+                                        {{ metadata[`${doc.direction}_head`] }}:
+                                        <span class="docs-cited-heads"
+                                            >passage
+                                            {{ metadataIndex + 1 }}</span
+                                        >
                                     </li>
                                 </ul>
                             </li>
@@ -95,23 +140,36 @@
                     <div class="p-2" v-if="intertextual && !docsCited">
                         No reuses from
                         <span v-if="direction == 'source'">later</span>
-                        <span v-if="direction == 'target'">earlier</span> texts were found.
+                        <span v-if="direction == 'target'">earlier</span> texts
+                        were found.
                     </div>
                 </b-tab>
             </b-tabs>
         </b-card>
         <b-card no-body class="mt-4 pt-3 shadow-sm">
-            <div
-                style="font-size: 80%; text-align: center;"
-            >To look up a word in a dictionary, select the word and press 'd' on your keyboard.</div>
-            <div
-                style="font-size: 80%; text-align: center;"
-            >To find documents similar to a particular passage, select the passage and press 's' on your keyboard.</div>
-            <b-row id="toc-wrapper" class="text-center mt-1" v-if="loading === false">
+            <div style="font-size: 80%; text-align: center">
+                To look up a word in a dictionary, select the word and press 'd'
+                on your keyboard.
+            </div>
+            <div style="font-size: 80%; text-align: center">
+                To find documents similar to a particular passage, select the
+                passage and press 's' on your keyboard.
+            </div>
+            <b-row
+                id="toc-wrapper"
+                class="text-center mt-1"
+                v-if="loading === false"
+            >
                 <div id="toc-top-bar">
                     <div id="nav-buttons" v-scroll="handleScroll">
-                        <b-button id="back-to-top" size="sm" @click="backToTop()">
-                            <span class="d-xs-none d-sm-inline-block">Back to top</span>
+                        <b-button
+                            id="back-to-top"
+                            size="sm"
+                            @click="backToTop()"
+                        >
+                            <span class="d-xs-none d-sm-inline-block"
+                                >Back to top</span
+                            >
                             <span class="d-xs-inline-block d-sm-none">Top</span>
                         </b-button>
                         <b-button-group size="sm" style="pointer-events: all">
@@ -120,24 +178,31 @@
                                 id="prev-obj"
                                 variant="primary"
                                 @click="goToTextObject(prev)"
-                            >&lt;</b-button>
+                                >&lt;</b-button
+                            >
                             <b-button
                                 id="show-toc"
                                 disabled="disabled"
                                 variant="primary"
                                 @click="toggleTableOfContents()"
-                            >Table of contents</b-button>
+                                >Table of contents</b-button
+                            >
                             <b-button
                                 disabled="disabled"
                                 id="next-obj"
                                 variant="primary"
                                 @click="goToTextObject(next)"
-                            >&gt;</b-button>
+                                >&gt;</b-button
+                            >
                         </b-button-group>
                     </div>
                     <div id="toc">
                         <div id="toc-titlebar" class="d-none">
-                            <b-button id="hide-toc" @click="toggleTableOfContents()">X</b-button>
+                            <b-button
+                                id="hide-toc"
+                                @click="toggleTableOfContents()"
+                                >X</b-button
+                            >
                         </div>
                         <transition name="slide-fade">
                             <b-card
@@ -149,29 +214,49 @@
                                 v-if="tocOpen"
                             >
                                 <div class="toc-more before" v-if="start !== 0">
-                                    <b-button size="sm" variant="primary" @click="loadBefore()"></b-button>
+                                    <b-button
+                                        size="sm"
+                                        variant="primary"
+                                        @click="loadBefore()"
+                                    ></b-button>
                                 </div>
                                 <div
-                                    v-for="(element, tocIndex) in tocElementsToDisplay"
+                                    v-for="(element,
+                                    tocIndex) in tocElementsToDisplay"
                                     :key="tocIndex"
                                 >
                                     <div
                                         :id="element.philo_id"
                                         :class="'toc-' + element.philo_type"
-                                        @click="textObjectSelection(element.philo_id, tocIndex)"
+                                        @click="
+                                            textObjectSelection(
+                                                element.philo_id,
+                                                tocIndex
+                                            )
+                                        "
                                     >
-                                        <span :class="'bullet-point-' + element.philo_type"></span>
+                                        <span
+                                            :class="
+                                                'bullet-point-' +
+                                                element.philo_type
+                                            "
+                                        ></span>
                                         <a
-                                            :class="{ 'current-obj': element.philo_id === currentPhiloId }"
+                                            :class="{
+                                                'current-obj':
+                                                    element.philo_id ===
+                                                    currentPhiloId,
+                                            }"
                                             href
                                         >
-                                            {{
-                                            element.label
-                                            }}
+                                            {{ element.label }}
                                         </a>
                                     </div>
                                 </div>
-                                <div class="toc-more after" v-if="end < tocElements.length">
+                                <div
+                                    class="toc-more after"
+                                    v-if="end < tocElements.length"
+                                >
                                     <b-button
                                         type="button"
                                         size="sm"
@@ -271,7 +356,9 @@
                     </h6>
                     <div
                         class="px-2"
-                        v-for="(metadata, index) in intertextualMetadata[groupIndex]"
+                        v-for="(metadata, index) in intertextualMetadata[
+                            groupIndex
+                        ]"
                         :key="index"
                     >
                         <citations
@@ -280,7 +367,8 @@
                             :philo-db="metadata.source_philo_db"
                             v-if="direction == 'target'"
                             nolink
-                        >-</citations>
+                            >-</citations
+                        >
                         <citations
                             :docPair="metadata"
                             direction="target"
@@ -288,7 +376,13 @@
                             nolink
                             v-else
                         ></citations>
-                        <hr class="m-2" v-if="index != intertextualMetadata[groupIndex].length-1" />
+                        <hr
+                            class="m-2"
+                            v-if="
+                                index !=
+                                intertextualMetadata[groupIndex].length - 1
+                            "
+                        />
                     </div>
                 </div>
                 <p class="mt-3 mb-0">
@@ -327,7 +421,10 @@
                         :key="`${simDoc.philo_db}${simDoc.metadata.philo_id}`"
                         style="padding: 0.15rem 0"
                     >
-                        <citations :docPair="simDoc.metadata" :philo-db="simDoc.philo_db"></citations>
+                        <citations
+                            :docPair="simDoc.metadata"
+                            :philo-db="simDoc.philo_db"
+                        ></citations>
                     </li>
                 </ul>
             </div>
@@ -1178,7 +1275,8 @@ export default {
     border-bottom-width: 0;
 }
 ::v-deep .nav-link {
-    background-color: $link-color;
+    background-color: rgba(143, 57, 49, 0.8);
+    border-color: rgba(143, 57, 49, 0.8);
     border-bottom: 1px solid #dee2e6;
     color: #fff;
     transition: all 250ms;

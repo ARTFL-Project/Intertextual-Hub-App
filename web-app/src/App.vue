@@ -130,6 +130,8 @@ export default {
         });
         if (this.$route.path != "/") {
             this.show = false;
+        } else {
+            this.show = true;
         }
     },
     methods: {
@@ -147,18 +149,13 @@ export default {
             this.report = report;
             if (report == "SeqPairResultsSummary") {
                 this.tabIndex = 2;
-                // this.activeTab = "textpair";
             } else if (report == "Topic" || report == "Document") {
-                // this.activeTab = "topics";
                 this.tabIndex = 3;
             } else if (report == "Search") {
-                // this.activeTab = "search";
                 this.tabIndex = 1;
             } else if (report == "intro") {
-                // this.activeTab = "intro";
                 this.tabIndex = 0;
             } else if (report == "wordUse") {
-                // this.activeTab = "wordUse";
                 this.tabIndex = 4;
             }
             this.show = show;
