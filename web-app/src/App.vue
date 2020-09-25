@@ -6,13 +6,7 @@
             </b-navbar-nav>
         </b-navbar>
 
-        <b-tabs
-            fill
-            no-fade
-            v-model="tabIndex"
-            id="main-tabs"
-            class="shadow-sm"
-        >
+        <b-tabs fill no-fade v-model="tabIndex" id="main-tabs" class="shadow">
             <b-tab
                 class="position-absolute shadow module-tab"
                 title="Collections"
