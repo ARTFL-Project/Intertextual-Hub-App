@@ -6,20 +6,32 @@
             </b-navbar-nav>
         </b-navbar>
 
-        <b-tabs fill no-fade id="main-tabs" class="shadow-sm">
+        <b-tabs
+            fill
+            no-fade
+            v-model="tabIndex"
+            id="main-tabs"
+            class="shadow-sm"
+        >
             <b-tab
-                class="position-absolute shadow"
-                style="z-index:10; width: 100%"
-                :active="activeTab == 'intro'"
+                class="position-absolute shadow module-tab"
                 title="Collections"
                 @click="selectModule('home')"
             >
                 <transition name="slide-fade">
                     <b-card style="border-top-width: 0" v-if="show">
-                        <h5>Here are the collections included in the Intertextual Hub:</h5>
-                        <b-list-group style="width: fit-content;">
-                            <b-list-group-item v-for="philoDb in philoDbs" :key="philoDb.name">
-                                <a :href="philoDb.url" target="_blank">{{philoDb.name}}</a>
+                        <h5>
+                            Here are the collections included in the
+                            Intertextual Hub:
+                        </h5>
+                        <b-list-group style="width: fit-content">
+                            <b-list-group-item
+                                v-for="philoDb in philoDbs"
+                                :key="philoDb.name"
+                            >
+                                <a :href="philoDb.url" target="_blank">{{
+                                    philoDb.name
+                                }}</a>
                                 :
                                 <span v-html="philoDb.description"></span>
                             </b-list-group-item>
@@ -28,9 +40,7 @@
                 </transition>
             </b-tab>
             <b-tab
-                class="position-absolute shadow"
-                style="z-index:10"
-                :active="activeTab == 'search'"
+                class="position-absolute shadow module-tab"
                 title="Search and Retrieval"
                 @click="selectModule('search')"
             >
@@ -39,9 +49,7 @@
                 </transition>
             </b-tab>
             <b-tab
-                class="position-absolute shadow"
-                style="z-index:10; width: 100%"
-                :active="activeTab == 'textpair'"
+                class="position-absolute shadow module-tab"
                 title="Explore text reuse"
                 @click="selectModule('SeqPairResultsSummary')"
             >
@@ -50,9 +58,7 @@
                 </transition>
             </b-tab>
             <b-tab
-                class="position-absolute shadow"
-                style="z-index:10; width: 100%; background-color: #fff"
-                :active="activeTab == 'topics'"
+                class="position-absolute shadow module-tab"
                 title="Explore Topics"
                 @click="selectModule('topicModeling')"
             >
@@ -62,9 +68,7 @@
             </b-tab>
 
             <b-tab
-                class="position-absolute shadow"
-                style="z-index:10; width: 100%"
-                :active="activeTab == 'wordUse'"
+                class="position-absolute shadow module-tab"
                 title="Explore word usage"
                 @click="selectModule('wordUse')"
             >
@@ -79,9 +83,11 @@
                 class="p-2 position-absolute"
                 v-if="!show"
                 @click="showOptions()"
-            >Click a tab to show navigation options</div>
+            >
+                Click a tab to show navigation options
+            </div>
         </transition>
-        <b-container fluid style="margin-top: 3rem !important;">
+        <b-container fluid style="margin-top: 3rem !important">
             <router-view name="SeqPairResultsSummary"></router-view>
             <router-view name="topicModeling"></router-view>
             <router-view name="Search"></router-view>
@@ -107,11 +113,11 @@ export default {
     },
     data() {
         return {
-            activeTab: "intro",
             report: this.$route.name,
             show: true,
             word: "",
             philoDbs: this.$appConfig.philoDBs,
+            tabIndex: 0,
         };
     },
     watch: {
@@ -140,15 +146,20 @@ export default {
             }
             this.report = report;
             if (report == "SeqPairResultsSummary") {
-                this.activeTab = "textpair";
+                this.tabIndex = 2;
+                // this.activeTab = "textpair";
             } else if (report == "Topic" || report == "Document") {
-                this.activeTab = "topics";
+                // this.activeTab = "topics";
+                this.tabIndex = 3;
             } else if (report == "Search") {
-                this.activeTab = "search";
+                // this.activeTab = "search";
+                this.tabIndex = 1;
             } else if (report == "intro") {
-                this.activeTab = "intro";
+                // this.activeTab = "intro";
+                this.tabIndex = 0;
             } else if (report == "wordUse") {
-                this.activeTab = "wordUse";
+                // this.activeTab = "wordUse";
+                this.tabIndex = 4;
             }
             this.show = show;
         },
@@ -216,6 +227,10 @@ a:not([href]):hover {
     color: #111;
     font-weight: 600;
     font-size: 0.9rem;
+}
+.module-tab {
+    z-index: 10;
+    width: 100%;
 }
 .slide-fade-enter-active {
     transition: all 0.3s ease-out;

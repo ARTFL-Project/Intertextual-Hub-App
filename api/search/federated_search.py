@@ -134,9 +134,16 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
         select_stmt = "SELECT {0} FROM {1} WHERE {1} MATCH ".format(select_vals, TABLE_NAME)
         if where_likes:
             query_stmt = select_stmt + "'" + match_stmt + "' AND " + where_likes + order_by
+            fullcount_query = (
+                f"SELECT COUNT(*) FROM {TABLE_NAME} WHERE {TABLE_NAME} MATCH "
+                + "'"
+                + match_stmt
+                + "' AND "
+                + where_likes
+            )
         else:
             query_stmt = select_stmt + "'" + match_stmt + "' " + order_by
-        fullcount_query = 'SELECT COUNT(*) from {0} where {0} MATCH "{1}"'.format(TABLE_NAME, searchwords)
+            fullcount_query = f"SELECT COUNT(*) FROM {TABLE_NAME} WHERE {TABLE_NAME} MATCH " + "'" + match_stmt + "' "
 
         cursor.execute(query_stmt,)
         results_list = []

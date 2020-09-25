@@ -10,6 +10,9 @@
                 <b-input-group-append>
                     <b-button variant="primary" type="submit">Search</b-button>
                 </b-input-group-append>
+                <span class="d-inline-block pl-2 mt-2"
+                    >Note that words are unaccented automatically.</span
+                >
             </b-input-group>
         </b-form>
     </b-card>

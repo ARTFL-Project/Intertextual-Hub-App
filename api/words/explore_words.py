@@ -3,18 +3,25 @@ import psycopg2
 import json
 from psycopg2.extras import DictCursor
 import numpy as np
+import requests
+import os
+from Levenshtein import jaro_winkler
+from unidecode import unidecode
+
 
 with open("./db_config.json") as db_config_file:
     db_config = json.load(db_config_file)
 DB_USER = db_config["database_user"]
 DB_NAME = db_config["database_name"]
 DB_PWD = db_config["database_password"]
+TOPOLOGIC = db_config["topologic"]
 
 
 def get_word_evolution(
-    word,
+    word: str,
 ) -> Tuple[Dict[int, List[Dict[str, Union[str, float]]]], Dict[str, Dict[str, str]], Dict[str, str]]:
     periods: Dict[str, List[Dict[str, Union[str, float]]]] = {}
+    word = unidecode(word)
     with psycopg2.connect(user="i_hub_user", password="martini", database="intertextual_hub",) as conn:
         cursor = conn.cursor(cursor_factory=DictCursor)
         cursor.execute("SELECT periods FROM word_vectors_by_quarter WHERE word=%s", (word,))
@@ -110,3 +117,38 @@ def retrieve_associated_words(word: str) -> Dict[str, str]:
         cursor.execute("SELECT words FROM global_word_vectors WHERE word=%s", (word,))
         words: Dict[str, str] = cursor.fetchone()["words"]
     return words
+
+
+# def get_all_words(db, request):
+#     """Expand query to all search terms."""
+#     words = request["q"].replace('"', "")
+#     hits = db.query(words)
+#     hits.finish()
+#     expanded_terms = get_expanded_query(hits)
+#     if expanded_terms:
+#         word_groups = []
+#         for word_group in expanded_terms:
+#             normalized_group = []
+#             for word in word_group:
+#                 word = word.replace('"', "")
+#                 word = "".join([i for i in unicodedata.normalize("NFKD", word) if not unicodedata.combining(i)])
+#                 normalized_group.append(word)
+#             word_groups.append(normalized_group)
+#         return word_groups
+#     return [words.split()]
+
+
+def find_similar_words(word_to_match: str):
+    """Edit distance function."""
+    # Check if lookup is cached
+    topologic_response = requests.get(
+        os.path.join(TOPOLOGIC["api"], "get_all_field_values", TOPOLOGIC["dbname"]), params={"field": "word"}
+    )
+    words = topologic_response.json()["field_values"]
+    similar_words: List[Tuple[str, float]] = []
+    for word in words:
+        similarity = jaro_winkler(word_to_match, word, 0.15)
+        if similarity >= 0.85:
+            similar_words.append((word, similarity))
+    similar_words.sort(key=lambda x: x[1], reverse=True)
+    return [word for word, _ in similar_words]

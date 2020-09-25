@@ -7,7 +7,7 @@ from starlette.middleware.cors import CORSMiddleware
 import aligner
 import search
 import similarity
-from words import get_word_evolution, retrieve_associated_words
+from words import get_word_evolution, retrieve_associated_words, find_similar_words
 from typing import List, Optional, Dict
 
 
@@ -251,3 +251,9 @@ def submit_passage(passage: Dict[str, str]):
 def get_associated_words(word: str):
     associated_words = retrieve_associated_words(word)
     return associated_words
+
+
+@app.get("/get_similar_words/{word}")
+def get_similar_words(word: str):
+    similar_words = find_similar_words(word)
+    return similar_words

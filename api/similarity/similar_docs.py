@@ -11,7 +11,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 from annoy import AnnoyIndex
 
-# from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
 with open("./db_config.json") as app_config:
     APP_CONFIG = json.load(app_config)

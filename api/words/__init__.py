@@ -1,1 +1,1 @@
-from .explore_words import get_word_evolution, retrieve_associated_words
+from .explore_words import get_word_evolution, retrieve_associated_words, find_similar_words

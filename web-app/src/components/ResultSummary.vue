@@ -1,27 +1,23 @@
 <template>
     <div class="mt-4">
-        <h5
-            v-if="results"
-        >Showing matches {{currentStart+1}}-{{currentStart+results.length}} of {{count}}</h5>
+        <h5 v-if="results">
+            Showing matches {{ currentStart + 1 }}-{{
+                currentStart + results.length
+            }}
+            of {{ count }}
+        </h5>
         <b-card
             class="mt-4 mb-4 shadow-sm"
             no-body
             v-for="(documentPair, resultsIndex) in results"
             :key="documentPair.pairid"
         >
-            <span class="count">{{ resultsIndex + 1 + currentStart}}</span>
+            <span class="count">{{ resultsIndex + 1 + currentStart }}</span>
             <b-row class="px-3">
                 <b-col sm="3" md="3" lg="2" align-self="center">
                     <h6 class="text-center">
-                        {{ documentPair.passage_number }} common {{'passage' | pluralize(documentPair.passage_number)}}
-                        <span
-                            v-if="documentPair.banality_count > 0"
-                        >
-                            <br />
-                            {{documentPair.banality_count}} {{'banal passage' | pluralize(documentPair.banality_count)}}
-                        </span>
-                        <br />
-                        {{documentPair.lengths}}
+                        {{ documentPair.passage_number }} common
+                        {{ "passage" | pluralize(documentPair.passage_number) }}
                     </h6>
                 </b-col>
                 <b-col align-self="stretch" style="border-left: solid 1px #ddd">
@@ -53,7 +49,7 @@
             <b-row class="position-relative m-0">
                 <b-col
                     class="position-absolute text-center"
-                    style="top: -1.95rem;"
+                    style="top: -1.95rem"
                     sm="3"
                     md="3"
                     lg="2"
@@ -62,13 +58,17 @@
                         size="sm"
                         variant="info"
                         @click="
-                        togglePassages(
-                            documentPair,
-                            documentPair.pairid,
-                            resultsIndex
-                        )
-                    "
-                    >{{ passageTogglerMessages[resultsIndex] | pluralize(documentPair.passage_number)}}</b-button>
+                            togglePassages(
+                                documentPair,
+                                documentPair.pairid,
+                                resultsIndex
+                            )
+                        "
+                        >{{
+                            passageTogglerMessages[resultsIndex]
+                                | pluralize(documentPair.passage_number)
+                        }}</b-button
+                    >
                 </b-col>
             </b-row>
 
@@ -79,14 +79,16 @@
                     v-if="passages[resultsIndex].length > 0"
                 >
                     <div
-                        v-for="(passage, passageIndex) in passages[resultsIndex]"
+                        v-for="(passage, passageIndex) in passages[
+                            resultsIndex
+                        ]"
                         :key="passage.passageid"
                     >
                         <hr
                             v-if="
-                        passageIndex != 0 &&
-                            passageIndex != passages[resultsIndex].length
-                    "
+                                passageIndex != 0 &&
+                                passageIndex != passages[resultsIndex].length
+                            "
                         />
                         <passage-pair
                             :passage="passage"
