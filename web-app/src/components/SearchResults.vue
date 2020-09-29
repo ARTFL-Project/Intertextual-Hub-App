@@ -44,7 +44,7 @@
                 ></b-spinner>
             </div>
             <div class="mt-2" v-else>
-                <span v-if="results">
+                <span v-if="docCount > 0">
                     Number of documents
                     <span v-if="searchTerms"
                         >with
@@ -64,7 +64,7 @@
                         >
                     </span>
                 </span>
-                <span v-else>no results.</span>
+                <span v-else>No results.</span>
                 <!-- <br />Top 20 Author and Title Frequencies at bottom. -->
             </div>
         </b-card>

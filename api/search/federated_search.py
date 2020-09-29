@@ -172,9 +172,9 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
 
 def metadata_search(author, title, start_date, end_date, collections, periods, limit):
     select_vals = "filename, author, title, date, philo_id, philo_db"
-    match_stmt_list = build_match("", author, title)
+    match_stmt_list = build_match("", author, title, periods)
     match_stmt = " AND ".join(match_stmt_list)
-    where_like_list = build_where_likes(start_date, end_date, collections, periods)
+    where_like_list = build_where_likes(start_date, end_date, collections)
     where_likes = " AND ".join(where_like_list)
     if match_stmt:
         select_stmt = "SELECT {0} FROM {1} WHERE {1} MATCH ".format(select_vals, TABLE_NAME)
