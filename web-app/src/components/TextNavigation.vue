@@ -10,7 +10,11 @@
         </h5>
         <b-card no-body class="shadow-sm mt-4">
             <b-tabs card v-model="tabIndex">
-                <b-tab title="Similar documents" :active="!intertextual">
+                <b-tab
+                    title="Similar documents"
+                    :active="!intertextual"
+                    @click="updateTocButton()"
+                >
                     <div v-if="similarDocs.length > 0">
                         <h6 class="pt-2 px-2">
                             20 most similar documents (top 5 displayed):
@@ -50,7 +54,7 @@
                     :disabled="sourceReuseCount == 0 && targetReuseCount == 0"
                     @click="reUseTab()"
                 >
-                    <div id="direction-toggle" v-if="reusesComputed">
+                    <div id="direction-toggle">
                         <b-form-group @change.native="toggleDirection">
                             <b-form-radio
                                 v-model="direction"
@@ -67,12 +71,6 @@
                                 >View reuses in later texts</b-form-radio
                             >
                         </b-form-group>
-                    </div>
-                    <div class="p-2" v-else>
-                        Reuses have
-                        <b>NOT</b> been computed for this document section.
-                        Select a higher level or lower level section from the
-                        table of contents.
                     </div>
                     <div v-if="docsCited">
                         <h6 class="pt-4">Reuses from these documents:</h6>
@@ -519,17 +517,6 @@ export default {
                 return this.similarDocs;
             }
         },
-        reusesComputed() {
-            if (!this.objectType) {
-                return true;
-            } else if (
-                this.$appConfig.philoDBs[this.$route.params.philoDb]
-                    .object_type != this.objectType
-            ) {
-                return false;
-            }
-            return true;
-        },
     },
     watch: {
         $route: "fetchData",
@@ -538,10 +525,7 @@ export default {
         this.fetchData();
     },
     mounted() {
-        let tocButton = document.querySelector("#show-toc");
-        this.$nextTick(() => {
-            this.navButtonPosition = tocButton.getBoundingClientRect().top;
-        });
+        this.updateTocButton();
     },
     updated() {
         if (this.gallery) {
@@ -587,9 +571,9 @@ export default {
         fetchData() {
             this.fetchPassage();
             this.fetchToC();
+            this.updateTocButton();
         },
         fetchPassage() {
-            console.log(this.$route.params, this.$route.query);
             this.$bvModal.hide("similar-docs");
             this.text = null;
             this.docMetadata = null;
@@ -668,6 +652,7 @@ export default {
                 )
                 .then((response) => {
                     this.similarDocs = response.data;
+                    this.updateTocButton();
                 });
         },
         getPhiloId() {
@@ -768,6 +753,7 @@ export default {
             if (this.pairid) {
                 this.direction = null;
             }
+            this.updateTocButton();
         },
         toggleDirection() {
             this.reload = true;
@@ -821,6 +807,12 @@ export default {
                     });
                 });
             }
+        },
+        updateTocButton() {
+            let tocButton = document.querySelector("#show-toc");
+            this.$nextTick(() => {
+                this.navButtonPosition = tocButton.getBoundingClientRect().top;
+            });
         },
         insertPageLinks(imgObj) {
             let currentObjImgs = imgObj.current_obj_img;
@@ -1182,6 +1174,7 @@ export default {
         },
         toggleSimDocs() {
             this.showAllSimDocs = true;
+            this.updateTocButton();
         },
         showHeads(docIndex) {
             document.querySelector(`#reuse-${docIndex} ul`).style.display =

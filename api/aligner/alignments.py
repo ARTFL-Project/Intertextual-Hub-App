@@ -17,8 +17,10 @@ DB_NAME = db_config["database_name"]
 DB_PWD = db_config["database_password"]
 ALIGNMENTS_TABLE = db_config["alignments_table"]
 PASSAGES_TABLE = db_config["passages_table"]
-
+OBJECT_TYPES: Dict[str, str] = {db_name: values["object_type"] for db_name, values in db_config["philo_dbs"].items()}
 GROUP_BY_DOC = db_config["group_by_doc"]
+
+OBJECT_LENGTH = {1: "doc", 2: "div1", 3: "div2"}
 
 
 FIELD_TYPES = {
@@ -279,7 +281,7 @@ def get_passages(pairid: str):
 
 
 def get_passage_by_philo_id(
-    object_id: List[str], philo_db: str, direction: Optional[str] = None
+    object_id: List[str], philo_db: str, direction: str = ""
 ) -> Union[
     Tuple[
         List[Dict[str, int]],
@@ -290,9 +292,10 @@ def get_passage_by_philo_id(
     Tuple[None, None, None, None],
 ]:
     """Get all passage bytes offsets by philo_id"""
+    object_id = [i for i in object_id if int(i)]  # remove trailing zeros as this could throw off object type detection
     zeros_to_add = " ".join(["0" for _ in range(7 - len(object_id))])
     philo_id: str = f"{' '.join(object_id)} {zeros_to_add}"
-
+    object_type = OBJECT_TYPES[philo_db]
     doc_metadata: Dict[str, Union[str, datetime]] = {}
     if direction == "source":
         opposite_direction = "target"
@@ -303,10 +306,17 @@ def get_passage_by_philo_id(
     ) as conn:
         passages: List[Tuple[int, int, Dict[str, Union[str, datetime]]]] = []
         cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        cursor.execute(
-            f"SELECT * FROM {ALIGNMENTS_TABLE} WHERE {direction}_philo_id=%s AND {direction}_philo_db=%s",
-            (philo_id, philo_db),
-        )
+        if object_type == OBJECT_LENGTH[len(object_id)]:
+            cursor.execute(
+                f"SELECT * FROM {ALIGNMENTS_TABLE} WHERE {direction}_philo_id=%s AND {direction}_philo_db=%s",
+                (philo_id, philo_db),
+            )
+        else:
+            philo_id = f"{' '.join(object_id)} %"
+            cursor.execute(
+                f"SELECT * FROM {ALIGNMENTS_TABLE} WHERE {direction}_philo_db=%s AND {direction}_philo_id LIKE %s",
+                (philo_db, philo_id),
+            )
         for row in cursor:
             local_metadata = {
                 field: row[field] for field in FIELD_TYPES if not field.startswith(direction) and field != "passages"
@@ -431,21 +441,43 @@ def get_passages_by_pairids_and_passageids(pairids: List[str], passageids: List[
 
 def check(philo_db: str, object_id: str):
     zeros_to_add = " ".join(["0" for _ in range(7 - len(object_id.split()))])
-    philo_id: str = f"{' '.join(object_id.split())} {zeros_to_add}"
+    object_type = OBJECT_TYPES[philo_db]
     source_count = 0
     target_count = 0
-    with psycopg2.connect(
-        user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
-    ) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            f"SELECT COUNT(*) FROM {ALIGNMENTS_TABLE} WHERE source_philo_db=%s AND source_philo_id=%s",
-            (philo_db, philo_id,),
-        )
-        source_count = cursor.fetchone()[0]
-        cursor.execute(
-            f"SELECT COUNT(*) FROM {ALIGNMENTS_TABLE} WHERE target_philo_db=%s AND target_philo_id=%s",
-            (philo_db, philo_id,),
-        )
-        target_count = cursor.fetchone()[0]
+    if object_type == OBJECT_LENGTH[len(object_id.split())]:
+        philo_id = f"{' '.join(object_id.split())} {zeros_to_add}"
+        with psycopg2.connect(
+            user=db_config["database_user"],
+            password=db_config["database_password"],
+            database=db_config["database_name"],
+        ) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                f"SELECT COUNT(*) FROM {ALIGNMENTS_TABLE} WHERE source_philo_db=%s AND source_philo_id=%s",
+                (philo_db, philo_id,),
+            )
+            source_count = cursor.fetchone()[0]
+            cursor.execute(
+                f"SELECT COUNT(*) FROM {ALIGNMENTS_TABLE} WHERE target_philo_db=%s AND target_philo_id=%s",
+                (philo_db, philo_id,),
+            )
+            target_count = cursor.fetchone()[0]
+    else:
+        philo_id = f"{object_id} %"
+        with psycopg2.connect(
+            user=db_config["database_user"],
+            password=db_config["database_password"],
+            database=db_config["database_name"],
+        ) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                f"SELECT COUNT(*) FROM {ALIGNMENTS_TABLE} WHERE source_philo_db=%s AND source_philo_id LIKE %s",
+                (philo_db, philo_id,),
+            )
+            source_count = cursor.fetchone()[0]
+            cursor.execute(
+                f"SELECT COUNT(*) FROM {ALIGNMENTS_TABLE} WHERE target_philo_db=%s AND target_philo_id LIKE%s",
+                (philo_db, philo_id,),
+            )
+            target_count = cursor.fetchone()[0]
     return {"source_count": source_count, "target_count": target_count}

@@ -2,11 +2,11 @@
     <b-container fluid class="my-4">
         <div v-if="noResults">
             <h6>
-                This document does not have enough words from which to derive a topic distribution.
-                <a
-                    :href="philoUrl"
-                    target="_blank"
-                >See document in PhiloLogic</a>.
+                This document does not have enough words from which to derive a
+                topic distribution.
+                <router-link :to="philoUrl"
+                    >See full text of document</router-link
+                >.
             </h6>
         </div>
         <div v-else>
@@ -29,13 +29,22 @@
                                 @row-clicked="goToTopic"
                             >
                                 <template slot="[name]" slot-scope="data">
-                                    <span class="frequency-parent">Topic {{ data.value }}</span>
+                                    <span class="frequency-parent"
+                                        >Topic {{ data.value }}</span
+                                    >
                                 </template>
-                                <template slot="[description]" slot-scope="data">
-                                    <span class="frequency-parent">{{ data.value }}</span>
+                                <template
+                                    slot="[description]"
+                                    slot-scope="data"
+                                >
+                                    <span class="frequency-parent">{{
+                                        data.value
+                                    }}</span>
                                 </template>
                                 <template slot="[frequency]" slot-scope="data">
-                                    <span class="frequency-value pl-2">{{ data.value }}%</span>
+                                    <span class="frequency-value pl-2"
+                                        >{{ data.value }}%</span
+                                    >
                                 </template>
                             </b-table>
                         </div>
@@ -47,25 +56,29 @@
                             <h6
                                 id="distinctive-words"
                                 class="mb-0"
-                                v-b-popover.hover.top="`Distinctiveness is computed using the Term Frequency - Inverse Document Frequency algorithm (TF-IDF)`"
+                                v-b-popover.hover.top="
+                                    `Distinctiveness is computed using the Term Frequency - Inverse Document Frequency algorithm (TF-IDF)`
+                                "
                             >
                                 Most distinctive words
-                                <span
-                                    v-if="words.length == 50"
-                                >(up to 50 shown)</span>
+                                <span v-if="words.length == 50"
+                                    >(up to 50 shown)</span
+                                >
                             </h6>
                         </template>
                         <div id="word-cloud" class="card-text">
                             <div>
-                                <span v-for="weightedWord in words" :key="weightedWord[2]">
+                                <span
+                                    v-for="weightedWord in words"
+                                    :key="weightedWord[2]"
+                                >
                                     <word-link
                                         :target="weightedWord[2]"
                                         :metadata="mainDoc.metadata"
                                         :word="weightedWord[0]"
-                                        :style="`display:inline-block; padding: 5px; cursor: pointer; font-size: ${1 +
-                                            weightedWord[1]}rem; color: ${
-                                            weightedWord[3]
-                                        }`"
+                                        :style="`display:inline-block; padding: 5px; cursor: pointer; font-size: ${
+                                            1 + weightedWord[1]
+                                        }rem; color: ${weightedWord[3]}`"
                                     ></word-link>
                                 </span>
                             </div>
@@ -77,16 +90,22 @@
                 <div class="col-6">
                     <b-card
                         no-body
-                        :header="
-                        `Top ${topicSimDocs.slice(0,20).length} documents with most similar topic distribution`
-                    "
+                        :header="`Top ${
+                            topicSimDocs.slice(0, 20).length
+                        } documents with most similar topic distribution`"
                     >
                         <b-list-group flush>
                             <b-list-group-item
-                                v-for="(doc, topIndex) in topicSimDocs.slice(0,20)"
+                                v-for="(doc, topIndex) in topicSimDocs.slice(
+                                    0,
+                                    20
+                                )"
                                 :key="doc.doc_id"
                                 class="list-group-item"
-                                style="border-radius: 0px; border-width: 1px 0px"
+                                style="
+                                    border-radius: 0px;
+                                    border-width: 1px 0px;
+                                "
                             >
                                 <citations
                                     :docPair="doc.metadata"
@@ -97,7 +116,10 @@
                                     variant="secondary"
                                     pill
                                     class="float-right"
-                                >{{ (doc.score * 100).toFixed(2) }}%</b-badge>
+                                    >{{
+                                        (doc.score * 100).toFixed(2)
+                                    }}%</b-badge
+                                >
                             </b-list-group-item>
                         </b-list-group>
                     </b-card>
@@ -105,16 +127,17 @@
                 <div class="col-6">
                     <b-card
                         no-body
-                        :header="
-                        `Top ${vectorSimDocs.length} documents with most similar vocabulary`
-                    "
+                        :header="`Top ${vectorSimDocs.length} documents with most similar vocabulary`"
                     >
                         <b-list-group flush>
                             <b-list-group-item
                                 v-for="(doc, vocIndex) in vectorSimDocs"
                                 :key="doc.doc_id"
                                 class="list-group-item"
-                                style="border-radius: 0px; border-width: 1px 0px"
+                                style="
+                                    border-radius: 0px;
+                                    border-width: 1px 0px;
+                                "
                             >
                                 <citations
                                     :docPair="doc.metadata"
@@ -125,7 +148,10 @@
                                     variant="secondary"
                                     pill
                                     class="float-right"
-                                >{{ (doc.score * 100).toFixed(0) }}%</b-badge>
+                                    >{{
+                                        (doc.score * 100).toFixed(0)
+                                    }}%</b-badge
+                                >
                             </b-list-group-item>
                         </b-list-group>
                     </b-card>
@@ -163,9 +189,7 @@ export default {
             vectorSimDocs: [],
             topicSimDocs: [],
             topicDistribution: [],
-            philoUrl: `${
-                this.$appConfig.philoDBs[this.$route.params.philoDb].url
-            }/navigate/${this.$route.params.doc}`,
+            philoUrl: `/navigate/${this.$route.params.philoDb}/${this.$route.params.doc}`,
             topicData: this.$topicModelData.topics_words,
         };
     },
@@ -203,10 +227,6 @@ export default {
                         this.topicDistribution = this.buildTopicDistribution(
                             response.data.topic_distribution
                         );
-                        // tippy("#distinctive-words", {
-                        //     content:
-                        //         "Distinctiveness is computed using the Term Frequency - Inverse Document Frequency algorithm",
-                        // });
                     }
                 });
         },

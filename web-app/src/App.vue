@@ -220,7 +220,7 @@ a:not([href]):hover {
     font-size: 0.9rem;
 }
 .module-tab {
-    z-index: 10;
+    z-index: 50;
     width: 100%;
 }
 .slide-fade-enter-active {

@@ -178,7 +178,6 @@ def retrieve_passage(pairid: str, start_byte: int, direction: str):
 
 @app.post("/retrieve_passages_all/")
 def retrieve_passages_all(passages: Dict[str, List[str]]):
-    print(passages["pairids"])
     passage_objects = aligner.get_passages_by_pairids_and_passageids(passages["pairids"], passages["passageids"])
     return passage_objects
 

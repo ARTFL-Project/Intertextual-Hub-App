@@ -31,12 +31,13 @@ PREPROC = PreProcessor(
     stopwords="/var/www/html/intertextual_hub/config/stopwords.txt",
 )
 
-INDEX = AnnoyIndex(2130, "angular")
+with open(APP_CONFIG["tfidf_model"], "rb") as vectorizer:
+    TF_IDF_VECTORIZER: TfidfVectorizer = pickle.load(vectorizer)
+
+INDEX = AnnoyIndex(len(TF_IDF_VECTORIZER.vocabulary_), "angular")
 INDEX.load(APP_CONFIG["annoy_index"])
 
 # DOC2VEC_MODEL = Doc2Vec.load("/shared/NEH_intertextual_hub/doc2vec-annoy/SEPT01mvo03.model")
-with open(APP_CONFIG["tfidf_model"], "rb") as vectorizer:
-    TF_IDF_VECTORIZER: TfidfVectorizer = pickle.load(vectorizer)
 
 
 def process_annoy_results(newsims) -> List[Dict[str, Union[str, Dict[str, str]]]]:
