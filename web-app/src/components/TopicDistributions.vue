@@ -1,6 +1,6 @@
 <template>
-    <b-container fluid class="mt-2">
-        <div class="mt-2 p-2">
+    <b-container fluid style="background-color: #fff">
+        <div class="pt-4 p-2">
             Click on any topic to explore its usage across the corpus
         </div>
         <b-card no-body class="mb-4">
