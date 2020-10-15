@@ -1,5 +1,21 @@
 <template>
     <div class="my-4">
+        <div
+            v-if="loading"
+            class="text-center"
+            style="
+                position: absolute;
+                left: 0;
+                top: 200px;
+                right: 0;
+                z-index: 10;
+            "
+        >
+            <b-spinner
+                label="Loading..."
+                style="width: 5rem; height: 5rem; color: rgba(143, 57, 49, 0.8)"
+            ></b-spinner>
+        </div>
         <b-tabs justified content-class="mt-3" v-model="tabIndex">
             <b-tab active>
                 <template v-slot:title>
@@ -366,6 +382,7 @@ export default {
             periodPairs: [],
             similarWords: [],
             tabIndex: 0,
+            loading: false,
         };
     },
     computed: {
@@ -382,6 +399,7 @@ export default {
     },
     methods: {
         fetchData() {
+            this.loading = true;
             this.$http
                 .get(
                     `${this.$appConfig.topologic.api}/get_word_data/${
@@ -389,6 +407,7 @@ export default {
                     }/${unidecode(this.$route.params.word)}`
                 )
                 .then((response) => {
+                    this.loading = false;
                     if (response.data.documents.length > 0) {
                         this.documents = response.data.documents.slice(0, 10);
                         this.topicDistribution = this.build_topic_distribution(

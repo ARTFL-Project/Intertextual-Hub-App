@@ -6,6 +6,16 @@
             }}
             of {{ count }}
         </h5>
+        <div
+            v-if="loading"
+            class="text-center"
+            style="position: absolute; left: 0; right: 0; z-index: 10"
+        >
+            <b-spinner
+                label="Loading..."
+                style="width: 5rem; height: 5rem; color: rgba(143, 57, 49, 0.8)"
+            ></b-spinner>
+        </div>
         <b-card
             class="mt-4 mb-4 shadow-sm"
             no-body
@@ -103,7 +113,7 @@
                 </div>
             </transition>
         </b-card>
-        <div class="overflow-auto">
+        <div class="overflow-auto" v-if="!loading">
             <b-pagination-nav
                 align="center"
                 first-text="First"
@@ -131,6 +141,7 @@ export default {
             passageTogglerMessages: null,
             currentStart: 0,
             pageCount: 1,
+            loading: false,
         };
     },
     watch: {
@@ -168,6 +179,7 @@ export default {
         fetchResults() {
             EventBus.$emit("hideForms");
             this.results = [];
+            this.loading = true;
             this.$http
                 .get(
                     `${
@@ -177,6 +189,7 @@ export default {
                     )}`
                 )
                 .then((response) => {
+                    this.loading = false;
                     this.passageTogglerMessages = response.data.results.map(
                         () => "Show passage"
                     );

@@ -22,7 +22,7 @@ def get_word_evolution(
 ) -> Tuple[Dict[int, List[Dict[str, Union[str, float]]]], Dict[str, Dict[str, str]], Dict[str, str]]:
     periods: Dict[str, List[Dict[str, Union[str, float]]]] = {}
     word = unidecode(word)
-    with psycopg2.connect(user="i_hub_user", password="martini", database="intertextual_hub",) as conn:
+    with psycopg2.connect(user=DB_USER, password=DB_PWD, database=DB_NAME,) as conn:
         cursor = conn.cursor(cursor_factory=DictCursor)
         cursor.execute("SELECT periods FROM word_vectors_by_quarter WHERE word=%s", (word,))
         periods = cursor.fetchone()["periods"]

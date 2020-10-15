@@ -15,6 +15,25 @@
                     :active="!intertextual"
                     @click="updateTocButton()"
                 >
+                    <div
+                        v-if="simDocsloading"
+                        class="text-center"
+                        style="
+                            position: absolute;
+                            left: 0;
+                            right: 0;
+                            z-index: 10;
+                        "
+                    >
+                        <b-spinner
+                            label="Loading..."
+                            style="
+                                width: 2.5rem;
+                                height: 2.5rem;
+                                color: rgba(143, 57, 49, 0.8);
+                            "
+                        ></b-spinner>
+                    </div>
                     <div v-if="similarDocs.length > 0">
                         <h6 class="pt-2 px-2">
                             20 most similar documents (top 5 displayed):
@@ -488,6 +507,7 @@ export default {
             sourceReuseCount: 0,
             targetReuseCount: 0,
             tabIndex: 0,
+            simDocsloading: false,
         };
     },
     computed: {
@@ -580,6 +600,7 @@ export default {
             this.docsCited = [];
             this.alreadyScrolled = false;
             this.showAllSimDocs = false;
+            this.similarDocs = [];
             this.$bvModal.hide("text-reuse");
             let philoId = this.getPhiloId();
             this.pairid = this.$route.query.pairid;
@@ -641,6 +662,7 @@ export default {
                     this.sourceReuseCount = response.data.source_count;
                     this.targetReuseCount = response.data.target_count;
                 });
+            this.simDocsloading = true;
             this.$http
                 .get(
                     `${this.$appConfig.apiServer}/intertextual-hub-api/get_similar_docs/${this.$route.params.philoDb}`,
@@ -651,6 +673,7 @@ export default {
                     }
                 )
                 .then((response) => {
+                    this.simDocsloading = false;
                     this.similarDocs = response.data;
                     this.updateTocButton();
                 });

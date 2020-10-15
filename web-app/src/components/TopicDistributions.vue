@@ -16,7 +16,11 @@
                 @row-clicked="goToTopic"
             >
                 <template v-slot:cell(name)="data">
-                    <span class="frequency-parent">Topic {{ data.value }}</span>
+                    <span
+                        class="frequency-parent d-inline-block"
+                        style="min-width: 80px"
+                        >Topic {{ data.value }}</span
+                    >
                 </template>
                 <template v-slot:cell(description)="data">
                     <span class="frequency-parent">{{ data.value }}</span>
@@ -27,7 +31,9 @@
                     >
                     <span
                         class="frequency-bar"
-                        :style="`width: ${data.value * frequencyMultiplier}%;`"
+                        :style="`width: ${
+                            data.value * frequencyMultiplier
+                        }%; max-height: 3em`"
                     ></span>
                 </template>
             </b-table>
