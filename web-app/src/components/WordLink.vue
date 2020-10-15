@@ -3,21 +3,27 @@
         <a class="word-link" :id="target" href="#">{{ word }}</a>
         <b-popover :target="`${target}`" triggers="focus" placement="top">
             <template v-slot:title>
-                <span style="font-variant: small-caps;">{{ word }}</span>
+                <span style="font-variant: small-caps">{{ word }}</span>
             </template>
             <b-list-group flush>
                 <b-list-group-item v-if="extraLink">
-                    <router-link :to="extraLink.link" v-html="extraLink.text"></router-link>
-                </b-list-group-item>
-                <b-list-group-item>
-                    <router-link :to="`/word/${word}`">Explore usage in corpus</router-link>
-                </b-list-group-item>
-                <b-list-group-item>
                     <router-link
-                        :to="link"
-                        v-if="metadata && philoUrl"
-                    >See all occurrences in document</router-link>
-                    <router-link :to="`/search?words=${word}`" v-else>Find most relevant documents</router-link>
+                        :to="extraLink.link"
+                        v-html="extraLink.text"
+                    ></router-link>
+                </b-list-group-item>
+                <b-list-group-item>
+                    <router-link :to="`/word/${word}`"
+                        >Explore usage in corpus</router-link
+                    >
+                </b-list-group-item>
+                <b-list-group-item>
+                    <a :href="link" target="_blank" v-if="metadata && philoUrl"
+                        >See all occurrences in document</a
+                    >
+                    <router-link :to="`/search?words=${word}`" v-else
+                        >Find most relevant documents</router-link
+                    >
                 </b-list-group-item>
             </b-list-group>
         </b-popover>
@@ -41,7 +47,7 @@ export default {
     },
     computed: {
         link: function () {
-            let params = { q: this.word };
+            let params = { q: `${this.word}.*` };
             if (this.metadata.author.length) {
                 params.author = `"${this.metadata.author}"`;
             }

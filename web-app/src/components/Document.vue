@@ -9,6 +9,16 @@
                 >.
             </h6>
         </div>
+        <div
+            v-if="loading"
+            class="text-center"
+            style="position: absolute; left: 0; right: 0; z-index: 10"
+        >
+            <b-spinner
+                label="Loading..."
+                style="width: 5rem; height: 5rem; color: rgba(143, 57, 49, 0.8)"
+            ></b-spinner>
+        </div>
         <div v-else>
             <h5 class="pl-4 pr-4" style="text-align: center">
                 <citations
@@ -191,6 +201,7 @@ export default {
             topicDistribution: [],
             philoUrl: `/navigate/${this.$route.params.philoDb}/${this.$route.params.doc}`,
             topicData: this.$topicModelData.topics_words,
+            loading: false,
         };
     },
 
@@ -203,14 +214,15 @@ export default {
     },
     methods: {
         fetchData() {
+            this.loading = true;
             let philo_id = this.$route.params.doc.split("/").join(" ");
             this.text = "";
-
             this.$http
                 .get(
                     `${this.$appConfig.topologic.api}/get_doc_data/${this.$appConfig.topologic.dbname}/${this.$route.params.philoDb}?philo_id=${philo_id}`
                 )
                 .then((response) => {
+                    this.loading = false;
                     if (!response.data.metadata) {
                         this.noResults = true;
                     } else {
