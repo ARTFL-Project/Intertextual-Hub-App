@@ -8,9 +8,8 @@ from typing import Dict, List, Optional, Tuple, Union
 import psycopg2
 import psycopg2.extras
 
-from config import DB_CONFIG
-
 sys.path.append("..")
+from config import DB_CONFIG
 
 
 DB_USER = DB_CONFIG["database_user"]

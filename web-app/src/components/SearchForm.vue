@@ -32,24 +32,27 @@
                         value="OR"
                         unchecked-value
                         class="d-inline-block mb-3"
-                    >OR search</b-form-checkbox>
+                        >OR search</b-form-checkbox
+                    >
                     <b-button
                         size="sm"
                         variant="outline-primary"
                         class="d-inline-block ml-3 mb-3"
                         style="vertical-align: baseline"
                         @click="addAssociatedWords()"
-                    >add 10 most associated words</b-button>
+                        >add 10 most associated words</b-button
+                    >
                     <b-alert
                         :show="dismissCountDown"
-                        @dismissed="dismissCountDown=0"
+                        @dismissed="dismissCountDown = 0"
                         @dismiss-count-down="countDownChanged"
                         variant="danger"
                         dismissible
                         fade
                     >
                         The term
-                        <b>{{formValues.words}}</b> is not present in the associated words index
+                        <b>{{ formValues.words }}</b> is not present in the
+                        associated words index
                     </b-alert>
                     <b-input-group
                         :prepend="field.label"
@@ -65,9 +68,16 @@
                     <b-input-group class="pb-3">
                         <template v-slot:prepend>
                             <b-input-group-text>Date</b-input-group-text>
-                            <b-dropdown :text="dateType" variant="outline-secondary">
-                                <b-dropdown-item @click="dropSelect('exact')">exact</b-dropdown-item>
-                                <b-dropdown-item @click="dropSelect('range')">range</b-dropdown-item>
+                            <b-dropdown
+                                :text="dateType"
+                                variant="outline-secondary"
+                            >
+                                <b-dropdown-item @click="dropSelect('exact')"
+                                    >exact</b-dropdown-item
+                                >
+                                <b-dropdown-item @click="dropSelect('range')"
+                                    >range</b-dropdown-item
+                                >
                             </b-dropdown>
                         </template>
                         <b-form-input
@@ -101,12 +111,21 @@
                         </b-input-group>
                     </b-input-group>
                     <b-input-group prepend="Collections" class="mb-3">
-                        <b-form-select v-model="collectionSelected" :options="collections"></b-form-select>
+                        <b-form-select
+                            v-model="collectionSelected"
+                            :options="collections"
+                        ></b-form-select>
                     </b-input-group>
                     <b-input-group prepend="Period" class="mb-3">
-                        <b-form-select v-model="periodSelected" :options="periods"></b-form-select>
+                        <b-form-select
+                            v-model="periodSelected"
+                            :options="periods"
+                        ></b-form-select>
                     </b-input-group>
-                    <b-input-group class="d-inline" prepend="Max results displayed"></b-input-group>
+                    <b-input-group
+                        class="d-inline"
+                        prepend="Max results displayed"
+                    ></b-input-group>
                     <b-form-group class="d-inline-block">
                         <b-form-radio-group
                             v-model="formValues.limit"
@@ -117,15 +136,19 @@
                         ></b-form-radio-group>
                     </b-form-group>
                     <b-button-group class="d-block mt-3">
-                        <b-button variant="primary" type="submit">Search</b-button>
-                        <b-button type="reset" variant="outline-primary">Reset</b-button>
+                        <b-button variant="primary" type="submit"
+                            >Search</b-button
+                        >
+                        <b-button type="reset" variant="outline-primary"
+                            >Reset</b-button
+                        >
                     </b-button-group>
                 </b-form>
             </b-col>
             <b-col class="d-xs-none d-md-none d-lg-block">
                 <p>
-                    Term queries run from this form return a list of documents ranked
-                    by revelance.
+                    Term queries run from this form return a list of documents
+                    ranked by revelance.
                 </p>
                 <p>
                     Queries can be executed just with search terms or can be
@@ -166,7 +189,9 @@ export default {
             },
             collections: [
                 { text: "All collections", value: null },
-                ...this.$appConfig.collections,
+                ...Object.keys(this.$appConfig.philoDBs).map((i) => {
+                    return { value: i, text: this.$appConfig.philoDBs[i].name };
+                }),
             ],
             collectionSelected: null,
             periods: [

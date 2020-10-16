@@ -2,7 +2,6 @@
 
 import os
 import pickle
-import sys
 from typing import Dict, List, Union
 
 import rapidjson
@@ -12,8 +11,7 @@ from philologic.runtime.get_text import get_text
 from sklearn.feature_extraction.text import TfidfVectorizer
 from text_preprocessing import PreProcessor
 
-sys.path.append("..")
-from config import DB_CONFIG, APP_CONFIG, PHILO_PATHS
+from api.config import DB_CONFIG, APP_CONFIG, PHILO_PATHS
 
 
 with open(os.path.join(DB_CONFIG["doc_id_mapping"], "philo_to_annoy.json")) as input_file:

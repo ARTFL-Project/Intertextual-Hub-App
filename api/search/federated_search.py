@@ -5,9 +5,8 @@ import sqlite3
 import sys
 import unicodedata
 
-from config import APP_CONFIG, DB_CONFIG
-
 sys.path.append("..")
+from config import APP_CONFIG, DB_CONFIG
 
 
 GROUP_BY_LEVELS = APP_CONFIG["groupByLevels"]
