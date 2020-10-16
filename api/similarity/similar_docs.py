@@ -1,26 +1,25 @@
 #!/usr/bin/env python3
 
-import json
 import os
 import pickle
-from typing import Dict, Union, List
+import sys
+from typing import Dict, List, Union
+
+import rapidjson
+from annoy import AnnoyIndex
 from philologic.runtime.DB import DB
 from philologic.runtime.get_text import get_text
-from text_preprocessing import PreProcessor
 from sklearn.feature_extraction.text import TfidfVectorizer
+from text_preprocessing import PreProcessor
 
-from annoy import AnnoyIndex
+sys.path.append("..")
+from config import DB_CONFIG, APP_CONFIG, PHILO_PATHS
 
 
-with open("./db_config.json") as app_config:
-    APP_CONFIG = json.load(app_config)
-
-with open("./db_config.json") as db_config_file:
-    db_config = json.load(db_config_file)
-    with open(os.path.join(db_config["doc_id_mapping"], "philo_to_annoy.json")) as input_file:
-        PHILO_ID_TO_ANNOY: Dict[str, Dict[str, str]] = json.load(input_file)
-    with open(os.path.join(db_config["doc_id_mapping"], "annoy_to_philo.json")) as input_file:
-        ANNOY_TO_PHILO_ID: Dict[str, Dict[str, str]] = json.load(input_file)
+with open(os.path.join(DB_CONFIG["doc_id_mapping"], "philo_to_annoy.json")) as input_file:
+    PHILO_ID_TO_ANNOY: Dict[str, Dict[str, str]] = rapidjson.load(input_file)
+with open(os.path.join(DB_CONFIG["doc_id_mapping"], "annoy_to_philo.json")) as input_file:
+    ANNOY_TO_PHILO_ID: Dict[str, Dict[str, str]] = rapidjson.load(input_file)
 
 PREPROC = PreProcessor(
     modernize=True,
@@ -31,11 +30,11 @@ PREPROC = PreProcessor(
     stopwords="/var/www/html/intertextual_hub/config/stopwords.txt",
 )
 
-with open(APP_CONFIG["tfidf_model"], "rb") as vectorizer:
+with open(DB_CONFIG["tfidf_model"], "rb") as vectorizer:
     TF_IDF_VECTORIZER: TfidfVectorizer = pickle.load(vectorizer)
 
 INDEX = AnnoyIndex(len(TF_IDF_VECTORIZER.vocabulary_), "angular")
-INDEX.load(APP_CONFIG["annoy_index"])
+INDEX.load(DB_CONFIG["annoy_index"])
 
 # DOC2VEC_MODEL = Doc2Vec.load("/shared/NEH_intertextual_hub/doc2vec-annoy/SEPT01mvo03.model")
 
@@ -69,7 +68,7 @@ def retrieve_similar_docs(philo_db: str, philo_id: str, num: int = 20):
     try:
         annoy_id = int(PHILO_ID_TO_ANNOY[philo_db][philo_id])
     except KeyError:
-        db = DB(f"/var/www/html/intertextual_hub/philologic/{philo_db}/data")
+        db = DB(f"{PHILO_PATHS[philo_db]}/data")
         hit = db[philo_id]
         text = get_text(
             hit, hit.start_byte, hit.end_byte - hit.start_byte, f"/var/www/html/intertextual_hub/philologic/{philo_db}",
@@ -86,4 +85,3 @@ def submit_passage(passage: str, num: int = 20):
     new_sims = INDEX.get_nns_by_vector(passage_vector, num, include_distances=True)
     results = process_annoy_results(new_sims)
     return results
-

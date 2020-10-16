@@ -1,24 +1,25 @@
 #!/usr/bin/env python3
 
 import re
+import sys
+from datetime import datetime
+from typing import Dict, List, Optional, Tuple, Union
 
 import psycopg2
 import psycopg2.extras
-from typing import List, Dict, Union, Tuple, Optional
-from dataclasses import dataclass
-import rapidjson as json
-from datetime import datetime
+
+from config import DB_CONFIG
+
+sys.path.append("..")
 
 
-with open("./db_config.json") as db_config_file:
-    db_config = json.load(db_config_file)
-DB_USER = db_config["database_user"]
-DB_NAME = db_config["database_name"]
-DB_PWD = db_config["database_password"]
-ALIGNMENTS_TABLE = db_config["alignments_table"]
-PASSAGES_TABLE = db_config["passages_table"]
-OBJECT_TYPES: Dict[str, str] = {db_name: values["object_type"] for db_name, values in db_config["philo_dbs"].items()}
-GROUP_BY_DOC = db_config["group_by_doc"]
+DB_USER = DB_CONFIG["database_user"]
+DB_NAME = DB_CONFIG["database_name"]
+DB_PWD = DB_CONFIG["database_password"]
+ALIGNMENTS_TABLE = DB_CONFIG["alignments_table"]
+PASSAGES_TABLE = DB_CONFIG["passages_table"]
+OBJECT_TYPES: Dict[str, str] = {db_name: values["object_type"] for db_name, values in DB_CONFIG["philo_dbs"].items()}
+GROUP_BY_DOC = DB_CONFIG["group_by_doc"]
 
 OBJECT_LENGTH = {1: "doc", 2: "div1", 3: "div2"}
 
@@ -76,13 +77,6 @@ FILTERED_QUERY_WORDS = {
     "un",
     "une",
 }
-
-
-@dataclass
-class Passage:
-    start_byte: int
-    end_byte: int
-    metadata: List[Dict[str, str]]
 
 
 def query_builder(query_args: dict):
@@ -164,7 +158,7 @@ def query_builder(query_args: dict):
 
 def search_alignments(**query_params):
     with psycopg2.connect(
-        user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
+        user=DB_CONFIG["database_user"], password=DB_CONFIG["database_password"], database=DB_CONFIG["database_name"],
     ) as conn:
         cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         offset = query_params["start"]
@@ -192,7 +186,7 @@ def search_alignments(**query_params):
 
 def search_alignments2(**query_params):
     with psycopg2.connect(
-        user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
+        user=DB_CONFIG["database_user"], password=DB_CONFIG["database_password"], database=DB_CONFIG["database_name"],
     ) as conn:
         cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         sql_fields, sql_values = query_builder(query_params)
@@ -260,7 +254,7 @@ def search_alignments2(**query_params):
 def get_passages(pairid: str):
     """Get passages by pairid"""
     with psycopg2.connect(
-        user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
+        user=DB_CONFIG["database_user"], password=DB_CONFIG["database_password"], database=DB_CONFIG["database_name"],
     ) as conn:
         cursor = conn.cursor()
         cursor.execute(f"SELECT passages FROM {PASSAGES_TABLE} WHERE pairid=%s", (pairid,))
@@ -302,7 +296,7 @@ def get_passage_by_philo_id(
     else:
         opposite_direction = "source"
     with psycopg2.connect(
-        user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
+        user=DB_CONFIG["database_user"], password=DB_CONFIG["database_password"], database=DB_CONFIG["database_name"],
     ) as conn:
         passages: List[Tuple[int, int, Dict[str, Union[str, datetime]]]] = []
         cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -384,7 +378,7 @@ def get_passage_by_philo_id(
 def get_passage_byte_offsets(pairid: str, direction: Optional[str]):
     """Get passage byte offsets by pairid"""
     with psycopg2.connect(
-        user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
+        user=DB_CONFIG["database_user"], password=DB_CONFIG["database_password"], database=DB_CONFIG["database_name"],
     ) as conn:
         cursor = conn.cursor()
         cursor.execute(f"SELECT {', '.join(FIELD_TYPES.keys())} FROM {ALIGNMENTS_TABLE} WHERE pairid=%s", (pairid,))
@@ -401,7 +395,7 @@ def get_passage_byte_offsets(pairid: str, direction: Optional[str]):
 def get_passage(pairid: str, start_byte: int, direction: str):
     """Get single passage by pairid and start byte"""
     with psycopg2.connect(
-        user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
+        user=DB_CONFIG["database_user"], password=DB_CONFIG["database_password"], database=DB_CONFIG["database_name"],
     ) as conn:
         cursor = conn.cursor()
         cursor.execute(f"SELECT passages FROM {ALIGNMENTS_TABLE} WHERE pairid=%s", (pairid,))
@@ -425,7 +419,7 @@ def get_passage(pairid: str, start_byte: int, direction: str):
 
 def get_passages_by_pairids_and_passageids(pairids: List[str], passageids: List[str]) -> List[Dict[str, str]]:
     with psycopg2.connect(
-        user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
+        user=DB_CONFIG["database_user"], password=DB_CONFIG["database_password"], database=DB_CONFIG["database_name"],
     ) as conn:
         cursor = conn.cursor()
         passage_objects: List[Dict[str, str]] = []
@@ -447,9 +441,9 @@ def check(philo_db: str, object_id: str):
     if object_type == OBJECT_LENGTH[len(object_id.split())]:
         philo_id = f"{' '.join(object_id.split())} {zeros_to_add}"
         with psycopg2.connect(
-            user=db_config["database_user"],
-            password=db_config["database_password"],
-            database=db_config["database_name"],
+            user=DB_CONFIG["database_user"],
+            password=DB_CONFIG["database_password"],
+            database=DB_CONFIG["database_name"],
         ) as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -465,9 +459,9 @@ def check(philo_db: str, object_id: str):
     else:
         philo_id = f"{object_id} %"
         with psycopg2.connect(
-            user=db_config["database_user"],
-            password=db_config["database_password"],
-            database=db_config["database_name"],
+            user=DB_CONFIG["database_user"],
+            password=DB_CONFIG["database_password"],
+            database=DB_CONFIG["database_name"],
         ) as conn:
             cursor = conn.cursor()
             cursor.execute(

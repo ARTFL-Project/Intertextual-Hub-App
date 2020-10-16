@@ -3,7 +3,7 @@ import App from "./App.vue";
 import router from "./router";
 import vueScrollTo from "vue-scrollto";
 import VueApexCharts from "vue-apexcharts";
-import appConfig from "../appConfig.json";
+import appConfig from "../../config/appConfig.json";
 
 import {
     BootstrapVue,

@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 
-import sys
 import re
-import json
-import unicodedata
 import sqlite3
+import sys
+import unicodedata
 
-with open("../web-app/src/appConfig.json") as db_config_file:
-    app_config = json.load(db_config_file)
-GROUP_BY_LEVELS = app_config["groupByLevels"]
-OBJECT_LEVELS = {db: value["object_type"] for db, value in app_config["philoDBs"].items()}
+from config import APP_CONFIG, DB_CONFIG
 
-with open("./db_config.json") as db_config_file:
-    db_config = json.load(db_config_file)
-DB_FILE = db_config["federated_search_index"]
+sys.path.append("..")
+
+
+GROUP_BY_LEVELS = APP_CONFIG["groupByLevels"]
+OBJECT_LEVELS = {db: value["object_type"] for db, value in APP_CONFIG["philoDBs"].items()}
+
+
+DB_FILE = DB_CONFIG["federated_search_index"]
 
 TABLE_NAME = "intertextual_hub_federated"
 
@@ -184,7 +185,8 @@ def metadata_search(author, title, start_date, end_date, collections, periods, l
     else:
         select_stmt = "SELECT {0} FROM {1} WHERE ".format(select_vals, TABLE_NAME)
         query_stmt = select_stmt + where_likes
-    query_stmt += f" GROUP BY author, title ORDER BY date, filename LIMIT {limit}"
+    query_stmt += f" GROUP BY author, title, filename ORDER BY date, filename LIMIT {limit}"
+    print(query_stmt)
 
     with sqlite3.connect(DB_FILE) as conn:
         conn.text_factory = str
@@ -215,4 +217,3 @@ def metadata_search(author, title, start_date, end_date, collections, periods, l
                     }
                 )
     return results_list, count
-

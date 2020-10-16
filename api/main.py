@@ -1,15 +1,16 @@
-import json
+from typing import Dict, List, Optional
+
 import requests
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
+
 import aligner
 import search
 import similarity
-from words import get_word_evolution, retrieve_associated_words, find_similar_words
-from typing import List, Optional, Dict
-
+from config import PHILO_URLS
+from words import find_similar_words, get_word_evolution, retrieve_associated_words
 
 app = FastAPI()
 
@@ -20,10 +21,6 @@ app.add_middleware(
 app.mount("/css", StaticFiles(directory="../web-app/dist/intertextual-hub/css"), name="css")
 app.mount("/js", StaticFiles(directory="../web-app/dist/intertextual-hub/js"), name="js")
 
-
-with open("./db_config.json") as db_config_file:
-    db_config = json.load(db_config_file)
-    PHILO_URLS = {dbname: values["url"] for dbname, values in db_config["philo_dbs"].items()}
 
 PHILO_TYPE = {1: "doc", 2: "div1", 3: "div2"}
 
@@ -110,6 +107,7 @@ def get_text(
                 "intertextual_metadata": [],
                 "object_type": text_object_type,
             }
+        print(passage_data)
         philologic_response = requests.post(
             f"{PHILO_URLS[philo_db]}/reports/navigation.py",
             params={"philo_id": " ".join(text_object_id)},

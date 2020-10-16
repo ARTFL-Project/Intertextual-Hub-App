@@ -1,20 +1,22 @@
-from typing import Dict, List, Union, Tuple
-import psycopg2
-import json
-from psycopg2.extras import DictCursor
-import numpy as np
-import requests
 import os
+import sys
+from typing import Dict, List, Tuple, Union
+
+import numpy as np
+import psycopg2
+import requests
 from Levenshtein import jaro_winkler
+from psycopg2.extras import DictCursor
 from unidecode import unidecode
 
+sys.path.append("..")
+from config import DB_CONFIG
 
-with open("./db_config.json") as db_config_file:
-    db_config = json.load(db_config_file)
-DB_USER = db_config["database_user"]
-DB_NAME = db_config["database_name"]
-DB_PWD = db_config["database_password"]
-TOPOLOGIC = db_config["topologic"]
+
+DB_USER = DB_CONFIG["database_user"]
+DB_NAME = DB_CONFIG["database_name"]
+DB_PWD = DB_CONFIG["database_password"]
+TOPOLOGIC = DB_CONFIG["topologic"]
 
 
 def get_word_evolution(
@@ -111,7 +113,7 @@ def get_word_evolution(
 
 def retrieve_associated_words(word: str) -> Dict[str, str]:
     with psycopg2.connect(
-        user=db_config["database_user"], password=db_config["database_password"], database=db_config["database_name"],
+        user=DB_CONFIG["database_user"], password=DB_CONFIG["database_password"], database=DB_CONFIG["database_name"],
     ) as conn:
         cursor = conn.cursor(cursor_factory=DictCursor)
         cursor.execute("SELECT words FROM global_word_vectors WHERE word=%s", (word,))
