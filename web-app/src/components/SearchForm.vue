@@ -1,5 +1,5 @@
 <template>
-    <b-card class="border-top-0">
+    <b-card class="position-relative border-top-0">
         <b-row>
             <b-col sm="12" lg="8" xl="7">
                 <b-form @submit.stop.prevent="search" @reset="clearForm">
@@ -163,9 +163,17 @@
                 </p>
             </b-col>
         </b-row>
+        <b-button
+            variant="outline-primary"
+            style="position: absolute; right: 1.25rem; bottom: 1rem"
+            @click="hideForm()"
+            >Close</b-button
+        >
     </b-card>
 </template>
 <script>
+import { EventBus } from "../main.js";
+
 export default {
     name: "SearchForm",
     data() {
@@ -318,6 +326,9 @@ export default {
         },
         showAlert() {
             this.dismissCountDown = 3;
+        },
+        hideForm() {
+            EventBus.$emit("hideForms");
         },
     },
 };

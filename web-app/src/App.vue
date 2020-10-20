@@ -2,7 +2,9 @@
     <div id="app">
         <b-navbar type="light" variant="light" class="shadow">
             <b-navbar-nav align="center" style="width: 100%">
-                <b-navbar-brand to="/">Intertextual Hub</b-navbar-brand>
+                <b-navbar-brand @click="goToHome()" style="cursor: pointer"
+                    >Intertextual Hub</b-navbar-brand
+                >
             </b-navbar-nav>
         </b-navbar>
 
@@ -14,10 +16,7 @@
             >
                 <transition name="slide-fade">
                     <b-card style="border-top-width: 0" v-if="show">
-                        <h5>
-                            Here are the collections included in the
-                            Intertextual Hub:
-                        </h5>
+                        <h5>Collections included in the Intertextual Hub:</h5>
                         <b-list-group style="width: fit-content">
                             <b-list-group-item
                                 v-for="philoDb in philoDbs"
@@ -147,7 +146,7 @@ export default {
                 this.tabIndex = 3;
             } else if (report == "Search") {
                 this.tabIndex = 1;
-            } else if (report == "intro") {
+            } else if (report == "home") {
                 this.tabIndex = 0;
             } else if (report == "wordUse") {
                 this.tabIndex = 4;
@@ -155,10 +154,17 @@ export default {
             this.show = show;
         },
         handleRouteChange(to) {
-            this.selectModule(to.name, false);
+            if (to.name == "home") {
+                this.selectModule("home", true);
+            } else {
+                this.selectModule(to.name, false);
+            }
         },
         showOptions() {
             this.show = true;
+        },
+        goToHome() {
+            this.$router.push({ name: "home" });
         },
     },
 };

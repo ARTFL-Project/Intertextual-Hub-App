@@ -65,7 +65,6 @@
                     </span>
                 </span>
                 <span v-else>No results.</span>
-                <!-- <br />Top 20 Author and Title Frequencies at bottom. -->
             </div>
         </b-card>
         <b-card
@@ -86,14 +85,21 @@
                 v-if="!biblioQuery"
                 v-html="result.headline"
             ></p>
-            <div v-if="biblioQuery && result.sections.length > 0">
-                <h6
-                    class="mt-1"
-                    style="color: rgb(143, 57, 49); cursor: pointer"
-                    @click="showSections(index)"
+            <div
+                v-if="
+                    biblioQuery &&
+                    philoConfig[result.philo_db].object_type != 'doc'
+                "
+            >
+                <b-button
+                    size="sm"
+                    variant="info"
+                    class="my-1"
+                    :id="`section${index}`"
+                    @click="toggleSections(index)"
                 >
                     See all chapters or sections
-                </h6>
+                </b-button>
                 <transition name="slide-fade">
                     <ul v-if="sectionsDisplay[index]">
                         <li
@@ -126,7 +132,7 @@ export default {
             biblioQuery: false,
             title: this.$route.query.title,
             author: this.$route.query.author,
-
+            philoConfig: this.$appConfig.philoDBs,
             results: null,
             docCount: null,
             sectionsDisplay: [],
@@ -190,8 +196,15 @@ export default {
             this.resultLimit = this.$route.query.limit;
             this.fetchResults();
         },
-        showSections(index) {
-            this.$set(this.sectionsDisplay, index, true);
+        toggleSections(index) {
+            if (!this.sectionsDisplay[index]) {
+                this.$set(this.sectionsDisplay, index, true);
+                document.getElementById(`section${index}`).innerText = "Hide";
+            } else {
+                this.$set(this.sectionsDisplay, index, false);
+                document.getElementById(`section${index}`).innerText =
+                    "See all chapters or sections";
+            }
         },
     },
 };

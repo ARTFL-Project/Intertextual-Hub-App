@@ -20,153 +20,156 @@
             ></b-spinner>
         </div>
         <div v-else>
-            <h5 class="pl-4 pr-4" style="text-align: center">
-                <citations
-                    :docPair="mainDoc.metadata"
-                    :philo-db="`${mainDoc.metadata.philo_db}`"
-                    v-if="mainDoc"
-                ></citations>
-            </h5>
+            <div v-if="!noResults">
+                <h5 class="pl-4 pr-4" style="text-align: center">
+                    <citations
+                        :docPair="mainDoc.metadata"
+                        :philo-db="`${mainDoc.metadata.philo_db}`"
+                        v-if="mainDoc"
+                    ></citations>
+                </h5>
 
-            <b-row class="mb-4 mt-4">
-                <b-col cols="12" md="6" lg="7" xl="8">
-                    <b-card no-body header="Top 10 Topics">
-                        <div class="pl-2 pr-2">
-                            <b-table
-                                hover
-                                :items="topicDistribution"
-                                :fields="fields"
-                                @row-clicked="goToTopic"
-                            >
-                                <template slot="[name]" slot-scope="data">
-                                    <span class="frequency-parent"
-                                        >Topic {{ data.value }}</span
+                <b-row class="mb-4 mt-4">
+                    <b-col cols="12" md="6" lg="7" xl="8">
+                        <b-card no-body header="Top 10 Topics">
+                            <div class="pl-2 pr-2">
+                                <b-table
+                                    hover
+                                    :items="topicDistribution"
+                                    :fields="fields"
+                                    @row-clicked="goToTopic"
+                                >
+                                    <template slot="[name]" slot-scope="data">
+                                        <span class="frequency-parent"
+                                            >Topic {{ data.value }}</span
+                                        >
+                                    </template>
+                                    <template
+                                        slot="[description]"
+                                        slot-scope="data"
                                     >
-                                </template>
-                                <template
-                                    slot="[description]"
-                                    slot-scope="data"
-                                >
-                                    <span class="frequency-parent">{{
-                                        data.value
-                                    }}</span>
-                                </template>
-                                <template slot="[frequency]" slot-scope="data">
-                                    <span class="frequency-value pl-2"
-                                        >{{ data.value }}%</span
+                                        <span class="frequency-parent">{{
+                                            data.value
+                                        }}</span>
+                                    </template>
+                                    <template
+                                        slot="[frequency]"
+                                        slot-scope="data"
                                     >
-                                </template>
-                            </b-table>
-                        </div>
-                    </b-card>
-                </b-col>
-                <b-col cols="12" md="6" lg="5" xl="4">
-                    <b-card no-body style="height: 100%">
-                        <template v-slot:header>
-                            <h6
-                                id="distinctive-words"
-                                class="mb-0"
-                                v-b-popover.hover.top="
-                                    `Distinctiveness is computed using the Term Frequency - Inverse Document Frequency algorithm (TF-IDF)`
-                                "
-                            >
-                                Most distinctive words
-                                <span v-if="words.length == 50"
-                                    >(up to 50 shown)</span
-                                >
-                            </h6>
-                        </template>
-                        <div id="word-cloud" class="card-text">
-                            <div>
-                                <span
-                                    v-for="weightedWord in words"
-                                    :key="weightedWord[2]"
-                                >
-                                    <word-link
-                                        :target="weightedWord[2]"
-                                        :metadata="mainDoc.metadata"
-                                        :word="weightedWord[0]"
-                                        :style="`display:inline-block; padding: 5px; cursor: pointer; font-size: ${
-                                            1 + weightedWord[1]
-                                        }rem; color: ${weightedWord[3]}`"
-                                    ></word-link>
-                                </span>
+                                        <span class="frequency-value pl-2"
+                                            >{{ data.value }}%</span
+                                        >
+                                    </template>
+                                </b-table>
                             </div>
-                        </div>
-                    </b-card>
-                </b-col>
-            </b-row>
-            <b-row class="mt-2">
-                <div class="col-6">
-                    <b-card
-                        no-body
-                        :header="`Top ${
-                            topicSimDocs.slice(0, 20).length
-                        } documents with most similar topic distribution`"
-                    >
-                        <b-list-group flush>
-                            <b-list-group-item
-                                v-for="(doc, topIndex) in topicSimDocs.slice(
-                                    0,
-                                    20
-                                )"
-                                :key="doc.doc_id"
-                                class="list-group-item"
-                                style="
-                                    border-radius: 0px;
-                                    border-width: 1px 0px;
-                                "
-                            >
-                                <citations
-                                    :docPair="doc.metadata"
-                                    :philo-db="`${doc.metadata.philo_db}`"
-                                    :index="`top-${topIndex}`"
-                                ></citations>
-                                <b-badge
-                                    variant="secondary"
-                                    pill
-                                    class="float-right"
-                                    >{{
-                                        (doc.score * 100).toFixed(2)
-                                    }}%</b-badge
+                        </b-card>
+                    </b-col>
+                    <b-col cols="12" md="6" lg="5" xl="4">
+                        <b-card no-body style="height: 100%">
+                            <template v-slot:header>
+                                <h6
+                                    id="distinctive-words"
+                                    class="mb-0"
+                                    v-b-popover.hover.top="
+                                        `Distinctiveness is computed using the Term Frequency - Inverse Document Frequency algorithm (TF-IDF)`
+                                    "
                                 >
-                            </b-list-group-item>
-                        </b-list-group>
-                    </b-card>
-                </div>
-                <div class="col-6">
-                    <b-card
-                        no-body
-                        :header="`Top ${vectorSimDocs.length} documents with most similar vocabulary`"
-                    >
-                        <b-list-group flush>
-                            <b-list-group-item
-                                v-for="(doc, vocIndex) in vectorSimDocs"
-                                :key="doc.doc_id"
-                                class="list-group-item"
-                                style="
-                                    border-radius: 0px;
-                                    border-width: 1px 0px;
-                                "
-                            >
-                                <citations
-                                    :docPair="doc.metadata"
-                                    :philo-db="`${doc.metadata.philo_db}`"
-                                    :index="`voc-${vocIndex}`"
-                                ></citations>
-                                <b-badge
-                                    variant="secondary"
-                                    pill
-                                    class="float-right"
-                                    >{{
-                                        (doc.score * 100).toFixed(0)
-                                    }}%</b-badge
+                                    Most distinctive words
+                                    <span v-if="words.length == 50"
+                                        >(up to 50 shown)</span
+                                    >
+                                </h6>
+                            </template>
+                            <div id="word-cloud" class="card-text">
+                                <div>
+                                    <span
+                                        v-for="weightedWord in words"
+                                        :key="weightedWord[2]"
+                                    >
+                                        <word-link
+                                            :target="weightedWord[2]"
+                                            :metadata="mainDoc.metadata"
+                                            :word="weightedWord[0]"
+                                            :style="`display:inline-block; padding: 5px; cursor: pointer; font-size: ${
+                                                1 + weightedWord[1]
+                                            }rem; color: ${weightedWord[3]}`"
+                                        ></word-link>
+                                    </span>
+                                </div>
+                            </div>
+                        </b-card>
+                    </b-col>
+                </b-row>
+                <b-row class="mt-2">
+                    <div class="col-6">
+                        <b-card
+                            no-body
+                            :header="`Top ${
+                                topicSimDocs.slice(0, 20).length
+                            } documents with most similar topic distribution`"
+                        >
+                            <b-list-group flush>
+                                <b-list-group-item
+                                    v-for="(doc,
+                                    topIndex) in topicSimDocs.slice(0, 20)"
+                                    :key="doc.doc_id"
+                                    class="list-group-item"
+                                    style="
+                                        border-radius: 0px;
+                                        border-width: 1px 0px;
+                                    "
                                 >
-                            </b-list-group-item>
-                        </b-list-group>
-                    </b-card>
-                </div>
-            </b-row>
+                                    <citations
+                                        :docPair="doc.metadata"
+                                        :philo-db="`${doc.metadata.philo_db}`"
+                                        :index="`top-${topIndex}`"
+                                    ></citations>
+                                    <b-badge
+                                        variant="secondary"
+                                        pill
+                                        class="float-right"
+                                        >{{
+                                            (doc.score * 100).toFixed(2)
+                                        }}%</b-badge
+                                    >
+                                </b-list-group-item>
+                            </b-list-group>
+                        </b-card>
+                    </div>
+                    <div class="col-6">
+                        <b-card
+                            no-body
+                            :header="`Top ${vectorSimDocs.length} documents with most similar vocabulary`"
+                        >
+                            <b-list-group flush>
+                                <b-list-group-item
+                                    v-for="(doc, vocIndex) in vectorSimDocs"
+                                    :key="doc.doc_id"
+                                    class="list-group-item"
+                                    style="
+                                        border-radius: 0px;
+                                        border-width: 1px 0px;
+                                    "
+                                >
+                                    <citations
+                                        :docPair="doc.metadata"
+                                        :philo-db="`${doc.metadata.philo_db}`"
+                                        :index="`voc-${vocIndex}`"
+                                    ></citations>
+                                    <b-badge
+                                        variant="secondary"
+                                        pill
+                                        class="float-right"
+                                        >{{
+                                            (doc.score * 100).toFixed(0)
+                                        }}%</b-badge
+                                    >
+                                </b-list-group-item>
+                            </b-list-group>
+                        </b-card>
+                    </div>
+                </b-row>
+            </div>
         </div>
     </b-container>
 </template>
@@ -240,6 +243,10 @@ export default {
                             response.data.topic_distribution
                         );
                     }
+                })
+                .catch(() => {
+                    this.loading = false;
+                    this.noResults = true;
                 });
         },
         buildTopicDistribution(topicDistribution) {

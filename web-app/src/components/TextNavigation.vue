@@ -834,7 +834,9 @@ export default {
         updateTocButton() {
             let tocButton = document.querySelector("#show-toc");
             this.$nextTick(() => {
-                this.navButtonPosition = tocButton.getBoundingClientRect().top;
+                if (tocButton != null) {
+                    this.navButtonPosition = tocButton.getBoundingClientRect().top;
+                }
             });
         },
         insertPageLinks(imgObj) {
@@ -1018,7 +1020,6 @@ export default {
         },
         setUpGallery() {
             // Image Gallery handling
-            console.log("called");
             for (let imageType of [
                 "page-image-link",
                 "inline-img",
@@ -1098,7 +1099,6 @@ export default {
             if (this.tocOpen) {
                 this.tocOpen = false;
             }
-            console.log(`/navigate/${this.philoDb}/${philoID}`);
             this.$router.push({
                 path: `/navigate/${this.philoDb}/${philoID}`,
                 params: {},

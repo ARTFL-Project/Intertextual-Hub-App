@@ -9,7 +9,6 @@ sys.path.append("..")
 from config import APP_CONFIG, DB_CONFIG
 
 
-GROUP_BY_LEVELS = APP_CONFIG["groupByLevels"]
 OBJECT_LEVELS = {db: value["object_type"] for db, value in APP_CONFIG["philoDBs"].items()}
 
 
@@ -185,7 +184,6 @@ def metadata_search(author, title, start_date, end_date, collections, periods, l
         select_stmt = "SELECT {0} FROM {1} WHERE ".format(select_vals, TABLE_NAME)
         query_stmt = select_stmt + where_likes
     query_stmt += f" GROUP BY author, title, filename ORDER BY date, filename LIMIT {limit}"
-    print(query_stmt)
 
     with sqlite3.connect(DB_FILE) as conn:
         conn.text_factory = str
@@ -202,8 +200,7 @@ def metadata_search(author, title, start_date, end_date, collections, periods, l
                 count += 1
                 philo_db = row["philo_db"]
                 sections = []
-                if OBJECT_LEVELS[philo_db] != GROUP_BY_LEVELS[philo_db]:
-                    sections = retrieve_section_names(secondary_cursor, row["filename"], philo_db)
+                sections = retrieve_section_names(secondary_cursor, row["filename"], philo_db)
                 results_list.append(
                     {
                         "author": row["author"] or "",

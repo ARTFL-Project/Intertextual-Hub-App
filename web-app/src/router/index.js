@@ -6,12 +6,13 @@ import Word from "../components/Word.vue";
 import Topic from "../components/Topic.vue";
 import Document from "../components/Document.vue";
 import SearchResults from "../components/SearchResults.vue"
+import appConfig from "../../../config/appConfig.json";
 
 Vue.use(Router);
 
 export default new Router({
     mode: "history",
-    base: "/intertextual-hub",
+    base: appConfig.base,
     routes: [{
             path: "/",
             name: "home",

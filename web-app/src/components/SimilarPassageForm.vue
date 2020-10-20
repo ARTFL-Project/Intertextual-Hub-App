@@ -1,5 +1,5 @@
 <template>
-    <b-card class="border-top-0">
+    <b-card class="position-relative border-top-0">
         <b-form @submit.stop.prevent="search" @reset="clearForm">
             <b-row>
                 <b-col cols="6">
@@ -86,9 +86,17 @@
                 >
             </b-button-group>
         </b-form>
+        <b-button
+            variant="outline-primary"
+            style="position: absolute; right: 1.25rem; bottom: 1rem"
+            @click="hideForm()"
+            >Close</b-button
+        >
     </b-card>
 </template>
 <script>
+import { EventBus } from "../main.js";
+
 export default {
     name: "SimilarPassageForm",
     data() {
@@ -186,6 +194,9 @@ export default {
             } else {
                 this.dateType.target = selection;
             }
+        },
+        hideForm() {
+            EventBus.$emit("hideForms");
         },
     },
 };

@@ -34,14 +34,12 @@ with open(DB_CONFIG["tfidf_model"], "rb") as vectorizer:
 INDEX = AnnoyIndex(len(TF_IDF_VECTORIZER.vocabulary_), "angular")
 INDEX.load(DB_CONFIG["annoy_index"])
 
-# DOC2VEC_MODEL = Doc2Vec.load("/shared/NEH_intertextual_hub/doc2vec-annoy/SEPT01mvo03.model")
-
 
 def process_annoy_results(newsims) -> List[Dict[str, Union[str, Dict[str, str]]]]:
     simscores = list(newsims[1])
     matchdocs = list(newsims[0])
     results: List[Dict[str, Union[str, Dict[str, str]]]] = []
-    db_cache = {philo_db: DB(f'{config["path"]}/data') for philo_db, config in APP_CONFIG["philo_dbs"].items()}
+    db_cache = {philo_db: DB(f'{config["path"]}/data') for philo_db, config in APP_CONFIG["philoDBs"].items()}
     for doc, score in zip(matchdocs, simscores):
         doc_id = ANNOY_TO_PHILO_ID[str(doc)]
         hit = db_cache[doc_id["philo_db"]][doc_id["philo_id"]]
@@ -68,9 +66,7 @@ def retrieve_similar_docs(philo_db: str, philo_id: str, num: int = 20):
     except KeyError:
         db = DB(f"{PHILO_PATHS[philo_db]}/data")
         hit = db[philo_id]
-        text = get_text(
-            hit, hit.start_byte, hit.end_byte - hit.start_byte, f"/var/www/html/intertextual_hub/philologic/{philo_db}",
-        )
+        text = get_text(hit, hit.start_byte, hit.end_byte - hit.start_byte, PHILO_PATHS[philo_db],)
         return submit_passage(text.decode("utf8"), num=10)
     newsims = INDEX.get_nns_by_item(annoy_id, num + 1, include_distances=True)
     results = process_annoy_results(newsims)
