@@ -122,11 +122,12 @@
                             :options="periods"
                         ></b-form-select>
                     </b-input-group>
-                    <b-input-group
-                        class="d-inline"
-                        prepend="Max results displayed"
-                    ></b-input-group>
-                    <b-form-group class="d-inline-block">
+
+                    <b-form-group>
+                        <b-input-group
+                            class="d-inline"
+                            prepend="Max results displayed"
+                        ></b-input-group>
                         <b-form-radio-group
                             v-model="formValues.limit"
                             :options="[100, 250, 500]"
@@ -135,7 +136,7 @@
                             name="radios-btn-default"
                         ></b-form-radio-group>
                     </b-form-group>
-                    <b-button-group class="d-block mt-3">
+                    <b-button-group class="d-block mt-4">
                         <b-button variant="primary" type="submit"
                             >Search</b-button
                         >

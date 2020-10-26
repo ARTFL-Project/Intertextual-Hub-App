@@ -21,6 +21,7 @@ app.add_middleware(
 app.mount("/css", StaticFiles(directory="../web-app/dist/intertextual-hub/css"), name="css")
 app.mount("/js", StaticFiles(directory="../web-app/dist/intertextual-hub/js"), name="js")
 app.mount("/img", StaticFiles(directory="../web-app/dist/intertextual-hub/img"), name="img")
+app.mount("/public", StaticFiles(directory="../web-app/dist/"), name="public")
 
 PHILO_TYPE = {1: "doc", 2: "div1", 3: "div2"}
 
