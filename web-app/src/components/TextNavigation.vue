@@ -157,13 +157,13 @@
                     <div class="p-2" v-if="intertextual && !docsCited">
                         No reuses from
                         <span v-if="direction == 'source'">later</span>
-                        <span v-if="direction == 'target'">earlier</span> texts
-                        were found.
+                        <span v-if="direction == 'target'">earlier</span>
+                        texts were found.
                     </div>
                 </b-tab>
             </b-tabs>
         </b-card>
-        <b-card no-body class="mt-4 pt-3 shadow-sm">
+        <b-card no-body class="mt-4 pt-3 shadow-sm" v-if="accessGranted">
             <div style="font-size: 80%; text-align: center">
                 To look up a word in a dictionary, select the word and press 'd'
                 on your keyboard.
@@ -407,6 +407,7 @@
                 </p>
             </div>
         </b-card>
+        <access-control v-else></access-control>
         <div
             id="blueimp-gallery"
             class="blueimp-gallery blueimp-gallery-controls"
@@ -451,6 +452,7 @@
 <script>
 import PassagePair from "./PassagePair.vue";
 import Citations from "./Citations.vue";
+import AccessControl from "./AccessControl";
 import Gallery from "blueimp-gallery";
 import "blueimp-gallery/css/blueimp-gallery.min.css";
 import tippy from "tippy.js";
@@ -463,6 +465,7 @@ export default {
     components: {
         PassagePair,
         Citations,
+        AccessControl,
     },
     data() {
         return {
@@ -508,6 +511,7 @@ export default {
             targetReuseCount: 0,
             tabIndex: 0,
             simDocsloading: false,
+            accessGranted: true,
         };
     },
     computed: {
@@ -589,6 +593,7 @@ export default {
     },
     methods: {
         fetchData() {
+            this.accessGranted = true;
             this.fetchPassage();
             this.fetchToC();
             this.updateTocButton();
@@ -615,6 +620,7 @@ export default {
                             intertextual: this.$route.query.intertextual,
                             byte: this.$route.query.byte,
                         },
+                        withCredentials: true,
                     }
                 )
                 .then((response) => {
@@ -648,6 +654,10 @@ export default {
                             this.updateInit();
                         });
                     }
+                })
+                .catch((error) => {
+                    console.log(error);
+                    this.accessGranted = false;
                 });
             this.$http
                 .get(

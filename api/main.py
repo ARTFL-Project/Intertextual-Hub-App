@@ -1,16 +1,31 @@
 from typing import Dict, List, Optional
 
 import requests
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response, Depends, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.security import APIKeyCookie
 from starlette.middleware.cors import CORSMiddleware
+from starlette import status
+from jose import jwt
+
 
 import aligner
 import search
 import similarity
-from config import PHILO_URLS
+from config import PHILO_URLS, DB_CONFIG
 from words import find_similar_words, get_word_evolution, retrieve_associated_words
+
+
+PHILO_TYPE = {1: "doc", 2: "div1", 3: "div2"}
+ACCESS_CONTROL = DB_CONFIG["access_control"]
+with open("../config/logins.txt") as logins:
+    LOGINS = {}
+    for line in logins:
+        username, password = line.strip().split()
+        LOGINS[username] = password
+SECRET_KEY = DB_CONFIG["cookie_secret"]
+
 
 app = FastAPI()
 
@@ -18,12 +33,11 @@ app.add_middleware(
     CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"],
 )
 
+
 app.mount("/css", StaticFiles(directory="../web-app/dist/intertextual-hub/css"), name="css")
 app.mount("/js", StaticFiles(directory="../web-app/dist/intertextual-hub/js"), name="js")
 app.mount("/img", StaticFiles(directory="../web-app/dist/intertextual-hub/img"), name="img")
 app.mount("/public", StaticFiles(directory="../web-app/dist/"), name="public")
-
-PHILO_TYPE = {1: "doc", 2: "div1", 3: "div2"}
 
 
 @app.get("/")
@@ -53,6 +67,7 @@ def home():
 
 @app.get("/get_text/{philo_db}")
 def get_text(
+    request: Request,
     philo_db: str,
     philo_id: str,
     direction: Optional[str] = None,
@@ -60,6 +75,12 @@ def get_text(
     intertextual: Optional[bool] = None,
     byte: Optional[str] = None,
 ):
+    if ACCESS_CONTROL[philo_db] is True:
+        try:
+            username = jwt.decode(request.cookies.get("hub_session"), SECRET_KEY)["user"]
+            _ = LOGINS[username]
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid authentication")
     text_object_id: List[str] = philo_id.split()
     while text_object_id[-1] == "0":
         text_object_id.pop()
@@ -255,3 +276,14 @@ def get_associated_words(word: str):
 def get_similar_words(word: str):
     similar_words = find_similar_words(word)
     return similar_words
+
+
+@app.post("/login")
+def access_request(response: Response, credentials: Dict[str, str]):
+    if credentials["username"] in LOGINS and LOGINS[credentials["username"]] == credentials["password"]:
+        token = jwt.encode({"user": credentials["username"]}, SECRET_KEY)
+        response.set_cookie("hub_session", token, expires=2592000)
+        return True
+    else:
+        return False
+

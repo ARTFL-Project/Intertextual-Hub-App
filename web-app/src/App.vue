@@ -241,11 +241,9 @@ a:not([href]):hover {
     opacity: 0;
 }
 .fade-enter-active {
-    // animation-delay: 2s;
     transition: all 0.15s ease-out;
 }
 .fade-leave-active {
-    // animation-delay: 2s;
     transition: all 0.15s ease-out;
 }
 .fade-enter,
