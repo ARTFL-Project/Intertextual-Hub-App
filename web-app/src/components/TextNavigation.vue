@@ -690,6 +690,9 @@ export default {
         },
         getPhiloId() {
             let philoId = [];
+            if (this.$route.params.doc.split("/").length == 9) {
+                return this.$route.params.doc.split("/").join(" ");
+            }
             for (let id of this.$route.params.doc.split("/")) {
                 if (id == "0") {
                     break;
@@ -1693,8 +1696,15 @@ body {
     margin-left: 10px;
     line-height: initial;
 }
+::v-deep .xml-add:after {
+    content: "[Passage by " attr(resp) "]";
+    visibility: visible;
+    text-transform: capitalize;
+    font-variant: small-caps;
+    font-size: 90%;
+}
 ::v-deep .xml-add {
-    color: #ef4500;
+    color: #3fa673;
 }
 ::v-deep .xml-seg {
     display: block;

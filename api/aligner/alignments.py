@@ -20,7 +20,7 @@ PASSAGES_TABLE = DB_CONFIG["passages_table"]
 OBJECT_TYPES: Dict[str, str] = {db_name: values["object_type"] for db_name, values in DB_CONFIG["philo_dbs"].items()}
 GROUP_BY_DOC = DB_CONFIG["group_by_doc"]
 
-OBJECT_LENGTH = {1: "doc", 2: "div1", 3: "div2"}
+OBJECT_LENGTH = {1: "doc", 2: "div1", 3: "div2", 4: "div3", 9: "page"}
 
 
 FIELD_TYPES = {

@@ -1,11 +1,50 @@
 <template>
     <div id="app">
         <b-navbar type="light" variant="light" class="shadow">
-            <b-navbar-nav align="center" style="width: 100%">
+            <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+            <b-collapse id="nav-collapse" is-nav>
+                <b-navbar-nav>
+                    <b-nav-item href="https://intertextual-hub.org"
+                        >Home</b-nav-item
+                    >
+                    <b-nav-item href="https://artfl-project.uchicago.edu"
+                        >ARTFL Project</b-nav-item
+                    >
+                    <b-nav-item href="https://textual-optics-lab.uchicago.edu"
+                        >Textual Optics Lab</b-nav-item
+                    >
+                </b-navbar-nav>
+                <b-navbar-nav align="right"
+                    ><b-nav-item>
+                        <img
+                            :src="`${publicPath}NEH-Preferred-Seal820.jpg`"
+                            class="d-inline-block align-top"
+                            style="width: 5%; height: 5%"
+                            alt="NEH"
+                        />
+                    </b-nav-item>
+                </b-navbar-nav>
+            </b-collapse>
+
+            <!-- <b-navbar-nav align="center" style="width: 100%">
                 <b-navbar-brand @click="goToHome()" style="cursor: pointer"
                     >Intertextual Hub</b-navbar-brand
                 >
-            </b-navbar-nav>
+            </b-navbar-nav> -->
+            <!-- <b-navbar-brand
+                style="
+                    font-weight: 700;
+                    font-size: 1.6rem;
+                    font-variant: small-caps;
+                    position: absolute;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    line-height: 80%;
+                "
+                to="/"
+                @click="goToHome()"
+                >Intertextual Hub</b-navbar-brand
+            > -->
         </b-navbar>
 
         <b-tabs fill no-fade v-model="tabIndex" id="main-tabs" class="shadow">
@@ -111,6 +150,7 @@ export default {
             word: "",
             philoDbs: this.$appConfig.philoDBs,
             tabIndex: 0,
+            publicPath: process.env.BASE_URL,
         };
     },
     watch: {
@@ -200,6 +240,12 @@ a:not([href]):hover {
     font-weight: 700;
     font-size: 1.8rem;
     padding: 0;
+}
+#nav-collapse .nav-item {
+    // margin-left: -1rem;
+    font-size: 75%;
+    // margin-top: -2rem;
+    font-variant: small-caps;
 }
 .link {
     cursor: pointer;

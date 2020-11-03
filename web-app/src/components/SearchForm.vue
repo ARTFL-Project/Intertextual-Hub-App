@@ -27,6 +27,14 @@
                         </template>
                     </b-input-group>
                     <b-form-checkbox
+                        v-model="formValues.stemmed"
+                        name="stemmed"
+                        value="yes"
+                        unchecked-value
+                        class="d-inline-block mb-3 mr-3"
+                        >stem words</b-form-checkbox
+                    >
+                    <b-form-checkbox
                         v-model="formValues.binding"
                         name="binding"
                         value="OR"

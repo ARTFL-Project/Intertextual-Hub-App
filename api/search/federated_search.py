@@ -14,8 +14,6 @@ OBJECT_LEVELS = {db: value["object_type"] for db, value in APP_CONFIG["philoDBs"
 
 DB_FILE = DB_CONFIG["federated_search_index"]
 
-TABLE_NAME = "intertextual_hub_federated"
-
 
 def de_accent(searchwords):
     sw2return = unicodedata.normalize("NFD", searchwords)
@@ -79,7 +77,7 @@ def build_match(searchwords, author, title, period):
 
 def retrieve_section_names(cursor, filename, philo_db):
     cursor.execute(
-        f"""SELECT distinct head, philo_id, div_date FROM {TABLE_NAME} WHERE {TABLE_NAME} MATCH '(filename:"{filename}") AND (philo_db:"{philo_db}")'"""
+        f"""SELECT distinct head, philo_id, div_date FROM intertextual_hub_federated_standard WHERE intertextual_hub_federated_standard MATCH '(filename:"{filename}") AND (philo_db:"{philo_db}")'"""
     )
     results = [
         {"head": row["head"], "philo_id": row["philo_id"], "div_date": row["div_date"], "philo_db": philo_db}
@@ -88,29 +86,12 @@ def retrieve_section_names(cursor, filename, philo_db):
     return results
 
 
-def word_search(searchwords, author, title, start_date, end_date, collections, periods, opbind, limit):
-
-    got_metadata_OR = 0
-    got_author_OR = 0
-    got_title_OR = 0
-
-    try:
-        if re.search(" OR ", author):
-            got_metadata_OR = 1
-            got_author_OR = 1
-    except:
-        pass
-
-    try:
-        if re.search(" OR ", title):
-            got_metadata_OR = 1
-            got_title_OR = 1
-    except:
-        pass
-
-    query_terms = []
-    snippets = "snippet({0}, 13, '<b>', '</b>', '...', 64)".format(TABLE_NAME)
-    where_stmt_list = []
+def word_search(searchwords, author, title, start_date, end_date, collections, periods, opbind, limit, stemmed):
+    if stemmed is True:
+        table_name = "intertextual_hub_federated_stemmed"
+    else:
+        table_name = "intertextual_hub_federated_standard"
+    snippets = "snippet({0}, 13, '<b>', '</b>', '...', 64)".format(table_name)
     fullcount_query = 0
 
     with sqlite3.connect(DB_FILE) as conn:
@@ -118,24 +99,23 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
-        # print("Word search.", file=sys.stderr)
         select_vals = "filename, author, title, date, philo_id, head, div_date, philo_db, bm25({0}), {1}".format(
-            TABLE_NAME, snippets
+            table_name, snippets
         )
         searchwords = de_accent(searchwords)
         query_stmt = ""
-        order_by = " order by bm25({0}) limit {1}".format(TABLE_NAME, limit)
+        order_by = " order by bm25({0}) limit {1}".format(table_name, limit)
         if opbind:
             searchwords = searchwords.replace(" ", " OR ")
         match_stmt_list = build_match(searchwords, author, title, periods)
         match_stmt = " AND ".join(match_stmt_list)
         where_like_list = build_where_likes(start_date, end_date, collections)
         where_likes = " AND ".join(where_like_list)
-        select_stmt = "SELECT {0} FROM {1} WHERE {1} MATCH ".format(select_vals, TABLE_NAME)
+        select_stmt = "SELECT {0} FROM {1} WHERE {1} MATCH ".format(select_vals, table_name)
         if where_likes:
             query_stmt = select_stmt + "'" + match_stmt + "' AND " + where_likes + order_by
             fullcount_query = (
-                f"SELECT COUNT(*) FROM {TABLE_NAME} WHERE {TABLE_NAME} MATCH "
+                f"SELECT COUNT(*) FROM {table_name} WHERE {table_name} MATCH "
                 + "'"
                 + match_stmt
                 + "' AND "
@@ -143,7 +123,7 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
             )
         else:
             query_stmt = select_stmt + "'" + match_stmt + "' " + order_by
-            fullcount_query = f"SELECT COUNT(*) FROM {TABLE_NAME} WHERE {TABLE_NAME} MATCH " + "'" + match_stmt + "' "
+            fullcount_query = f"SELECT COUNT(*) FROM {table_name} WHERE {table_name} MATCH " + "'" + match_stmt + "' "
 
         cursor.execute(query_stmt,)
         results_list = []
@@ -176,12 +156,12 @@ def metadata_search(author, title, start_date, end_date, collections, periods, l
     where_like_list = build_where_likes(start_date, end_date, collections)
     where_likes = " AND ".join(where_like_list)
     if match_stmt:
-        select_stmt = "SELECT {0} FROM {1} WHERE {1} MATCH ".format(select_vals, TABLE_NAME)
+        select_stmt = f"SELECT {select_vals} FROM intertextual_hub_federated_standard WHERE intertextual_hub_federated_standard MATCH "
         query_stmt = select_stmt + "'" + match_stmt + "'"
         if where_likes:
             query_stmt += " AND " + where_likes
     else:
-        select_stmt = "SELECT {0} FROM {1} WHERE ".format(select_vals, TABLE_NAME)
+        select_stmt = f"SELECT {select_vals} FROM intertextual_hub_federated_standard WHERE "
         query_stmt = select_stmt + where_likes
     query_stmt += f" GROUP BY author, title, filename ORDER BY date, filename LIMIT {limit}"
 

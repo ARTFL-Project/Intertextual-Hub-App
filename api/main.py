@@ -4,7 +4,6 @@ import requests
 from fastapi import FastAPI, Request, Response, Depends, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.security import APIKeyCookie
 from starlette.middleware.cors import CORSMiddleware
 from starlette import status
 from jose import jwt
@@ -17,7 +16,7 @@ from config import PHILO_URLS, DB_CONFIG
 from words import find_similar_words, get_word_evolution, retrieve_associated_words
 
 
-PHILO_TYPE = {1: "doc", 2: "div1", 3: "div2"}
+PHILO_TYPE = {1: "doc", 2: "div1", 3: "div2", 4: "div3", 9: "page"}
 ACCESS_CONTROL = DB_CONFIG["access_control"]
 with open("../config/logins.txt") as logins:
     LOGINS = {}
@@ -48,6 +47,7 @@ app.mount("/public", StaticFiles(directory="../web-app/dist/"), name="public")
 @app.get("/navigate/{philo_db}/{doc}/{div1}/{div2}/{div3}/{para}")
 @app.get("/navigate/{philo_db}/{doc}/{div1}/{div2}/{div3}/{para}/{sent}")
 @app.get("/navigate/{philo_db}/{doc}/{div1}/{div2}/{div3}/{para}/{sent}/{word}")
+@app.get("/navigate/{philo_db}/{doc}/{div1}/{div2}/{div3}/{para}/{sent}/{word}/{byte_offset}/{page}")
 @app.get("/seq-pair/search")
 @app.get("/search")
 @app.get("/topic/{topic}")
@@ -58,6 +58,7 @@ app.mount("/public", StaticFiles(directory="../web-app/dist/"), name="public")
 @app.get("/document/{db}/{doc}/{div1}/{div2}/{div3}/{para}")
 @app.get("/document/{db}/{doc}/{div1}/{div2}/{div3}/{para}/{sent}")
 @app.get("/document/{db}/{doc}/{div1}/{div2}/{div3}/{para}/{sent}/{word}")
+@app.get("/document/{db}/{doc}/{div1}/{div2}/{div3}/{para}/{sent}/{word}/{byte_offset}/{page}")
 @app.get("/word/{word}")
 def home():
     with open("../web-app/dist/index.html") as html:
@@ -129,7 +130,6 @@ def get_text(
                 "intertextual_metadata": [],
                 "object_type": text_object_type,
             }
-        print(passage_data)
         philologic_response = requests.post(
             f"{PHILO_URLS[philo_db]}/reports/navigation.py",
             params={"philo_id": " ".join(text_object_id)},
@@ -147,7 +147,7 @@ def get_text(
             "object_type": text_object_type,
         }
     else:
-        philologic_response = requests.post(
+        philologic_response = requests.get(
             f"{PHILO_URLS[philo_db]}/reports/navigation.py",
             params={"philo_id": " ".join(text_object_id), "byte": byte},
         )
@@ -217,6 +217,7 @@ def search_texts(request: Request):
     collections = ""
     periods = ""
     opbind = ""
+    stemmed = False
     limit = 100
     if "author" in request.query_params:
         author = request.query_params["author"]
@@ -238,10 +239,13 @@ def search_texts(request: Request):
         limit = int(request.query_params["limit"])
     if "binding" in request.query_params:
         opbind = request.query_params["binding"]
+    if "stemmed" in request.query_params:
+        if request.query_params["stemmed"]:
+            stemmed = True
     if "words" in request.query_params:
         searchwords = request.query_params["words"]
         results, doc_count = search.word_search(
-            searchwords, author, title, start_date, end_date, collections, periods, opbind, limit
+            searchwords, author, title, start_date, end_date, collections, periods, opbind, limit, stemmed
         )
     else:
         results, doc_count = search.metadata_search(author, title, start_date, end_date, collections, periods, limit)

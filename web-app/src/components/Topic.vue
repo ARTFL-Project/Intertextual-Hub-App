@@ -410,15 +410,6 @@ export default {
                 return a + b;
             }, 0);
         },
-        frequencyMultiplier() {
-            let maxFrequency = 0.0;
-            for (let word of this.wordWeights) {
-                if (word.weight > maxFrequency) {
-                    maxFrequency = word.weight;
-                }
-            }
-            return 100 / maxFrequency;
-        },
         formatTopicEvolution(topicEvolution) {
             let arrSum = this.sumArray(topicEvolution);
             let weightedTopicEvolution = [];
