@@ -96,7 +96,7 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
         searchwords = " ".join([STEMMER.stemWord(word) for word in searchwords.split()])
     else:
         table_name = "intertextual_hub_federated_standard"
-    snippets = "snippet({0}, 13, '<b>', '</b>', '...', 64)".format(table_name)
+    # snippets = "snippet({0}, 13, '<b>', '</b>', '...', 64)".format(table_name)
     fullcount_query = 0
 
     with sqlite3.connect(DB_FILE) as conn:
@@ -104,9 +104,7 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
-        select_vals = "filename, author, title, date, philo_id, head, div_date, philo_db, bm25({0}), {1}".format(
-            table_name, snippets
-        )
+        select_vals = "filename, author, title, date, philo_id, head, div_date, philo_db, bm25({0})".format(table_name)
         searchwords = de_accent(searchwords)
         query_stmt = ""
         order_by = " order by bm25({0}) limit {1}".format(table_name, limit)
@@ -136,7 +134,7 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
         for row in cursor:
             count += 1
             score = row[8]
-            headline = row[9]
+            # headline = row[9]
             results_json = {
                 "author": row["author"] or "",
                 "title": row["title"],
@@ -145,7 +143,7 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
                 "head": row["head"],
                 "div_date": row["div_date"] or "",
                 "philo_db": row["philo_db"],
-                "headline": headline,
+                # "headline": headline,
                 "score": score,
             }
             results_list.append(results_json)

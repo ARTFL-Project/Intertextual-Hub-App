@@ -63,7 +63,7 @@
                             <img
                                 :src="`${publicPath}NEH-Preferred-Seal820.jpg`"
                                 class="d-inline-block align-top"
-                                style="width: 15%; height: 15%"
+                                style="width: 140px; height: 64px"
                                 alt="NEH" /></a
                     ></b-container>
                 </div>

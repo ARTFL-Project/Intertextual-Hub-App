@@ -15,6 +15,7 @@
                 ></b>
                 <b v-else>{{ searchTerms }}</b>
             </span>
+            <span v-if="stemmed == 'yes'"><br />Input terms stemmed</span>
             <br />Bibliographic search criteria:
             <span v-if="author">
                 <b>Author:</b>
@@ -80,11 +81,7 @@
             <span class="pl-2" v-if="!biblioQuery"
                 >(score: {{ result.score }})</span
             >
-            <p
-                class="mt-2 text"
-                v-if="!biblioQuery"
-                v-html="result.headline"
-            ></p>
+            <p class="mt-2 text" v-if="!biblioQuery"></p>
             <div
                 v-if="
                     biblioQuery &&
@@ -132,6 +129,7 @@ export default {
             biblioQuery: false,
             title: this.$route.query.title,
             author: this.$route.query.author,
+
             philoConfig: this.$appConfig.philoDBs,
             results: null,
             docCount: null,
@@ -149,6 +147,9 @@ export default {
         },
         binding() {
             return this.$route.query.binding;
+        },
+        stemmed() {
+            return this.$route.query.stemmed;
         },
     },
     created() {

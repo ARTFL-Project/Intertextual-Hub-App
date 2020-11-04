@@ -30,7 +30,7 @@
                         v-model="formValues.stemmed"
                         name="stemmed"
                         value="yes"
-                        unchecked-value
+                        checked-value
                         class="d-inline-block mb-3 mr-3"
                         >stem words</b-form-checkbox
                     >
@@ -216,7 +216,7 @@ export default {
                 ...this.$appConfig.periods,
             ],
             periodSelected: null,
-            formValues: { limit: 100 },
+            formValues: { limit: 100, stemmed: "yes" },
             topics: this.$topicModelData.topics_words,
             showError: false,
             dismissCountDown: 0,
