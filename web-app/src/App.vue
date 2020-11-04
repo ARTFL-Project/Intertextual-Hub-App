@@ -13,25 +13,10 @@
                     <b-nav-item href="https://textual-optics-lab.uchicago.edu"
                         >Textual Optics Lab</b-nav-item
                     >
-                </b-navbar-nav>
-                <b-navbar-nav align="right"
-                    ><b-nav-item>
-                        <img
-                            :src="`${publicPath}NEH-Preferred-Seal820.jpg`"
-                            class="d-inline-block align-top"
-                            style="width: 5%; height: 5%"
-                            alt="NEH"
-                        />
-                    </b-nav-item>
+                    <b-nav-item href="https://neh.gov">NEH</b-nav-item>
                 </b-navbar-nav>
             </b-collapse>
-
-            <!-- <b-navbar-nav align="center" style="width: 100%">
-                <b-navbar-brand @click="goToHome()" style="cursor: pointer"
-                    >Intertextual Hub</b-navbar-brand
-                >
-            </b-navbar-nav> -->
-            <!-- <b-navbar-brand
+            <b-navbar-brand
                 style="
                     font-weight: 700;
                     font-size: 1.6rem;
@@ -44,9 +29,8 @@
                 to="/"
                 @click="goToHome()"
                 >Intertextual Hub</b-navbar-brand
-            > -->
+            >
         </b-navbar>
-
         <b-tabs fill no-fade v-model="tabIndex" id="main-tabs" class="shadow">
             <b-tab
                 class="position-absolute shadow module-tab"
@@ -70,6 +54,19 @@
                         </b-list-group>
                     </b-card>
                 </transition>
+                <footer class="footer">
+                    <b-container>
+                        <p class="mb-0" style="font-variant: small-caps">
+                            Sponsored by the
+                        </p>
+                        <a href="https://neh.gov" target="_blank">
+                            <img
+                                :src="`${publicPath}NEH-Preferred-Seal820.jpg`"
+                                class="d-inline-block align-top"
+                                style="width: 15%; height: 15%"
+                                alt="NEH" /></a
+                    ></b-container>
+                </footer>
             </b-tab>
             <b-tab
                 class="position-absolute shadow module-tab"
@@ -241,10 +238,9 @@ a:not([href]):hover {
     font-size: 1.8rem;
     padding: 0;
 }
-#nav-collapse .nav-item {
-    // margin-left: -1rem;
+#nav-collapse .nav-item a {
+    color: $link-color !important;
     font-size: 75%;
-    // margin-top: -2rem;
     font-variant: small-caps;
 }
 .link {
@@ -275,6 +271,13 @@ a:not([href]):hover {
     z-index: 50;
     width: 100%;
 }
+.footer {
+    position: absolute;
+    bottom: -8rem;
+    width: 100%;
+    text-align: center;
+}
+
 .slide-fade-enter-active {
     transition: all 0.3s ease-out;
 }

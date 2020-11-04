@@ -4,6 +4,8 @@ import re
 import sqlite3
 import sys
 import unicodedata
+from Stemmer import Stemmer
+
 
 sys.path.append("..")
 from config import APP_CONFIG, DB_CONFIG
@@ -13,6 +15,8 @@ OBJECT_LEVELS = {db: value["object_type"] for db, value in APP_CONFIG["philoDBs"
 
 
 DB_FILE = DB_CONFIG["federated_search_index"]
+
+STEMMER = Stemmer("french")
 
 
 def de_accent(searchwords):
@@ -89,6 +93,7 @@ def retrieve_section_names(cursor, filename, philo_db):
 def word_search(searchwords, author, title, start_date, end_date, collections, periods, opbind, limit, stemmed):
     if stemmed is True:
         table_name = "intertextual_hub_federated_stemmed"
+        searchwords = " ".join([STEMMER.stemWord(word) for word in searchwords.split()])
     else:
         table_name = "intertextual_hub_federated_standard"
     snippets = "snippet({0}, 13, '<b>', '</b>', '...', 64)".format(table_name)

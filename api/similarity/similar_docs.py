@@ -22,7 +22,7 @@ with open(os.path.join(DB_CONFIG["doc_id_mapping"], "annoy_to_philo.json")) as i
 PREPROC = PreProcessor(
     modernize=True,
     language="french",
-    ascii=False,
+    ascii=True,
     min_word_length=3,
     lemmatizer="spacy",
     stopwords="/var/www/html/intertextual_hub/config/stopwords.txt",
