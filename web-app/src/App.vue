@@ -54,7 +54,7 @@
                         </b-list-group>
                     </b-card>
                 </transition>
-                <footer class="footer">
+                <div class="footer" v-if="routeName != 'TextNavigation'">
                     <b-container>
                         <p class="mb-0" style="font-variant: small-caps">
                             Sponsored by the
@@ -66,7 +66,7 @@
                                 style="width: 15%; height: 15%"
                                 alt="NEH" /></a
                     ></b-container>
-                </footer>
+                </div>
             </b-tab>
             <b-tab
                 class="position-absolute shadow module-tab"
@@ -143,6 +143,7 @@ export default {
     data() {
         return {
             report: this.$route.name,
+            routeName: this.$route.name,
             show: true,
             word: "",
             philoDbs: this.$appConfig.philoDBs,
@@ -191,6 +192,7 @@ export default {
             this.show = show;
         },
         handleRouteChange(to) {
+            this.routeName = to.name;
             if (to.name == "home") {
                 this.selectModule("home", true);
             } else {
