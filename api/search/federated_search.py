@@ -91,6 +91,7 @@ def retrieve_section_names(cursor, filename, philo_db):
 
 
 def word_search(searchwords, author, title, start_date, end_date, collections, periods, opbind, limit, stemmed):
+    searchwords = searchwords.replace(",", " ")
     if stemmed is True:
         table_name = "intertextual_hub_federated_stemmed"
         searchwords = " ".join([STEMMER.stemWord(word) for word in searchwords.split()])

@@ -59,6 +59,11 @@
                                     vs. public) inherent in digital collections today, and still yield meaningful
                                     results.
                                 </p>
+                                <h6>
+                                    <a href="https://intertextual-hub.uchicago.edu/intertextual_hub_screencast.mp4"
+                                        >See screencast describing feature set</a
+                                    >
+                                </h6>
                             </b-col></b-row
                         >
                     </b-card>

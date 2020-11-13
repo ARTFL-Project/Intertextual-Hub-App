@@ -1,61 +1,34 @@
 <template>
     <div class="my-4">
         <h5 class="text-center mb-4">
-            <citations
-                :docPair="docMetadata"
-                :direction="direction"
-                :philo-db="philoDb"
-                v-if="docMetadata"
-            ></citations>
+            <citations :docPair="docMetadata" :direction="direction" :philo-db="philoDb" v-if="docMetadata"></citations>
         </h5>
         <b-card no-body class="shadow-sm mt-4">
             <b-tabs card v-model="tabIndex">
-                <b-tab
-                    title="Similar documents"
-                    :active="!intertextual"
-                    @click="updateTocButton()"
-                >
+                <b-tab title="Similar documents" :active="!intertextual" @click="updateTocButton()">
                     <div
                         v-if="simDocsloading"
                         class="text-center"
-                        style="
-                            position: absolute;
-                            left: 0;
-                            right: 0;
-                            z-index: 10;
-                        "
+                        style="position: absolute; left: 0; right: 0; z-index: 10"
                     >
                         <b-spinner
                             label="Loading..."
-                            style="
-                                width: 2.5rem;
-                                height: 2.5rem;
-                                color: rgba(143, 57, 49, 0.8);
-                            "
+                            style="width: 2.5rem; height: 2.5rem; color: rgba(143, 57, 49, 0.8)"
                         ></b-spinner>
                     </div>
                     <div v-if="similarDocs.length > 0">
-                        <h6 class="pt-2 px-2">
-                            20 most similar documents (top 5 displayed):
-                        </h6>
+                        <h6 class="pt-2 px-2">20 most similar documents (top 5 displayed):</h6>
                         <ul class="mb-1">
                             <li
                                 v-for="simDoc in simDocsToDisplay"
                                 :key="`${simDoc.philo_db}${simDoc.metadata.philo_id}`"
                                 style="padding: 0.15rem 0"
                             >
-                                <citations
-                                    :docPair="simDoc.metadata"
-                                    :philo-db="simDoc.philo_db"
-                                ></citations>
+                                <citations :docPair="simDoc.metadata" :philo-db="simDoc.philo_db"></citations>
                             </li>
                         </ul>
                         <span
-                            style="
-                                diplay: inline-block;
-                                color: rgb(143, 57, 49);
-                                cursor: pointer;
-                            "
+                            style="diplay: inline-block; color: rgb(143, 57, 49); cursor: pointer"
                             v-if="!showAllSimDocs"
                             @click="toggleSimDocs()"
                             >View all</span
@@ -64,11 +37,7 @@
                     <h6 class="p-2" v-else>No similar docs were found.</h6>
                 </b-tab>
                 <b-tab
-                    :title="
-                        sourceReuseCount > 0 || targetReuseCount > 0
-                            ? 'Text reuses'
-                            : 'No text reuses'
-                    "
+                    :title="sourceReuseCount > 0 || targetReuseCount > 0 ? 'Text reuses' : 'No text reuses'"
                     :active="intertextual == 'true'"
                     :disabled="sourceReuseCount == 0 && targetReuseCount == 0"
                     @click="reUseTab()"
@@ -93,62 +62,28 @@
                     </div>
                     <div v-if="docsCited">
                         <h6 class="pt-4">Reuses from these documents:</h6>
-                        <ul
-                            style="
-                                padding-inline-start: 2rem;
-                                line-height: 2rem;
-                            "
-                        >
-                            <li
-                                v-for="(doc, docIndex) in docsCited"
-                                :key="docIndex"
-                                :id="`reuse-${docIndex}`"
-                            >
-                                <span
-                                    v-if="
-                                        doc.doc_metadata[
-                                            `${doc.direction}_author`
-                                        ]
-                                    "
-                                    >{{
-                                        doc.doc_metadata[
-                                            `${doc.direction}_author`
-                                        ]
-                                    }}&nbsp;&#9679;&nbsp;</span
+                        <ul style="padding-inline-start: 2rem; line-height: 2rem">
+                            <li v-for="(doc, docIndex) in docsCited" :key="docIndex" :id="`reuse-${docIndex}`">
+                                <span v-if="doc.doc_metadata[`${doc.direction}_author`]"
+                                    >{{ doc.doc_metadata[`${doc.direction}_author`] }}&nbsp;&#9679;&nbsp;</span
                                 >
-                                <i
-                                    class="docs-cited"
-                                    @click="showHeads(docIndex)"
-                                    >{{
-                                        doc.doc_metadata[
-                                            `${doc.direction}_title`
-                                        ]
-                                    }}</i
-                                >
+                                <i class="docs-cited" @click="showHeads(docIndex)">{{
+                                    doc.doc_metadata[`${doc.direction}_title`]
+                                }}</i>
                                 &nbsp;&#9679;&nbsp;
                                 {{ doc.doc_metadata[`${doc.direction}_date`] }}
                                 <ul style="display: none">
-                                    <h6
-                                        style="
-                                            margin-left: -2.5rem;
-                                            padding-bottom: 0;
-                                        "
-                                    >
-                                        Passages listed in order of occurrence
-                                        in document:
+                                    <h6 style="margin-left: -2.5rem; padding-bottom: 0">
+                                        Passages listed in order of occurrence in document:
                                     </h6>
                                     <li
-                                        v-for="(metadata,
-                                        metadataIndex) in doc.metadata"
+                                        v-for="(metadata, metadataIndex) in doc.metadata"
                                         :key="metadata.passageid"
                                         @click="goToPassage(metadata.passageid)"
                                         style="line-height: 1.5rem"
                                     >
                                         {{ metadata[`${doc.direction}_head`] }}:
-                                        <span class="docs-cited-heads"
-                                            >passage
-                                            {{ metadataIndex + 1 }}</span
-                                        >
+                                        <span class="docs-cited-heads">passage {{ metadataIndex + 1 }}</span>
                                     </li>
                                 </ul>
                             </li>
@@ -165,36 +100,20 @@
         </b-card>
         <b-card no-body class="mt-4 pt-3 shadow-sm" v-if="accessGranted">
             <div style="font-size: 80%; text-align: center">
-                To look up a word in a dictionary, select the word and press 'd'
-                on your keyboard.
+                To look up a word in a dictionary, select the word and press 'd' on your keyboard.
             </div>
             <div style="font-size: 80%; text-align: center">
-                To find documents similar to a particular passage, select the
-                passage and press 's' on your keyboard.
+                To find documents similar to a particular passage, select the passage and press 's' on your keyboard.
             </div>
-            <b-row
-                id="toc-wrapper"
-                class="text-center mt-1"
-                v-if="loading === false"
-            >
+            <b-row id="toc-wrapper" class="text-center mt-1" v-if="loading === false">
                 <div id="toc-top-bar">
                     <div id="nav-buttons" v-scroll="handleScroll">
-                        <b-button
-                            id="back-to-top"
-                            size="sm"
-                            @click="backToTop()"
-                        >
-                            <span class="d-xs-none d-sm-inline-block"
-                                >Back to top</span
-                            >
+                        <b-button variant="primary" id="back-to-top" size="sm" @click="backToTop()">
+                            <span class="d-xs-none d-sm-inline-block">Back to top</span>
                             <span class="d-xs-inline-block d-sm-none">Top</span>
                         </b-button>
                         <b-button-group size="sm" style="pointer-events: all">
-                            <b-button
-                                disabled="disabled"
-                                id="prev-obj"
-                                variant="primary"
-                                @click="goToTextObject(prev)"
+                            <b-button disabled="disabled" id="prev-obj" variant="primary" @click="goToTextObject(prev)"
                                 >&lt;</b-button
                             >
                             <b-button
@@ -204,22 +123,14 @@
                                 @click="toggleTableOfContents()"
                                 >Table of contents</b-button
                             >
-                            <b-button
-                                disabled="disabled"
-                                id="next-obj"
-                                variant="primary"
-                                @click="goToTextObject(next)"
+                            <b-button disabled="disabled" id="next-obj" variant="primary" @click="goToTextObject(next)"
                                 >&gt;</b-button
                             >
                         </b-button-group>
                     </div>
                     <div id="toc">
                         <div id="toc-titlebar" class="d-none">
-                            <b-button
-                                id="hide-toc"
-                                @click="toggleTableOfContents()"
-                                >X</b-button
-                            >
+                            <b-button id="hide-toc" @click="toggleTableOfContents()">X</b-button>
                         </div>
                         <transition name="slide-fade">
                             <b-card
@@ -231,38 +142,18 @@
                                 v-if="tocOpen"
                             >
                                 <div class="toc-more before" v-if="start !== 0">
-                                    <b-button
-                                        size="sm"
-                                        variant="primary"
-                                        @click="loadBefore()"
-                                    ></b-button>
+                                    <b-button size="sm" variant="primary" @click="loadBefore()"></b-button>
                                 </div>
-                                <div
-                                    v-for="(element,
-                                    tocIndex) in tocElementsToDisplay"
-                                    :key="tocIndex"
-                                >
+                                <div v-for="(element, tocIndex) in tocElementsToDisplay" :key="tocIndex">
                                     <div
                                         :id="element.philo_id"
                                         :class="'toc-' + element.philo_type"
-                                        @click="
-                                            textObjectSelection(
-                                                element.philo_id,
-                                                tocIndex
-                                            )
-                                        "
+                                        @click="textObjectSelection(element.philo_id, tocIndex)"
                                     >
-                                        <span
-                                            :class="
-                                                'bullet-point-' +
-                                                element.philo_type
-                                            "
-                                        ></span>
+                                        <span :class="'bullet-point-' + element.philo_type"></span>
                                         <a
                                             :class="{
-                                                'current-obj':
-                                                    element.philo_id ===
-                                                    currentPhiloId,
+                                                'current-obj': element.philo_id === currentPhiloId,
                                             }"
                                             href
                                         >
@@ -270,16 +161,8 @@
                                         </a>
                                     </div>
                                 </div>
-                                <div
-                                    class="toc-more after"
-                                    v-if="end < tocElements.length"
-                                >
-                                    <b-button
-                                        type="button"
-                                        size="sm"
-                                        variant="primary"
-                                        @click="loadAfter()"
-                                    ></b-button>
+                                <div class="toc-more after" v-if="end < tocElements.length">
+                                    <b-button type="button" size="sm" variant="primary" @click="loadAfter()"></b-button>
                                 </div>
                             </b-card>
                         </transition>
@@ -339,14 +222,7 @@
                     ></a>
                 </div>
             </b-card-text>
-            <b-modal
-                id="text-reuse"
-                size="xl"
-                centered
-                scrollable
-                hide-footer
-                title="Intertextual Links"
-            >
+            <b-modal id="text-reuse" size="xl" centered scrollable hide-footer title="Intertextual Links">
                 <div v-if="intertextualPassages">
                     <passage-pair
                         v-for="passage in intertextualPassages"
@@ -371,13 +247,7 @@
                     <h6 class="mb-3">
                         <strong>Passage found in:</strong>
                     </h6>
-                    <div
-                        class="px-2"
-                        v-for="(metadata, index) in intertextualMetadata[
-                            groupIndex
-                        ]"
-                        :key="index"
-                    >
+                    <div class="px-2" v-for="(metadata, index) in intertextualMetadata[groupIndex]" :key="index">
                         <citations
                             :docPair="metadata"
                             direction="source"
@@ -393,13 +263,7 @@
                             nolink
                             v-else
                         ></citations>
-                        <hr
-                            class="m-2"
-                            v-if="
-                                index !=
-                                intertextualMetadata[groupIndex].length - 1
-                            "
-                        />
+                        <hr class="m-2" v-if="index != intertextualMetadata[groupIndex].length - 1" />
                     </div>
                 </div>
                 <p class="mt-3 mb-0">
@@ -439,10 +303,7 @@
                         :key="`${simDoc.philo_db}${simDoc.metadata.philo_id}`"
                         style="padding: 0.15rem 0"
                     >
-                        <citations
-                            :docPair="simDoc.metadata"
-                            :philo-db="simDoc.philo_db"
-                        ></citations>
+                        <citations :docPair="simDoc.metadata" :philo-db="simDoc.philo_db"></citations>
                     </li>
                 </ul>
             </div>
@@ -512,6 +373,7 @@ export default {
             tabIndex: 0,
             simDocsloading: false,
             accessGranted: true,
+            lastDocId: null,
         };
     },
     computed: {
@@ -549,25 +411,19 @@ export default {
         this.fetchData();
     },
     mounted() {
-        this.updateTocButton();
+        this.updateTocButton("mounted");
     },
     updated() {
         if (this.gallery) {
             this.$nextTick(() => {
-                for (let imageType of [
-                    "page-image-link",
-                    "inline-img",
-                    "external-img",
-                ]) {
-                    document
-                        .getElementById("full-size-image")
-                        .removeEventListener("click", () => {
-                            let imageIndex = this.gallery.getIndex();
-                            let img = Array.from(
-                                document.getElementsByClassName(imageType)
-                            )[imageIndex].getAttribute("large-img");
-                            window.open(img);
-                        });
+                for (let imageType of ["page-image-link", "inline-img", "external-img"]) {
+                    document.getElementById("full-size-image").removeEventListener("click", () => {
+                        let imageIndex = this.gallery.getIndex();
+                        let img = Array.from(document.getElementsByClassName(imageType))[imageIndex].getAttribute(
+                            "large-img"
+                        );
+                        window.open(img);
+                    });
                 }
             });
         }
@@ -577,11 +433,9 @@ export default {
         let passageMarkers = document.getElementsByClassName("passage-marker");
         for (let i = 0; i < passageMarkers.length; i += 1) {
             let passageNumber = i;
-            document
-                .getElementsByClassName(`passage-${passageNumber}`)
-                .forEach((el) => {
-                    el.removeEventListener("click");
-                });
+            document.getElementsByClassName(`passage-${passageNumber}`).forEach((el) => {
+                el.removeEventListener("click");
+            });
         }
         this.tippyInstances.forEach((instance) => {
             instance.destroy();
@@ -594,9 +448,10 @@ export default {
     methods: {
         fetchData() {
             this.accessGranted = true;
+            if (this.getPhiloId() != this.lastDocId) {
+                this.fetchToC();
+            }
             this.fetchPassage();
-            this.fetchToC();
-            this.updateTocButton();
         },
         fetchPassage() {
             this.$bvModal.hide("similar-docs");
@@ -608,36 +463,30 @@ export default {
             this.similarDocs = [];
             this.$bvModal.hide("text-reuse");
             let philoId = this.getPhiloId();
+            this.lastDocId = philoId;
             this.pairid = this.$route.query.pairid;
             this.$http
-                .get(
-                    `${this.$appConfig.apiServer}/intertextual-hub-api/get_text/${this.$route.params.philoDb}`,
-                    {
-                        params: {
-                            philo_id: philoId,
-                            pairid: this.$route.query.pairid,
-                            direction: this.$route.query.direction,
-                            intertextual: this.$route.query.intertextual,
-                            byte: this.$route.query.byte,
-                        },
-                        withCredentials: true,
-                    }
-                )
+                .get(`${this.$appConfig.apiServer}/intertextual-hub-api/get_text/${this.$route.params.philoDb}`, {
+                    params: {
+                        philo_id: philoId,
+                        pairid: this.$route.query.pairid,
+                        direction: this.$route.query.direction,
+                        intertextual: this.$route.query.intertextual,
+                        byte: this.$route.query.byte,
+                    },
+                    withCredentials: true,
+                })
                 .then((response) => {
                     this.text = response.data.text;
                     this.objectType = response.data.object_type;
                     this.direction = this.$route.query.direction;
                     if (this.$route.query.direction) {
-                        this.philoDb =
-                            response.data.doc_metadata[
-                                `${this.dbPrefix}philo_db`
-                            ];
+                        this.philoDb = response.data.doc_metadata[`${this.dbPrefix}philo_db`];
                     } else {
                         this.philoDb = response.data.doc_metadata.philo_db;
                     }
                     this.docMetadata = response.data.doc_metadata;
-                    this.intertextualMetadata =
-                        response.data.intertextual_metadata;
+                    this.intertextualMetadata = response.data.intertextual_metadata;
                     this.docsCited = response.data.docs_cited;
                     if (!this.deepEqual(response.data.imgs, {})) {
                         this.insertPageLinks(response.data.imgs);
@@ -685,7 +534,6 @@ export default {
                 .then((response) => {
                     this.simDocsloading = false;
                     this.similarDocs = response.data;
-                    this.updateTocButton();
                 });
         },
         getPhiloId() {
@@ -716,9 +564,7 @@ export default {
                     };
                 } else {
                     getAlignments = () => {
-                        let passagesMetadata = this.intertextualMetadata[
-                            parseInt(passageNumber)
-                        ];
+                        let passagesMetadata = this.intertextualMetadata[parseInt(passageNumber)];
                         this.getAlignments(
                             passagesMetadata.map((metadata) => {
                                 return metadata.pairid;
@@ -730,24 +576,19 @@ export default {
                         );
                     };
                 }
-                document
-                    .getElementsByClassName(`passage-${passageNumber}`)
-                    .forEach((el) => {
-                        el.addEventListener("click", getAlignments, false);
-                    });
+                document.getElementsByClassName(`passage-${passageNumber}`).forEach((el) => {
+                    el.addEventListener("click", getAlignments, false);
+                });
             }
         },
         getAlignment(data) {
             this.$http
-                .get(
-                    `${this.$appConfig.apiServer}/intertextual-hub-api/retrieve_passage/${this.$route.query.pairid}`,
-                    {
-                        params: {
-                            start_byte: data.offsets[0],
-                            direction: this.$route.query.direction,
-                        },
-                    }
-                )
+                .get(`${this.$appConfig.apiServer}/intertextual-hub-api/retrieve_passage/${this.$route.query.pairid}`, {
+                    params: {
+                        start_byte: data.offsets[0],
+                        direction: this.$route.query.direction,
+                    },
+                })
                 .then((response) => {
                     this.intertextualPassages = [
                         {
@@ -763,13 +604,10 @@ export default {
         },
         getAlignments(pairids, passageids, passagesMetadata) {
             this.$http
-                .post(
-                    `${this.$appConfig.apiServer}/intertextual-hub-api/retrieve_passages_all/`,
-                    {
-                        pairids: pairids,
-                        passageids: passageids,
-                    }
-                )
+                .post(`${this.$appConfig.apiServer}/intertextual-hub-api/retrieve_passages_all/`, {
+                    pairids: pairids,
+                    passageids: passageids,
+                })
                 .then((response) => {
                     let intertextualPassages = [];
                     for (let i = 0; i < passagesMetadata.length; i += 1) {
@@ -789,7 +627,7 @@ export default {
             if (this.pairid) {
                 this.direction = null;
             }
-            this.updateTocButton();
+            this.updateTocButton("ReuseTabs");
         },
         toggleDirection() {
             this.reload = true;
@@ -803,27 +641,20 @@ export default {
             if (!this.alreadyScrolled && firstPassage != null) {
                 this.$nextTick(() => {
                     if (this.pairid) {
-                        this.$scrollTo(
-                            document.querySelector(".passage-marker"),
-                            1000,
-                            { easing: "ease-out", offset: -150 }
-                        );
+                        this.$scrollTo(document.querySelector(".passage-marker"), 1000, {
+                            easing: "ease-out",
+                            offset: -150,
+                        });
                     }
-                    let passageMarkers = document.getElementsByClassName(
-                        "passage-marker"
-                    );
+                    let passageMarkers = document.getElementsByClassName("passage-marker");
 
-                    Array.from(passageMarkers).forEach((el) =>
-                        this.showPassage(el)
-                    );
+                    Array.from(passageMarkers).forEach((el) => this.showPassage(el));
                     this.tippyInstances = [];
                     for (let i = 0; i < passageMarkers.length; i += 1) {
                         let passage = `.passage-${i}`;
                         let tippyInstances = tippy(passage, {
                             content() {
-                                let popup = document.getElementById(
-                                    `intertextual-metadata-${i}`
-                                );
+                                let popup = document.getElementById(`intertextual-metadata-${i}`);
                                 return popup.innerHTML;
                             },
                             allowHTML: true,
@@ -835,20 +666,24 @@ export default {
                     }
                 });
                 this.alreadyScrolled = true;
-            } else if (wordHighlight) {
+            } else if (wordHighlight && !this.alreadyScrolled) {
                 this.$nextTick(() => {
                     this.$scrollTo(wordHighlight, 1000, {
                         easing: "ease-out",
                         offset: -150,
                     });
+                    this.alreadyScrolled = true;
                 });
             }
         },
         updateTocButton() {
-            let tocButton = document.querySelector("#show-toc");
             this.$nextTick(() => {
+                let tocButton = document.querySelector("#show-toc");
                 if (tocButton != null) {
                     this.navButtonPosition = tocButton.getBoundingClientRect().top;
+                    if (this.navButtonPosition < 580) {
+                        this.navButtonPosition = 580;
+                    }
                 }
             });
         },
@@ -864,25 +699,13 @@ export default {
                     if (currentObjImgs.indexOf(img[0]) === -1) {
                         if (img.length == 2) {
                             this.beforeObjImgs.push([
-                                `${
-                                    this.$appConfig.philoDBs[this.philoDb]
-                                        .page_images_url_root
-                                }/${img[0]}`,
-                                `${
-                                    this.$appConfig.philoDBs[this.philoDb]
-                                        .page_images_url_root
-                                }/${img[1]}`,
+                                `${this.$appConfig.philoDBs[this.philoDb].page_images_url_root}/${img[0]}`,
+                                `${this.$appConfig.philoDBs[this.philoDb].page_images_url_root}/${img[1]}`,
                             ]);
                         } else {
                             this.beforeObjImgs.push([
-                                `${
-                                    this.$appConfig.philoDBs[this.philoDb]
-                                        .page_images_url_root
-                                }/${img[0]}`,
-                                `${
-                                    this.$appConfig.philoDBs[this.philoDb]
-                                        .page_images_url_root
-                                }/${img[0]}`,
+                                `${this.$appConfig.philoDBs[this.philoDb].page_images_url_root}/${img[0]}`,
+                                `${this.$appConfig.philoDBs[this.philoDb].page_images_url_root}/${img[0]}`,
                             ]);
                         }
                     } else {
@@ -895,25 +718,13 @@ export default {
                     if (currentObjImgs.indexOf(img[0]) === -1) {
                         if (img.length == 2) {
                             this.afterObjImgs.push([
-                                `${
-                                    this.$appConfig.philoDBs[this.philoDb]
-                                        .page_images_url_root
-                                }/${img[0]}`,
-                                `${
-                                    this.$appConfig.philoDBs[this.philoDb]
-                                        .page_images_url_root
-                                }/${img[1]}`,
+                                `${this.$appConfig.philoDBs[this.philoDb].page_images_url_root}/${img[0]}`,
+                                `${this.$appConfig.philoDBs[this.philoDb].page_images_url_root}/${img[1]}`,
                             ]);
                         } else {
                             this.afterObjImgs.push([
-                                `${
-                                    this.$appConfig.philoDBs[this.philoDb]
-                                        .page_images_url_root
-                                }/${img[0]}`,
-                                `${
-                                    this.$appConfig.philoDBs[this.philoDb]
-                                        .page_images_url_root
-                                }/${img[0]}`,
+                                `${this.$appConfig.philoDBs[this.philoDb].page_images_url_root}/${img[0]}`,
+                                `${this.$appConfig.philoDBs[this.philoDb].page_images_url_root}/${img[0]}`,
                             ]);
                         }
                     }
@@ -933,25 +744,13 @@ export default {
                     if (currentObjImgs.indexOf(img[0]) === -1) {
                         if (img.length == 2) {
                             this.beforeGraphicsImgs.push([
-                                `${
-                                    this.$appConfig.philoDBs[this.philoDb]
-                                        .page_images_url_root
-                                }/${img[0]}`,
-                                `${
-                                    this.$appConfig.philoDBs[this.philoDb]
-                                        .page_images_url_root
-                                }/${img[1]}`,
+                                `${this.$appConfig.philoDBs[this.philoDb].page_images_url_root}/${img[0]}`,
+                                `${this.$appConfig.philoDBs[this.philoDb].page_images_url_root}/${img[1]}`,
                             ]);
                         } else {
                             this.beforeGraphicsImgs.push([
-                                `${
-                                    this.$appConfig.philoDBs[this.philoDb]
-                                        .page_images_url_root
-                                }/${img[0]}`,
-                                `${
-                                    this.$appConfig.philoDBs[this.philoDb]
-                                        .page_images_url_root
-                                }/${img[0]}`,
+                                `${this.$appConfig.philoDBs[this.philoDb].page_images_url_root}/${img[0]}`,
+                                `${this.$appConfig.philoDBs[this.philoDb].page_images_url_root}/${img[0]}`,
                             ]);
                         }
                     } else {
@@ -964,25 +763,13 @@ export default {
                     if (currentObjImgs.indexOf(img[0]) === -1) {
                         if (img.length == 2) {
                             this.afterGraphicsImgs.push([
-                                `${
-                                    this.$appConfig.philoDBs[this.philoDb]
-                                        .page_images_url_root
-                                }/${img[0]}`,
-                                `${
-                                    this.$appConfig.philoDBs[this.philoDb]
-                                        .page_images_url_root
-                                }/${img[1]}`,
+                                `${this.$appConfig.philoDBs[this.philoDb].page_images_url_root}/${img[0]}`,
+                                `${this.$appConfig.philoDBs[this.philoDb].page_images_url_root}/${img[1]}`,
                             ]);
                         } else {
                             this.afterGraphicsImgs.push([
-                                `${
-                                    this.$appConfig.philoDBs[this.philoDb]
-                                        .page_images_url_root
-                                }/${img[0]}`,
-                                `${
-                                    this.$appConfig.philoDBs[this.philoDb]
-                                        .page_images_url_root
-                                }/${img[0]}`,
+                                `${this.$appConfig.philoDBs[this.philoDb].page_images_url_root}/${img[0]}`,
+                                `${this.$appConfig.philoDBs[this.philoDb].page_images_url_root}/${img[0]}`,
                             ]);
                         }
                     }
@@ -1017,6 +804,7 @@ export default {
                         let tocButton = document.querySelector("#show-toc");
                         tocButton.removeAttribute("disabled");
                         tocButton.classList.remove("disabled");
+                        this.updateTocButton("fetchToC");
                     })
                     .catch((error) => {
                         console.log(error);
@@ -1033,48 +821,30 @@ export default {
         },
         setUpGallery() {
             // Image Gallery handling
-            for (let imageType of [
-                "page-image-link",
-                "inline-img",
-                "external-img",
-            ]) {
-                Array.from(document.getElementsByClassName(imageType)).forEach(
-                    (item) => {
-                        item.addEventListener("click", (event) => {
-                            event.preventDefault();
-                            let target = event.srcElement;
-                            this.gallery = Gallery(
-                                [
-                                    ...document.getElementsByClassName(
-                                        imageType
-                                    ),
-                                ].map(
-                                    (item) =>
-                                        item.getAttribute("href") ||
-                                        item.getAttribute("src")
-                                ),
-                                {
-                                    index: Array.from(
-                                        document.getElementsByClassName(
-                                            imageType
-                                        )
-                                    ).indexOf(target),
-                                    continuous: false,
-                                    thumbnailIndicators: false,
-                                }
-                            );
-                        });
-                    }
-                );
-                document
-                    .getElementById("full-size-image")
-                    .addEventListener("click", () => {
-                        let imageIndex = this.gallery.getIndex();
-                        let img = Array.from(
-                            document.getElementsByClassName(imageType)
-                        )[imageIndex].getAttribute("large-img");
-                        window.open(img);
+            for (let imageType of ["page-image-link", "inline-img", "external-img"]) {
+                Array.from(document.getElementsByClassName(imageType)).forEach((item) => {
+                    item.addEventListener("click", (event) => {
+                        event.preventDefault();
+                        let target = event.srcElement;
+                        this.gallery = Gallery(
+                            [...document.getElementsByClassName(imageType)].map(
+                                (item) => item.getAttribute("href") || item.getAttribute("src")
+                            ),
+                            {
+                                index: Array.from(document.getElementsByClassName(imageType)).indexOf(target),
+                                continuous: false,
+                                thumbnailIndicators: false,
+                            }
+                        );
                     });
+                });
+                document.getElementById("full-size-image").addEventListener("click", () => {
+                    let imageIndex = this.gallery.getIndex();
+                    let img = Array.from(document.getElementsByClassName(imageType))[imageIndex].getAttribute(
+                        "large-img"
+                    );
+                    window.open(img);
+                });
             }
         },
         loadBefore() {
@@ -1094,13 +864,9 @@ export default {
             } else {
                 this.tocOpen = true;
                 this.$nextTick(() => {
-                    this.$scrollTo(
-                        document.querySelector(".current-obj"),
-                        500,
-                        {
-                            container: document.querySelector("#toc-content"),
-                        }
-                    );
+                    this.$scrollTo(document.querySelector(".current-obj"), 500, {
+                        container: document.querySelector("#toc-content"),
+                    });
                 });
             }
         },
@@ -1196,12 +962,9 @@ export default {
                 window.open(link);
             } else if (event.key == "s") {
                 this.$http
-                    .post(
-                        `${this.$appConfig.apiServer}/intertextual-hub-api/submit_passage`,
-                        {
-                            passage: selection,
-                        }
-                    )
+                    .post(`${this.$appConfig.apiServer}/intertextual-hub-api/submit_passage`, {
+                        passage: selection,
+                    })
                     .then((response) => {
                         this.passageSimilarDocs = response.data;
                         this.$bvModal.show("similar-docs");
@@ -1210,11 +973,10 @@ export default {
         },
         toggleSimDocs() {
             this.showAllSimDocs = true;
-            this.updateTocButton();
+            this.updateTocButton("toggleSimDocs");
         },
         showHeads(docIndex) {
-            document.querySelector(`#reuse-${docIndex} ul`).style.display =
-                "block";
+            document.querySelector(`#reuse-${docIndex} ul`).style.display = "block";
         },
         goToPassage(passageid) {
             let n = 0;
@@ -1226,26 +988,20 @@ export default {
                 }
                 n += 1;
             }
-            this.$scrollTo(
-                document.querySelector(`.passage-marker[n='${n}']`),
-                1000,
-                {
-                    easing: "ease-out",
-                    offset: -150,
-                    onDone: () => {
-                        this.$nextTick(() => {
-                            document
-                                .querySelectorAll(`.passage-${n}`)
-                                .forEach((el) => {
-                                    el.classList.add("color-change");
-                                    setTimeout(() => {
-                                        el.classList.remove("color-change");
-                                    }, 500);
-                                });
-                        }, 1000);
-                    },
-                }
-            );
+            this.$scrollTo(document.querySelector(`.passage-marker[n='${n}']`), 1000, {
+                easing: "ease-out",
+                offset: -150,
+                onDone: () => {
+                    this.$nextTick(() => {
+                        document.querySelectorAll(`.passage-${n}`).forEach((el) => {
+                            el.classList.add("color-change");
+                            setTimeout(() => {
+                                el.classList.remove("color-change");
+                            }, 500);
+                        });
+                    }, 1000);
+                },
+            });
             console.log(n);
         },
     },
@@ -1354,6 +1110,10 @@ export default {
     position: fixed;
     backdrop-filter: blur(0.5rem);
     background-color: rgba(255, 255, 255, 0.3);
+    pointer-events: all;
+}
+#back-to-top.visible {
+    opacity: 1;
     pointer-events: all;
 }
 #nav-buttons {
