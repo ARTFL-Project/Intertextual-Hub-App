@@ -5,15 +5,8 @@
             <b>{{ topic }}</b>
             across corpus (overall frequency of {{ frequency }}%)
         </h5>
-        <div
-            v-if="loading"
-            class="text-center"
-            style="position: absolute; left: 0; right: 0; z-index: 10"
-        >
-            <b-spinner
-                label="Loading..."
-                style="width: 5rem; height: 5rem; color: rgba(143, 57, 49, 0.8)"
-            ></b-spinner>
+        <div v-if="loading" class="text-center" style="position: absolute; left: 0; right: 0; z-index: 10">
+            <b-spinner label="Loading..." style="width: 5rem; height: 5rem; color: rgba(143, 57, 49, 0.8)"></b-spinner>
         </div>
         <b-row>
             <b-col cols="12" sm="5" md="4">
@@ -21,32 +14,17 @@
                     <b-list-group flush>
                         <b-list-group-item>
                             <router-link :to="federatedSearch"
-                                >Rank documents by occurrence of top 10
-                                tokens</router-link
+                                >Rank documents by occurrence of top 10 tokens</router-link
                             >
                         </b-list-group-item>
                     </b-list-group>
                     <div class="px-3 pt-2 pb-2">
-                        <div
-                            class="px-3"
-                            v-for="word in wordWeights"
-                            :key="word.word"
-                        >
-                            <b-row
-                                class="word-weight"
-                                @click="goToWord(word.word)"
-                            >
-                                <span
-                                    class="frequency-bar"
-                                    :style="`width: ${word.barWidth}%;`"
-                                ></span>
-                                <b-col cols="8" class="word pl-1">{{
-                                    word.word
-                                }}</b-col>
+                        <div class="px-3" v-for="word in wordWeights" :key="word.word">
+                            <b-row class="word-weight" @click="goToWord(word.word)">
+                                <span class="frequency-bar" :style="`width: ${word.barWidth}%;`"></span>
+                                <b-col cols="8" class="word pl-1">{{ word.word }}</b-col>
                                 <b-col cols="4" class="position-relative">
-                                    <span class="frequency-value">{{
-                                        word.weight
-                                    }}</span>
+                                    <span class="frequency-value">{{ word.weight }}</span>
                                 </b-col>
                             </b-row>
                         </div>
@@ -56,11 +34,7 @@
             <b-col cols="12" sm="7" md="8">
                 <b-row>
                     <b-col cols="12">
-                        <b-card
-                            no-body
-                            class="shadow-sm"
-                            header="Distribution of topic weight over time"
-                        >
+                        <b-card no-body class="shadow-sm" header="Distribution of topic weight over time">
                             <div class="pl-2 pr-2 pt-2">
                                 <apexchart
                                     width="100%"
@@ -73,11 +47,7 @@
                         </b-card>
                     </b-col>
                     <b-col cols="12" lg="6">
-                        <b-card
-                            no-body
-                            header="5 most correlated topics over time"
-                            class="mt-4 shadow-sm"
-                        >
+                        <b-card no-body header="5 most correlated topics over time" class="mt-4 shadow-sm">
                             <apexchart
                                 ref="timeChart"
                                 width="100%"
@@ -86,8 +56,7 @@
                                 :options="similarEvolutionOptions"
                             ></apexchart>
                             <div
-                                v-for="(localTopic,
-                                seriesIndex) in similarEvolutionSeries"
+                                v-for="(localTopic, seriesIndex) in similarEvolutionSeries"
                                 :key="localTopic.name"
                                 class="topic pl-2 pr-2 pb-1"
                                 style="font-size: 80%"
@@ -100,10 +69,7 @@
                                         :style="`background-color: ${similarEvolutionOptions.colors[seriesIndex]}`"
                                     ></span>
                                     Topic {{ localTopic.name }}:
-                                    {{
-                                        topicData[parseInt(localTopic.name)]
-                                            .description
-                                    }}
+                                    {{ topicData[parseInt(localTopic.name)].description }}
                                 </span>
                             </div>
                         </b-card>
@@ -119,27 +85,16 @@
                                 style="left: 0; right: 0; top: 4rem; z-index: 1"
                                 v-if="docLoading"
                             >
-                                <b-spinner
-                                    style="width: 4rem; height: 4rem"
-                                    label="Large Spinner"
-                                ></b-spinner>
+                                <b-spinner style="width: 4rem; height: 4rem" label="Large Spinner"></b-spinner>
                             </div>
                             <b-list-group flush>
-                                <b-list-group-item
-                                    v-for="doc in documents"
-                                    :key="doc.doc_id"
-                                >
+                                <b-list-group-item v-for="doc in documents" :key="doc.doc_id">
                                     <citations
                                         :docPair="doc.metadata"
                                         :philo-db="`${doc.metadata.philo_db}`"
                                     ></citations>
-                                    <b-badge
-                                        variant="secondary"
-                                        pill
-                                        class="float-right"
-                                        >{{
-                                            (doc.score * 100).toFixed(2)
-                                        }}%</b-badge
+                                    <b-badge variant="secondary" pill class="float-right"
+                                        >{{ (doc.score * 100).toFixed(2) }}%</b-badge
                                     >
                                 </b-list-group-item>
                             </b-list-group>
@@ -212,11 +167,7 @@ export default {
                 tooltip: {
                     x: {
                         formatter: (year) => {
-                            return `${year}-${
-                                parseInt(year) +
-                                parseInt(this.year_interval) -
-                                1
-                            }`;
+                            return `${year}-${parseInt(year) + parseInt(this.year_interval) - 1}`;
                         },
                     },
                 },
@@ -274,9 +225,13 @@ export default {
     },
     computed: {
         federatedSearch: function () {
-            return `/search?words=${this.wordWeights
+            let words = this.wordWeights
                 .slice(0, 10)
-                .join(" ")}&binding=OR`;
+                .map((word) => {
+                    return word.word;
+                })
+                .join(" ");
+            return `/search?words=${words}&binding=OR`;
         },
     },
     mounted() {
@@ -301,61 +256,34 @@ export default {
                     this.frequency = (response.data.frequency * 100).toFixed(4);
                     this.similarTopics = response.data.similar_topics;
                     let maxFrequency = response.data.word_distribution.data[0];
-                    this.wordWeights = response.data.word_distribution.labels.map(
-                        (word, i) => ({
-                            word: word,
-                            weight: response.data.word_distribution.data[
-                                i
-                            ].toFixed(2),
-                            barWidth:
-                                (100 / maxFrequency) *
-                                response.data.word_distribution.data[i],
-                        })
-                    );
+                    this.wordWeights = response.data.word_distribution.labels.map((word, i) => ({
+                        word: word,
+                        weight: response.data.word_distribution.data[i].toFixed(2),
+                        barWidth: (100 / maxFrequency) * response.data.word_distribution.data[i],
+                    }));
 
-                    let startIndex = response.data.topic_evolution.labels.indexOf(
-                        this.timeSeriesConfig.startDate
-                    );
+                    let startIndex = response.data.topic_evolution.labels.indexOf(this.timeSeriesConfig.startDate);
                     let endIndex = response.data.topic_evolution.labels.length;
-                    for (
-                        let index = 0;
-                        index < response.data.topic_evolution.labels.length;
-                        index += 1
-                    ) {
-                        if (
-                            response.data.topic_evolution.labels[index] >
-                            this.timeSeriesConfig.endDate
-                        ) {
+                    for (let index = 0; index < response.data.topic_evolution.labels.length; index += 1) {
+                        if (response.data.topic_evolution.labels[index] > this.timeSeriesConfig.endDate) {
                             endIndex = index + 1;
                             break;
                         }
                     }
-                    this.year = `${
-                        response.data.topic_evolution.labels[startIndex]
-                    }-${response.data.topic_evolution.labels[endIndex - 1]}`;
-                    this.buildTopicEvolution(
-                        response.data.topic_evolution,
-                        startIndex,
-                        endIndex
-                    );
+                    this.year = `${response.data.topic_evolution.labels[startIndex]}-${
+                        response.data.topic_evolution.labels[endIndex - 1]
+                    }`;
+                    this.buildTopicEvolution(response.data.topic_evolution, startIndex, endIndex);
 
                     this.similarEvolutionSeries = [
-                        ...response.data.similar_topics
-                            .slice(0, 5)
-                            .map((topic) => ({
-                                data: topic.topic_evolution.data.slice(
-                                    startIndex,
-                                    endIndex
-                                ),
-                                name: topic.topic.toString(),
-                                type: "line",
-                            })),
+                        ...response.data.similar_topics.slice(0, 5).map((topic) => ({
+                            data: topic.topic_evolution.data.slice(startIndex, endIndex),
+                            name: topic.topic.toString(),
+                            type: "line",
+                        })),
                         {
                             name: this.topic,
-                            data: response.data.topic_evolution.data.slice(
-                                startIndex,
-                                endIndex
-                            ),
+                            data: response.data.topic_evolution.data.slice(startIndex, endIndex),
                             type: "area",
                         },
                     ];
@@ -369,36 +297,21 @@ export default {
                                 ),
                             },
                             fill: {
-                                opacity: [
-                                    ...response.data.similar_topics,
-                                    this.topic,
-                                ]
+                                opacity: [...response.data.similar_topics, this.topic]
                                     .slice(startIndex, endIndex)
                                     .map((topic) => {
-                                        if (
-                                            topic.topic !=
-                                            this.$route.params.topic
-                                        ) {
+                                        if (topic.topic != this.$route.params.topic) {
                                             return 1;
                                         } else {
                                             return 0.1;
                                         }
                                     }),
                             },
-                            colors: [
-                                "#2E93fA",
-                                "#66DA26",
-                                "#546E7A",
-                                "#E91E63",
-                                "#FF9800",
-                                "rgba(51, 178, 223, 0.09)",
-                            ],
+                            colors: ["#2E93fA", "#66DA26", "#546E7A", "#E91E63", "#FF9800", "rgba(51, 178, 223, 0.09)"],
                         },
                     };
                     this.$nextTick(function () {
-                        let selectedYear = document.querySelector(
-                            "path[selected='true']"
-                        );
+                        let selectedYear = document.querySelector("path[selected='true']");
                         if (selectedYear != null) {
                             selectedYear.setAttribute("selected", "false");
                         }
@@ -414,24 +327,14 @@ export default {
             let arrSum = this.sumArray(topicEvolution);
             let weightedTopicEvolution = [];
             for (let value of topicEvolution) {
-                weightedTopicEvolution.push(
-                    ((value / arrSum) * 100).toFixed(2)
-                );
+                weightedTopicEvolution.push(((value / arrSum) * 100).toFixed(2));
             }
             return weightedTopicEvolution;
         },
         buildTopicEvolution(topicEvolution, startIndex, endIndex) {
-            topicEvolution.data = topicEvolution.data.slice(
-                startIndex,
-                endIndex
-            );
-            topicEvolution.labels = topicEvolution.labels.slice(
-                startIndex,
-                endIndex
-            );
-            this.topicEvolutionSeries[0].data = this.formatTopicEvolution(
-                topicEvolution.data
-            );
+            topicEvolution.data = topicEvolution.data.slice(startIndex, endIndex);
+            topicEvolution.labels = topicEvolution.labels.slice(startIndex, endIndex);
+            this.topicEvolutionSeries[0].data = this.formatTopicEvolution(topicEvolution.data);
 
             this.topicEvolutionChartOptions = {
                 ...this.topicEvolutionChartOptions,
@@ -447,9 +350,7 @@ export default {
         },
         goToYear(event) {
             let seriesIndex = parseInt(event.target.getAttribute("j"));
-            let year = this.topicEvolutionChartOptions.xaxis.categories[
-                seriesIndex
-            ];
+            let year = this.topicEvolutionChartOptions.xaxis.categories[seriesIndex];
             this.docLoading = true;
             this.$http
                 .get(
@@ -466,9 +367,7 @@ export default {
         },
         linker(metadata) {
             let philoType = `philo_${metadata.philo_type}_id`;
-            let url = `/document/${metadata.philo_db}/${metadata[philoType]
-                .split(" ")
-                .join("/")}`;
+            let url = `/document/${metadata.philo_db}/${metadata[philoType].split(" ").join("/")}`;
             return url;
         },
     },

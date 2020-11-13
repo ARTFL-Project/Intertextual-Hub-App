@@ -31,7 +31,7 @@
                     <b-card no-body class="px-4 pb-4" style="border-top-width: 0" v-if="show">
                         <b-row>
                             <b-col cols="12" md="6" lg="7">
-                                <h5 class="mt-4">Explore specific collection under PhiloLogic:</h5>
+                                <h5 class="mt-4">Explore specific collections under PhiloLogic:</h5>
                                 <b-list-group style="width: fit-content">
                                     <b-list-group-item v-for="philoDb in philoDbs" :key="philoDb.name">
                                         <a :href="philoDb.url" target="_blank">{{ philoDb.name }}</a>

@@ -1002,7 +1002,6 @@ export default {
                     }, 1000);
                 },
             });
-            console.log(n);
         },
     },
 };
