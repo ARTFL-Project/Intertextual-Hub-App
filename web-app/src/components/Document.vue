@@ -2,22 +2,12 @@
     <b-container fluid class="my-4">
         <div v-if="noResults">
             <h6>
-                This document does not have enough words from which to derive a
-                topic distribution.
-                <router-link :to="philoUrl"
-                    >See full text of document</router-link
-                >.
+                This document does not have enough words from which to derive a topic distribution.
+                <router-link :to="philoUrl">See full text of document</router-link>.
             </h6>
         </div>
-        <div
-            v-if="loading"
-            class="text-center"
-            style="position: absolute; left: 0; right: 0; z-index: 10"
-        >
-            <b-spinner
-                label="Loading..."
-                style="width: 5rem; height: 5rem; color: rgba(143, 57, 49, 0.8)"
-            ></b-spinner>
+        <div v-if="loading" class="text-center" style="position: absolute; left: 0; right: 0; z-index: 10">
+            <b-spinner label="Loading..." style="width: 5rem; height: 5rem; color: rgba(143, 57, 49, 0.8)"></b-spinner>
         </div>
         <div v-else>
             <div v-if="!noResults">
@@ -33,32 +23,15 @@
                     <b-col cols="12" md="6" lg="7" xl="8">
                         <b-card no-body header="Top 10 Topics">
                             <div class="pl-2 pr-2">
-                                <b-table
-                                    hover
-                                    :items="topicDistribution"
-                                    :fields="fields"
-                                    @row-clicked="goToTopic"
-                                >
+                                <b-table hover :items="topicDistribution" :fields="fields" @row-clicked="goToTopic">
                                     <template slot="[name]" slot-scope="data">
-                                        <span class="frequency-parent"
-                                            >Topic {{ data.value }}</span
-                                        >
+                                        <span class="frequency-parent">Topic {{ data.value }}</span>
                                     </template>
-                                    <template
-                                        slot="[description]"
-                                        slot-scope="data"
-                                    >
-                                        <span class="frequency-parent">{{
-                                            data.value
-                                        }}</span>
+                                    <template slot="[description]" slot-scope="data">
+                                        <span class="frequency-parent">{{ data.value }}</span>
                                     </template>
-                                    <template
-                                        slot="[frequency]"
-                                        slot-scope="data"
-                                    >
-                                        <span class="frequency-value pl-2"
-                                            >{{ data.value }}%</span
-                                        >
+                                    <template slot="[frequency]" slot-scope="data">
+                                        <span class="frequency-value pl-2">{{ data.value }}%</span>
                                     </template>
                                 </b-table>
                             </div>
@@ -75,17 +48,12 @@
                                     "
                                 >
                                     Most distinctive words
-                                    <span v-if="words.length == 50"
-                                        >(up to 50 shown)</span
-                                    >
+                                    <span v-if="words.length == 50">(up to 50 shown)</span>
                                 </h6>
                             </template>
                             <div id="word-cloud" class="card-text">
                                 <div>
-                                    <span
-                                        v-for="weightedWord in words"
-                                        :key="weightedWord[2]"
-                                    >
+                                    <span v-for="weightedWord in words" :key="weightedWord[2]">
                                         <word-link
                                             :target="weightedWord[2]"
                                             :metadata="mainDoc.metadata"
@@ -110,60 +78,40 @@
                         >
                             <b-list-group flush>
                                 <b-list-group-item
-                                    v-for="(doc,
-                                    topIndex) in topicSimDocs.slice(0, 20)"
+                                    v-for="(doc, topIndex) in topicSimDocs.slice(0, 20)"
                                     :key="doc.doc_id"
                                     class="list-group-item"
-                                    style="
-                                        border-radius: 0px;
-                                        border-width: 1px 0px;
-                                    "
+                                    style="border-radius: 0px; border-width: 1px 0px"
                                 >
                                     <citations
                                         :docPair="doc.metadata"
                                         :philo-db="`${doc.metadata.philo_db}`"
                                         :index="`top-${topIndex}`"
                                     ></citations>
-                                    <b-badge
-                                        variant="secondary"
-                                        pill
-                                        class="float-right"
-                                        >{{
-                                            (doc.score * 100).toFixed(2)
-                                        }}%</b-badge
-                                    >
+                                    <b-badge variant="secondary" pill class="float-right">{{
+                                        doc.score.toFixed(3)
+                                    }}</b-badge>
                                 </b-list-group-item>
                             </b-list-group>
                         </b-card>
                     </div>
                     <div class="col-6">
-                        <b-card
-                            no-body
-                            :header="`Top ${vectorSimDocs.length} documents with most similar vocabulary`"
-                        >
+                        <b-card no-body :header="`Top ${vectorSimDocs.length} documents with most similar vocabulary`">
                             <b-list-group flush>
                                 <b-list-group-item
                                     v-for="(doc, vocIndex) in vectorSimDocs"
                                     :key="doc.doc_id"
                                     class="list-group-item"
-                                    style="
-                                        border-radius: 0px;
-                                        border-width: 1px 0px;
-                                    "
+                                    style="border-radius: 0px; border-width: 1px 0px"
                                 >
                                     <citations
                                         :docPair="doc.metadata"
                                         :philo-db="`${doc.metadata.philo_db}`"
                                         :index="`voc-${vocIndex}`"
                                     ></citations>
-                                    <b-badge
-                                        variant="secondary"
-                                        pill
-                                        class="float-right"
-                                        >{{
-                                            (doc.score * 100).toFixed(0)
-                                        }}%</b-badge
-                                    >
+                                    <b-badge variant="secondary" pill class="float-right">{{
+                                        doc.score.toFixed(3)
+                                    }}</b-badge>
                                 </b-list-group-item>
                             </b-list-group>
                         </b-card>
@@ -182,6 +130,20 @@ export default {
     components: {
         Citations,
         WordLink,
+    },
+    computed: {
+        philoObjectType() {
+            let philoId = [];
+            for (let id of this.$route.params.doc.split("/")) {
+                if (id == "0") {
+                    break;
+                }
+                philoId.push(id);
+            }
+            let objectLevels = { 1: "doc", 2: "div1", 3: "div2", 4: "div3", 9: "page" };
+            let objectLevel = objectLevels[philoId.length];
+            return objectLevel;
+        },
     },
     data() {
         return {
@@ -205,6 +167,9 @@ export default {
             philoUrl: `/navigate/${this.$route.params.philoDb}/${this.$route.params.doc}`,
             topicData: this.$topicModelData.topics_words,
             loading: false,
+            objectLevels: Object.fromEntries(
+                Object.entries(this.$appConfig.philoDBs).map((values) => [values[0], values[1].object_type])
+            ),
         };
     },
 
@@ -213,13 +178,18 @@ export default {
     },
     watch: {
         // call again the method if the route changes
-        $route: "loadNewData",
+        $route: "fetchData",
     },
     methods: {
         fetchData() {
+            let philo_id;
             this.loading = true;
-            let philo_id = this.$route.params.doc.split("/").join(" ");
-            this.text = "";
+            if (this.objectLevel != this.objectLevels[this.$route.params.philoDb]) {
+                //catching cases where a philo_virtual is the object we want
+                philo_id = `${this.$route.params.doc.split("/").join(" ").trim()} 1`;
+            } else {
+                philo_id = this.$route.params.doc.split("/").join(" ");
+            }
             this.$http
                 .get(
                     `${this.$appConfig.topologic.api}/get_doc_data/${this.$appConfig.topologic.dbname}/${this.$route.params.philoDb}?philo_id=${philo_id}`
@@ -239,9 +209,7 @@ export default {
                             philo_id: response.data.metadata.philo_id,
                             philo_type: response.data.metadata.philo_type,
                         };
-                        this.topicDistribution = this.buildTopicDistribution(
-                            response.data.topic_distribution
-                        );
+                        this.topicDistribution = this.buildTopicDistribution(response.data.topic_distribution);
                     }
                 })
                 .catch(() => {
@@ -276,9 +244,6 @@ export default {
                 }
             }
             return sortedDistribution;
-        },
-        loadNewData() {
-            this.fetchData();
         },
         goToTopic(topic) {
             this.$router.push(`/topic/${topic.name}`);

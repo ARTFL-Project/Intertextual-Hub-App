@@ -8,6 +8,7 @@ import requests
 from Levenshtein import jaro_winkler
 from psycopg2.extras import DictCursor
 from unidecode import unidecode
+from gensim.models import word2vec
 
 sys.path.append("..")
 from config import DB_CONFIG
@@ -18,16 +19,35 @@ DB_NAME = DB_CONFIG["database_name"]
 DB_PWD = DB_CONFIG["database_password"]
 TOPOLOGIC = DB_CONFIG["topologic"]
 
+MODELS = {
+    "1700": word2vec.Word2Vec.load(DB_CONFIG["word2vec"]["1700"]),
+    "1725": word2vec.Word2Vec.load(DB_CONFIG["word2vec"]["1725"]),
+    "1750": word2vec.Word2Vec.load(DB_CONFIG["word2vec"]["1750"]),
+    "1775": word2vec.Word2Vec.load(DB_CONFIG["word2vec"]["1775"]),
+}
+
 
 def get_word_evolution(
-    word: str,
+    words: str,
 ) -> Tuple[Dict[int, List[Dict[str, Union[str, float]]]], Dict[str, Dict[str, str]], Dict[str, str]]:
     periods: Dict[str, List[Dict[str, Union[str, float]]]] = {}
-    word = unidecode(word)
-    with psycopg2.connect(user=DB_USER, password=DB_PWD, database=DB_NAME,) as conn:
-        cursor = conn.cursor(cursor_factory=DictCursor)
-        cursor.execute("SELECT periods FROM word_vectors_by_quarter WHERE word=%s", (word,))
-        periods = cursor.fetchone()["periods"]
+    vectors = {year: [] for year in MODELS.keys()}
+    tokens = words.split()
+    for year in vectors:
+        vectors = []
+        for word in tokens:
+            word = unidecode(word)
+            try:
+                vectors.append(MODELS[year].wv.get_vector(word))
+            except KeyError:
+                print("\n\nNOT FOUND\n\n")
+                return None
+        # if len(tokens) > 1:
+        vector = np.mean(np.array(vectors), axis=0)
+        # else:
+        #     vector = vectors[0]
+        matches = MODELS[year].wv.similar_by_vector(vector, topn=50 + len(tokens))
+        periods[year] = [{"word": word, "weight": score} for word, score in matches if word not in tokens]
 
     word_map: Dict[str, int] = {}
     index_map: Dict[int, str] = {}
@@ -69,7 +89,7 @@ def get_word_evolution(
 
     colored_periods: Dict[str, List[Dict[str, Union[str, float]]]] = {}
     for period, words in periods.items():
-        word_list = [(w["word"], w["weight"] * 10) for w in words]
+        word_list = [(w["word"], w["weight"] * 10) for w in words[:50]]
         highest_value = word_list[0][1]
         if len(word_list) > 1:
             lowest_value = word_list[-1][1]
@@ -121,28 +141,8 @@ def retrieve_associated_words(word: str) -> Dict[str, str]:
     return words
 
 
-# def get_all_words(db, request):
-#     """Expand query to all search terms."""
-#     words = request["q"].replace('"', "")
-#     hits = db.query(words)
-#     hits.finish()
-#     expanded_terms = get_expanded_query(hits)
-#     if expanded_terms:
-#         word_groups = []
-#         for word_group in expanded_terms:
-#             normalized_group = []
-#             for word in word_group:
-#                 word = word.replace('"', "")
-#                 word = "".join([i for i in unicodedata.normalize("NFKD", word) if not unicodedata.combining(i)])
-#                 normalized_group.append(word)
-#             word_groups.append(normalized_group)
-#         return word_groups
-#     return [words.split()]
-
-
 def find_similar_words(word_to_match: str):
     """Edit distance function."""
-    # Check if lookup is cached
     topologic_response = requests.get(
         os.path.join(TOPOLOGIC["api"], "get_all_field_values", TOPOLOGIC["dbname"]), params={"field": "word"}
     )

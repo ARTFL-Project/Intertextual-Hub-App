@@ -374,6 +374,9 @@ export default {
             simDocsloading: false,
             accessGranted: true,
             lastDocId: null,
+            objectLevels: Object.fromEntries(
+                Object.entries(this.$appConfig.philoDBs).map((values) => [values[0], values[1].object_type])
+            ),
         };
     },
     computed: {
@@ -403,11 +406,19 @@ export default {
                 return this.similarDocs;
             }
         },
+        philoObjectType() {
+            let philoId = this.getPhiloId().split(" ");
+            let objectLevels = { 1: "doc", 2: "div1", 3: "div2", 4: "div3", 9: "page" };
+            let objectLevel = objectLevels[philoId.length];
+            console.log(objectLevel);
+            return objectLevel;
+        },
     },
     watch: {
         $route: "fetchData",
     },
     created() {
+        console.log(this.getPhiloId());
         this.fetchData();
     },
     mounted() {
@@ -462,7 +473,14 @@ export default {
             this.showAllSimDocs = false;
             this.similarDocs = [];
             this.$bvModal.hide("text-reuse");
-            let philoId = this.getPhiloId();
+            let philoId;
+            if (this.objectLevel != this.objectLevels[this.$route.params.philoDb]) {
+                //catching cases where a philo_virtual is the object we want
+                philoId = `${this.$route.params.doc.split("/").join(" ").trim()} 1`;
+            } else {
+                philoId = this.getPhiloId();
+            }
+            console.log(philoId);
             this.lastDocId = philoId;
             this.pairid = this.$route.query.pairid;
             this.$http
@@ -778,7 +796,7 @@ export default {
         },
         fetchToC() {
             this.tocPosition = "";
-            var philoId = this.$route.params.doc.split("/").join(" ");
+            var philoId = this.$route.params.doc.split("/").join(" ").trim();
             let docId = philoId.split(" ")[0];
             this.currentPhiloId = philoId;
             if (docId !== this.tocElements.docId) {
