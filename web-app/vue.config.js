@@ -1,4 +1,6 @@
 const fs = require("fs");
+const path = require("path");
+const vueSrc = "./src";
 
 module.exports = {
     devServer: {
@@ -16,11 +18,13 @@ module.exports = {
             "Access-Control-Allow-Origin": "*",
         },
     },
-    chainWebpack: (config) => {
-        config.externals({
-            Vue: "vue",
-        });
-    },
     assetsDir: "intertextual-hub/",
-    runtimeCompiler: true,
+    configureWebpack: {
+        resolve: {
+            alias: {
+                "@": path.resolve(__dirname, vueSrc)
+            },
+            extensions: ['.js', '.vue', '.json']
+        }
+    }
 };

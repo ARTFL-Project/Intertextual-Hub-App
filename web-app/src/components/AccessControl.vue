@@ -17,8 +17,7 @@
                     style="text-align: justify"
                 >
                     <h5 v-if="!accessDenied" class="mt-2 mb-3">
-                        If you have a username and password, please enter them
-                        here:
+                        If you have a username and password, please enter them here:
                     </h5>
                     <h5 class="text-danger" v-if="accessDenied">
                         Your username or password don't match. Please try again.
@@ -26,18 +25,14 @@
                     <b-row class="mb-3">
                         <b-col cols="12" sm="6" md="5" lg="4">
                             <b-input-group prepend="Username">
-                                <b-form-input
-                                    v-model="accessInput.username"
-                                ></b-form-input>
+                                <b-form-input v-model="accessInput.username"></b-form-input>
                             </b-input-group>
                         </b-col>
                     </b-row>
                     <b-row class="mb-3">
                         <b-col cols="12" sm="6" md="5" lg="4">
                             <b-input-group prepend="Password">
-                                <b-form-input
-                                    v-model="accessInput.password"
-                                ></b-form-input>
+                                <b-form-input v-model="accessInput.password"></b-form-input>
                             </b-input-group>
                         </b-col>
                     </b-row>
@@ -45,12 +40,7 @@
                         <b-col cols="12">
                             <b-button-group>
                                 <b-button @click="submit">Submit</b-button>
-                                <b-button
-                                    type="reset"
-                                    variant="danger"
-                                    @click="reset"
-                                    >Reset</b-button
-                                >
+                                <b-button type="reset" variant="danger" @click="reset">Reset</b-button>
                             </b-button-group>
                         </b-col>
                     </b-row>
@@ -60,7 +50,6 @@
     </b-container>
 </template>
 <script>
-// import { EventBus } from "../main.js";
 export default {
     name: "AccessControl",
     props: ["authorized", "clientIp", "domainName"],
@@ -74,13 +63,10 @@ export default {
     methods: {
         submit() {
             this.$http
-                .post(
-                    `${this.$appConfig.apiServer}/intertextual-hub-api/login`,
-                    {
-                        username: this.accessInput.username,
-                        password: this.accessInput.password,
-                    }
-                )
+                .post(`${this.$appConfig.apiServer}/intertextual-hub-api/login`, {
+                    username: this.accessInput.username,
+                    password: this.accessInput.password,
+                })
                 .then((response) => {
                     if (response.data) {
                         location.reload();

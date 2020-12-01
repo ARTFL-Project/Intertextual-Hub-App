@@ -2,26 +2,17 @@
     <span>
         <span v-for="(citation, citeIndex) in citations" :key="citeIndex" :style="citation.style">
             <span v-if="citation.link">
-                <b-button
-                    href="#"
-                    tabindex="0"
-                    class="link d-inline"
-                    :id="`${philoDb}_${philoId}-${index}`"
-                >{{ citation.field || 'Unnamed section' }}</b-button>
-                <doc-link
-                    :target="`${philoDb}_${philoId}-${index}`"
-                    :philo-db="philoDb"
-                    :philo-id="philoId"
-                ></doc-link>
+                <b-button href="#" tabindex="0" class="link d-inline" :id="`${philoDb}_${philoId}-${index}`">{{
+                    citation.field || "Unnamed section"
+                }}</b-button>
+                <doc-link :target="`${philoDb}_${philoId}-${index}`" :philo-db="philoDb" :philo-id="philoId"></doc-link>
             </span>
             <span v-else>{{ citation.field }}</span>
             <span
                 class="separator"
-                v-if="
-                    (citation.field.length > 0 || citation.link) &&
-                        citeIndex != citations.length - 1
-                "
-            >&#9679;</span>
+                v-if="(citation.field.length > 0 || citation.link) && citeIndex != citations.length - 1"
+                >&#9679;</span
+            >
         </span>
     </span>
 </template>
@@ -68,15 +59,9 @@ export default {
                     if (typeof this.nolink == "undefined") {
                         if (this.objectLevel == "doc" && field == "title") {
                             link = true;
-                        } else if (
-                            this.objectLevel == "div1" &&
-                            field == "head"
-                        ) {
+                        } else if (this.objectLevel == "div1" && field == "head") {
                             link = true;
-                        } else if (
-                            this.objectLevel == "div2" &&
-                            field == "head"
-                        ) {
+                        } else if (this.objectLevel == "div2" && field == "head") {
                             link = true;
                         }
                     }

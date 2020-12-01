@@ -1,20 +1,7 @@
 <template>
     <div class="my-4">
-        <div
-            v-if="loading"
-            class="text-center"
-            style="
-                position: absolute;
-                left: 0;
-                top: 200px;
-                right: 0;
-                z-index: 10;
-            "
-        >
-            <b-spinner
-                label="Loading..."
-                style="width: 5rem; height: 5rem; color: rgba(143, 57, 49, 0.8)"
-            ></b-spinner>
+        <div v-if="loading" class="text-center" style="position: absolute; left: 0; top: 200px; right: 0; z-index: 10">
+            <b-spinner label="Loading..." style="width: 5rem; height: 5rem; color: rgba(143, 57, 49, 0.8)"></b-spinner>
         </div>
         <b-tabs justified content-class="mt-3" v-model="tabIndex">
             <b-tab active>
@@ -23,14 +10,9 @@
                     <b>{{ word }}</b> in the corpus
                 </template>
                 <div v-if="notFound" class="p-4">
-                    <b>{{ word }}</b> not in vocabulary used for modeling. Try
-                    the following similar words:<br />
+                    <b>{{ word }}</b> not in vocabulary used for modeling. Try the following similar words:<br />
                     <span v-for="similarWord in similarWords" :key="similarWord"
-                        ><word-link
-                            :target="`simword-${similarWord}`"
-                            :word="similarWord"
-                        ></word-link
-                        ><br />
+                        ><word-link :target="`simword-${similarWord}`" :word="similarWord"></word-link><br />
                     </span>
                 </div>
                 <div class="row mt-4 p-2" v-if="!notFound">
@@ -44,35 +26,15 @@
                                             <b>{{ word }}</b>
                                         </span>
                                     </template>
-                                    <b-table
-                                        hover
-                                        :items="topicDistribution"
-                                        :fields="fields"
-                                        @row-clicked="goToTopic"
-                                    >
-                                        <template
-                                            slot="[name]"
-                                            slot-scope="data"
-                                        >
-                                            <span class="frequency-parent"
-                                                >Topic {{ data.value }}</span
-                                            >
+                                    <b-table hover :items="topicDistribution" :fields="fields" @row-clicked="goToTopic">
+                                        <template slot="[name]" slot-scope="data">
+                                            <span class="frequency-parent">Topic {{ data.value }}</span>
                                         </template>
-                                        <template
-                                            slot="[description]"
-                                            slot-scope="data"
-                                        >
-                                            <span class="frequency-parent">{{
-                                                data.value
-                                            }}</span>
+                                        <template slot="[description]" slot-scope="data">
+                                            <span class="frequency-parent">{{ data.value }}</span>
                                         </template>
-                                        <template
-                                            slot="[frequency]"
-                                            slot-scope="data"
-                                        >
-                                            <span class="frequency-value pl-2"
-                                                >{{ data.value }}%</span
-                                            >
+                                        <template slot="[frequency]" slot-scope="data">
+                                            <span class="frequency-value pl-2">{{ data.value }}%</span>
                                         </template>
                                     </b-table>
                                 </b-card>
@@ -90,15 +52,8 @@
                                             :key="word.word"
                                             class="list-group-item word-sim"
                                         >
-                                            <word-link
-                                                :target="`${word.word}-topics`"
-                                                :word="word.word"
-                                            ></word-link>
-                                            <b-badge
-                                                variant="secondary"
-                                                pill
-                                                class="float-right"
-                                            >
+                                            <word-link :target="`${word.word}-topics`" :word="word.word"></word-link>
+                                            <b-badge variant="secondary" pill class="float-right">
                                                 {{ word.weight.toFixed(4) }}
                                             </b-badge>
                                         </b-list-group-item>
@@ -116,15 +71,8 @@
                                             :key="word.word"
                                             class="list-group-item word-sim"
                                         >
-                                            <word-link
-                                                :target="`${word.word}-docs`"
-                                                :word="word.word"
-                                            ></word-link>
-                                            <b-badge
-                                                variant="secondary"
-                                                pill
-                                                class="float-right"
-                                            >
+                                            <word-link :target="`${word.word}-docs`" :word="word.word"></word-link>
+                                            <b-badge variant="secondary" pill class="float-right">
                                                 {{ word.weight.toFixed(4) }}
                                             </b-badge>
                                         </b-list-group-item>
@@ -134,32 +82,21 @@
                         </b-row>
                     </div>
                     <div class="col-5">
-                        <b-card
-                            no-body
-                            class="shadow-sm"
-                            :header="`Top ${documents.length} documents by relevance`"
-                        >
+                        <b-card no-body class="shadow-sm" :header="`Top ${documents.length} documents by relevance`">
                             <b-list-group flush>
                                 <b-list-group-item
                                     v-for="doc in documents"
                                     :key="doc.doc_id"
                                     class="list-group-item"
-                                    style="
-                                        border-radius: 0px;
-                                        border-width: 1px 0px;
-                                        font-size: 90%;
-                                    "
+                                    style="border-radius: 0px; border-width: 1px 0px; font-size: 90%"
                                 >
                                     <citations
                                         :docPair="doc.metadata"
                                         :philo-db="`${doc.metadata.philo_db}`"
                                     ></citations>
-                                    <b-badge
-                                        variant="secondary"
-                                        pill
-                                        class="float-right"
-                                        >{{ doc.score.toFixed(2) }}</b-badge
-                                    >
+                                    <b-badge variant="secondary" pill class="float-right">{{
+                                        doc.score.toFixed(2)
+                                    }}</b-badge>
                                 </b-list-group-item>
                             </b-list-group>
                         </b-card>
@@ -171,12 +108,7 @@
                     Evolution of words associated with
                     <b>{{ word }}</b> over time
                 </template>
-                <b-row
-                    class="mt-4"
-                    no-gutters
-                    align-h="center"
-                    v-if="wordMovers && !singlePeriod"
-                >
+                <b-row class="mt-4" no-gutters align-h="center" v-if="wordMovers && !singlePeriod">
                     <b-col cols="2" offset-md="4" align-self="center">
                         <h4 class="pl-3">Overall evolution:</h4>
                     </b-col>
@@ -213,51 +145,30 @@
                     only occurs in {{ singlePeriod }}
                 </div>
                 <div class="mt-4" v-if="periodPairs">
-                    <b-row
-                        v-for="periodPair in periodPairs"
-                        :key="`${periodPair.start.period}-${word}`"
-                    >
+                    <b-row v-for="periodPair in periodPairs" :key="`${periodPair.start.period}-${word}`">
                         <b-col cols="5">
                             <b-card class="mb-3 shadow-sm" no-body>
                                 <template v-slot:header>
                                     <h5 class="mb-0 text-center">
-                                        {{ periodPair.start.period }}-{{
-                                            parseInt(periodPair.start.period) +
-                                            24
-                                        }}
+                                        {{ periodPair.start.period }}-{{ parseInt(periodPair.start.period) + 24 }}
                                     </h5>
                                 </template>
                                 <div class="card-text word-cloud">
                                     <div class="p-2">
-                                        <span
-                                            v-for="weightedWord in periodPair
-                                                .start.words"
-                                            :key="weightedWord.word"
-                                        >
+                                        <span v-for="weightedWord in periodPair.start.words" :key="weightedWord.word">
                                             &nbsp;
                                             <word-link
                                                 :target="`${weightedWord.word}-${periodPair.start.period}-start`"
                                                 :word="weightedWord.word"
                                                 :extraLink="{
-                                                    link: makeCoocLink(
-                                                        word,
-                                                        weightedWord,
-                                                        periodPair
-                                                    ),
+                                                    link: makeCoocLink(word, weightedWord, periodPair),
                                                     text: `Find most relevant documents for <b>${word}</b> and <b>${
                                                         weightedWord.word
-                                                    }</b> between <b>${
-                                                        periodPair.start.period
-                                                    }</b> and <b>${
-                                                        parseInt(
-                                                            periodPair.start
-                                                                .period
-                                                        ) + 24
+                                                    }</b> between <b>${periodPair.start.period}</b> and <b>${
+                                                        parseInt(periodPair.start.period) + 24
                                                     }</b>`,
                                                 }"
-                                                :style="`font-size: ${
-                                                    1 + weightedWord.size
-                                                }rem; color: ${
+                                                :style="`font-size: ${1 + weightedWord.size}rem; color: ${
                                                     weightedWord.color
                                                 } !important; padding: 0 .5rem`"
                                             ></word-link
@@ -298,46 +209,26 @@
                             <b-card class="mb-3 shadow-sm" no-body>
                                 <template v-slot:header>
                                     <h5 class="mb-0 text-center">
-                                        {{ periodPair.end.period }}-{{
-                                            parseInt(periodPair.end.period) + 24
-                                        }}
+                                        {{ periodPair.end.period }}-{{ parseInt(periodPair.end.period) + 24 }}
                                     </h5>
                                 </template>
                                 <div class="card-text word-cloud">
                                     <div class="p-2">
-                                        <span
-                                            v-for="weightedWord in periodPair
-                                                .end.words"
-                                            :key="weightedWord.word"
-                                        >
+                                        <span v-for="weightedWord in periodPair.end.words" :key="weightedWord.word">
                                             <word-link
                                                 :target="`${weightedWord.word}-${periodPair.end.period}-end`"
                                                 :word="weightedWord.word"
-                                                :style="`font-size: ${
-                                                    1 + weightedWord.size
-                                                }rem; color: ${
+                                                :style="`font-size: ${1 + weightedWord.size}rem; color: ${
                                                     weightedWord.color
                                                 } !important; padding: 0 .5rem`"
                                                 :extraLink="{
-                                                    link: `/search?words=${word}%20OR%20${
-                                                        weightedWord.word
-                                                    }&date=${
+                                                    link: `/search?words=${word}%20OR%20${weightedWord.word}&date=${
                                                         periodPair.end.period
-                                                    }<%3D>${
-                                                        parseInt(
-                                                            periodPair.end
-                                                                .period
-                                                        ) + 24
-                                                    }`,
+                                                    }<%3D>${parseInt(periodPair.end.period) + 24}`,
                                                     text: `Find most relevant documents for <b>${word}</b> and <b>${
                                                         weightedWord.word
-                                                    }</b> between <b>${
-                                                        periodPair.end.period
-                                                    }</b> and <b>${
-                                                        parseInt(
-                                                            periodPair.end
-                                                                .period
-                                                        ) + 24
+                                                    }</b> between <b>${periodPair.end.period}</b> and <b>${
+                                                        parseInt(periodPair.end.period) + 24
                                                     }</b>`,
                                                 }"
                                             ></word-link>
@@ -402,21 +293,17 @@ export default {
             this.loading = true;
             this.$http
                 .get(
-                    `${this.$appConfig.topologic.api}/get_word_data/${
-                        this.$appConfig.topologic.dbname
-                    }/${unidecode(this.$route.params.word)}`
+                    `${this.$appConfig.topologic.api}/get_word_data/${this.$appConfig.topologic.dbname}/${unidecode(
+                        this.$route.params.word
+                    )}`
                 )
                 .then((response) => {
                     this.loading = false;
                     if (response.data.documents.length > 0) {
                         this.documents = response.data.documents.slice(0, 10);
-                        this.topicDistribution = this.build_topic_distribution(
-                            response.data.topic_distribution
-                        );
-                        this.simWordsByTopics =
-                            response.data.similar_words_by_topic;
-                        this.simWordsByCooc =
-                            response.data.similar_words_by_cooc;
+                        this.topicDistribution = this.build_topic_distribution(response.data.topic_distribution);
+                        this.simWordsByTopics = response.data.similar_words_by_topic;
+                        this.simWordsByCooc = response.data.similar_words_by_cooc;
                         this.notFound = false;
                     } else {
                         this.notFound = true;
@@ -435,9 +322,7 @@ export default {
                     this.notFound = true;
                 });
             this.$http
-                .get(
-                    `${this.$appConfig.apiServer}/intertextual-hub-api/get_word_vectors/${this.$route.params.word}`
-                )
+                .get(`${this.$appConfig.apiServer}/intertextual-hub-api/get_word_vectors/${this.$route.params.word}`)
                 .then((response) => {
                     this.wordMovers = response.data.overall_movers;
                     let periods = Object.keys(response.data.evolution);
@@ -455,9 +340,7 @@ export default {
                         });
                     }
                     if (this.periodPairs.length === 0) {
-                        this.singlePeriod = `${periods[0]}-${
-                            parseInt(periods[0]) + 25
-                        }`;
+                        this.singlePeriod = `${periods[0]}-${parseInt(periods[0]) + 25}`;
                     }
                 })
                 .catch((error) => {
@@ -489,9 +372,9 @@ export default {
             this.$router.push(`/topic/${topic.name}`);
         },
         makeCoocLink(word, weightedWord, periodPair) {
-            return `/search?words=${word}%20OR%20${weightedWord.word}&date=${
-                periodPair.start.period
-            }<%3D>${parseInt(periodPair.start.period) + 24}`;
+            return `/search?words=${word}%20OR%20${weightedWord.word}&date=${periodPair.start.period}<%3D>${
+                parseInt(periodPair.start.period) + 24
+            }`;
         },
     },
 };

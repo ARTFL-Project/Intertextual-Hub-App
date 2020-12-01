@@ -311,9 +311,9 @@
     </div>
 </template>
 <script>
-import PassagePair from "./PassagePair.vue";
+const PassagePair = () => import("./PassagePair.vue");
 import Citations from "./Citations.vue";
-import AccessControl from "./AccessControl";
+const AccessControl = () => import("./AccessControl");
 import Gallery from "blueimp-gallery";
 import "blueimp-gallery/css/blueimp-gallery.min.css";
 import tippy from "tippy.js";

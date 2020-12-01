@@ -133,10 +133,10 @@
 </template>
 
 <script>
-import SimilarPassageForm from "./components/SimilarPassageForm.vue";
-import SearchForm from "./components/SearchForm";
-import TopicDistributions from "./components/TopicDistributions.vue";
-import WordSearch from "./components/WordSearch.vue";
+const SimilarPassageForm = () => import("./components/SimilarPassageForm.vue");
+const SearchForm = () => import("./components/SearchForm");
+const TopicDistributions = () => import("./components/TopicDistributions.vue");
+const WordSearch = () => import("./components/WordSearch.vue");
 import { EventBus } from "./main.js";
 
 export default {
@@ -155,7 +155,7 @@ export default {
             word: "",
             philoDbs: this.$appConfig.philoDBs,
             tabIndex: 0,
-            publicPath: process.env.BASE_URL,
+            publicPath: `${this.$appConfig.base}/public/`,
         };
     },
     watch: {

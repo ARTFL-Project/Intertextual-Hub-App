@@ -5,69 +5,54 @@
             <p class="pt-3 px-3">
                 <citations :docPair="passage.metadata" direction="source" :philo-db="sourcePhiloDb"></citations>
             </p>
-            <b-button
-                class="ml-3 mb-2"
-                size="sm"
-                variant="outline-secondary"
-                @click="goToDocument(passage, 'source')"
-            >
+            <b-button class="ml-3 mb-2" size="sm" variant="outline-secondary" @click="goToDocument(passage, 'source')">
                 See
-                <span v-if="message">{{message}}</span>
-                <span
-                    v-else
-                >{{"this" | pluralize(passageNumber)}} {{'passage' | pluralize(passageNumber)}}</span> in document
+                <span v-if="message">{{ message }}</span>
+                <span v-else>{{ "this" | pluralize(passageNumber) }} {{ "passage" | pluralize(passageNumber) }}</span>
+                in document
             </b-button>
         </b-col>
-        <b-col
-            cols="6"
-            class="mt-2 border border-top-0 border-right-0 border-bottom-0"
-            v-if="passage.metadata"
-        >
+        <b-col cols="6" class="mt-2 border border-top-0 border-right-0 border-bottom-0" v-if="passage.metadata">
             <h6 class="text-center pb-2">Later use</h6>
             <p class="pt-3 px-3">
                 <citations :docPair="passage.metadata" direction="target" :philo-db="targetPhiloDb"></citations>
             </p>
-            <b-button
-                class="ml-3"
-                size="sm"
-                variant="outline-secondary"
-                @click="goToDocument(passage, 'target')"
-            >
+            <b-button class="ml-3" size="sm" variant="outline-secondary" @click="goToDocument(passage, 'target')">
                 See
-                <span v-if="message">{{message}}</span>
-                <span
-                    v-else
-                >{{"this" | pluralize(passageNumber)}} {{'passage' | pluralize(passageNumber)}}</span> in document
+                <span v-if="message">{{ message }}</span>
+                <span v-else>{{ "this" | pluralize(passageNumber) }} {{ "passage" | pluralize(passageNumber) }}</span>
+                in document
             </b-button>
         </b-col>
         <b-col cols="6" class="mb-2 text">
             <p class="card-text text-justify px-3 pt-2 mb-4">
                 {{ passage.source_context_before }}
-                <span
-                    class="source-passage"
-                >{{ passage.source_passage }}</span>
+                <span class="source-passage">{{ passage.source_passage }}</span>
                 {{ passage.source_context_after }}
             </p>
         </b-col>
         <b-col cols="6" class="mb-2 border border-top-0 border-right-0 border-bottom-0 text">
             <p class="card-text text-justify px-3 pt-2 mb-4">
                 {{ passage.target_context_before }}
-                <span
-                    class="target-passage"
-                >{{ passage.target_passage }}</span>
+                <span class="target-passage">{{ passage.target_passage }}</span>
                 {{ passage.target_context_after }}
             </p>
         </b-col>
-        <div class="text-center" style="width:100%">
+        <div class="text-center" style="width: 100%">
             <a
                 class="diff-btn"
                 diffed="false"
-                @click="showDifferences(passage.source_passage, passage.target_passage, passage.source_passage.length, passage.target_passage.length)"
-            >Show differences</a>
-            <div
-                class="loading position-absolute"
-                style="display:none; left: 50%; transform: translateX(-50%);"
+                @click="
+                    showDifferences(
+                        passage.source_passage,
+                        passage.target_passage,
+                        passage.source_passage.length,
+                        passage.target_passage.length
+                    )
+                "
+                >Show differences</a
             >
+            <div class="loading position-absolute" style="display: none; left: 50%; transform: translateX(-50%)">
                 <atom-spinner :animation-duration="800" :size="25" color="#000" />
             </div>
         </div>
@@ -107,9 +92,7 @@ export default {
                         pairid: this.pairid || this.passage.metadata.pairid,
                         direction: direction,
                     },
-                    `/navigate/${this.sourcePhiloDb}/${this.sourcePhiloId
-                        .split(" ")
-                        .join("/")}`
+                    `/navigate/${this.sourcePhiloDb}/${this.sourcePhiloId.split(" ").join("/")}`
                 );
             } else {
                 link = this.paramsToRoute(
@@ -117,23 +100,14 @@ export default {
                         pairid: this.pairid || this.passage.metadata.pairid,
                         direction: direction,
                     },
-                    `/navigate/${this.targetPhiloDb}/${this.targetPhiloId
-                        .split(" ")
-                        .join("/")}`
+                    `/navigate/${this.targetPhiloDb}/${this.targetPhiloId.split(" ").join("/")}`
                 );
             }
             this.$router.push(link);
         },
-        showDifferences(
-            sourceText,
-            targetText,
-            sourcePassageLength,
-            targetPassageLength
-        ) {
+        showDifferences(sourceText, targetText, sourcePassageLength, targetPassageLength) {
             if (sourcePassageLength > 50000 || targetPassageLength > 50000) {
-                alert(
-                    "Passage of 50000 words or more may take up a long time to compare"
-                );
+                alert("Passage of 50000 words or more may take up a long time to compare");
             }
 
             let parent = document.getElementById(this.passage.passageid);

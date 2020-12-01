@@ -36,25 +36,25 @@
                     <b-col cols="12">
                         <b-card no-body class="shadow-sm" header="Distribution of topic weight over time">
                             <div class="pl-2 pr-2 pt-2">
-                                <apexchart
+                                <vue-apex-charts
                                     width="100%"
                                     height="300px"
                                     type="bar"
                                     :options="topicEvolutionChartOptions"
                                     :series="topicEvolutionSeries"
-                                ></apexchart>
+                                ></vue-apex-charts>
                             </div>
                         </b-card>
                     </b-col>
                     <b-col cols="12" lg="6">
                         <b-card no-body header="5 most correlated topics over time" class="mt-4 shadow-sm">
-                            <apexchart
+                            <vue-apex-charts
                                 ref="timeChart"
                                 width="100%"
                                 height="400px"
                                 :series="similarEvolutionSeries"
                                 :options="similarEvolutionOptions"
-                            ></apexchart>
+                            ></vue-apex-charts>
                             <div
                                 v-for="(localTopic, seriesIndex) in similarEvolutionSeries"
                                 :key="localTopic.name"
@@ -108,11 +108,13 @@
 <script>
 import Citations from "./Citations";
 import { EventBus } from "../main.js";
+import VueApexCharts from "vue-apexcharts";
 
 export default {
     name: "Topic",
     components: {
         Citations,
+        VueApexCharts,
     },
     data() {
         return {

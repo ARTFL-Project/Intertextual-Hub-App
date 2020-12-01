@@ -5,13 +5,7 @@
                 Input terms:
                 <b
                     v-if="binding == 'OR'"
-                    v-html="
-                        searchTerms
-                            .split(' ')
-                            .join(
-                                `<tt style='font-size: 140%; font-weight: normal;'> OR </tt>`
-                            )
-                    "
+                    v-html="searchTerms.split(' ').join(`<tt style='font-size: 140%; font-weight: normal;'> OR </tt>`)"
                 ></b>
                 <b v-else>{{ searchTerms }}</b>
             </span>
@@ -30,83 +24,42 @@
                 {{ date }}
             </span>
             <span v-if="!author && !title && !date">None</span>
-            <div
-                v-if="loading"
-                class="text-center"
-                style="position: absolute; left: 0; right: 0; z-index: 10"
-            >
+            <div v-if="loading" class="text-center" style="position: absolute; left: 0; right: 0; z-index: 10">
                 <b-spinner
                     label="Loading..."
-                    style="
-                        width: 5rem;
-                        height: 5rem;
-                        color: rgba(143, 57, 49, 0.8);
-                    "
+                    style="width: 5rem; height: 5rem; color: rgba(143, 57, 49, 0.8)"
                 ></b-spinner>
             </div>
             <div class="mt-2" v-else>
                 <span v-if="docCount > 0">
                     Number of documents
                     <span v-if="searchTerms"
-                        >with
-                        {{
-                            "this search term"
-                                | pluralize(searchTerms.split(" ").length)
-                        }}</span
+                        >with {{ "this search term" | pluralize(searchTerms.split(" ").length) }}</span
                     >:
                     <b>{{ docCount }}</b>
 
                     <span v-if="docCount > resultLimit">
                         <br />
-                        Displaying first {{ resultLimit }} results: &nbsp;use
-                        search filters to narrow search results
-                        <span v-if="resultLimit != 500"
-                            >or increase max results displayed</span
-                        >
+                        Displaying first {{ resultLimit }} results: &nbsp;use search filters to narrow search results
+                        <span v-if="resultLimit != 500">or increase max results displayed</span>
                     </span>
                 </span>
                 <span v-else>No results.</span>
             </div>
         </b-card>
-        <b-card
-            class="position-relative mb-2 shadow-sm"
-            v-for="(result, index) in results"
-            :key="result.philo_id"
-        >
+        <b-card class="position-relative mb-2 shadow-sm" v-for="(result, index) in results" :key="result.philo_id">
             <span class="count">{{ index + 1 }}</span>
-            <citations
-                :docPair="result"
-                :philo-db="`${result.philo_db}`"
-            ></citations>
-            <span class="pl-2" v-if="!biblioQuery"
-                >(score: {{ result.score }})</span
-            >
+            <citations :docPair="result" :philo-db="`${result.philo_db}`"></citations>
+            <span class="pl-2" v-if="!biblioQuery">(score: {{ result.score }})</span>
             <p class="mt-2 text" v-if="!biblioQuery"></p>
-            <div
-                v-if="
-                    biblioQuery &&
-                    philoConfig[result.philo_db].object_type != 'doc'
-                "
-            >
-                <b-button
-                    size="sm"
-                    variant="info"
-                    class="my-1"
-                    :id="`section${index}`"
-                    @click="toggleSections(index)"
-                >
+            <div v-if="biblioQuery && philoConfig[result.philo_db].object_type != 'doc'">
+                <b-button size="sm" variant="info" class="my-1" :id="`section${index}`" @click="toggleSections(index)">
                     See all chapters or sections
                 </b-button>
                 <transition name="slide-fade">
                     <ul v-if="sectionsDisplay[index]">
-                        <li
-                            v-for="section in result.sections"
-                            :key="section.philo_id"
-                        >
-                            <citations
-                                :docPair="section"
-                                :philo-db="`${result.philo_db}`"
-                            ></citations>
+                        <li v-for="section in result.sections" :key="section.philo_id">
+                            <citations :docPair="section" :philo-db="`${result.philo_db}`"></citations>
                         </li>
                     </ul>
                 </transition>
@@ -168,9 +121,7 @@ export default {
             this.loading = true;
             this.$http
                 .get(
-                    `${
-                        this.$appConfig.apiServer
-                    }/intertextual-hub-api/search_texts?${this.paramsToUrlString(
+                    `${this.$appConfig.apiServer}/intertextual-hub-api/search_texts?${this.paramsToUrlString(
                         this.$route.query
                     )}`
                 )
@@ -203,8 +154,7 @@ export default {
                 document.getElementById(`section${index}`).innerText = "Hide";
             } else {
                 this.$set(this.sectionsDisplay, index, false);
-                document.getElementById(`section${index}`).innerText =
-                    "See all chapters or sections";
+                document.getElementById(`section${index}`).innerText = "See all chapters or sections";
             }
         },
     },
