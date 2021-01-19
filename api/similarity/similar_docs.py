@@ -67,7 +67,7 @@ def retrieve_similar_docs(philo_db: str, philo_id: str, num: int = 20):
         db = DB(f"{PHILO_PATHS[philo_db]}/data")
         hit = db[philo_id]
         text = get_text(hit, hit.start_byte, hit.end_byte - hit.start_byte, PHILO_PATHS[philo_db],)
-        return submit_passage(text.decode("utf8"), num=10)
+        return submit_passage(text.decode("utf8"), num=num)
     newsims = INDEX.get_nns_by_item(annoy_id, num + 1, include_distances=True)
     results = process_annoy_results(newsims)
     return results[1:]

@@ -210,45 +210,18 @@ def check_for_alignments(philo_db: str, philo_id: str):
 
 @app.get("/search_texts")
 def search_texts(request: Request):
-    author = ""
-    title = ""
-    start_date = ""
-    end_date = ""
-    collections = ""
-    periods = ""
-    opbind = ""
-    stemmed = False
-    limit = 100
-    if "author" in request.query_params:
-        author = request.query_params["author"]
-    if "title" in request.query_params:
-        title = request.query_params["title"]
-    if "collections" in request.query_params:
-        collections = request.query_params["collections"]
-    if "periods" in request.query_params:
-        periods = request.query_params["periods"]
-    if "date" in request.query_params:
-        date = request.query_params["date"]
-        dates = date.split("<=>")
-        start_date = dates[0]
-        try:
-            end_date = dates[1]
-        except IndexError:
-            pass
-    if "limit" in request.query_params:
-        limit = int(request.query_params["limit"])
-    if "binding" in request.query_params:
-        opbind = request.query_params["binding"]
-    if "stemmed" in request.query_params:
-        if request.query_params["stemmed"]:
-            stemmed = True
+    author, title, head, start_date, end_date, collections, periods, opbind, stemmed, limit = search.query_parser(
+        request.query_params
+    )
     if "words" in request.query_params:
         searchwords = request.query_params["words"]
         results, doc_count = search.word_search(
-            searchwords, author, title, start_date, end_date, collections, periods, opbind, limit, stemmed
+            searchwords, author, title, head, start_date, end_date, collections, periods, opbind, limit, stemmed
         )
     else:
-        results, doc_count = search.metadata_search(author, title, start_date, end_date, collections, periods, limit)
+        results, doc_count = search.metadata_search(
+            author, title, head, start_date, end_date, collections, periods, limit
+        )
     return {"results": results, "doc_count": doc_count}
 
 

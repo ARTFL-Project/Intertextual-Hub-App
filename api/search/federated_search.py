@@ -5,6 +5,7 @@ import sqlite3
 import sys
 import unicodedata
 from Stemmer import Stemmer
+from typing import Tuple, Dict, Union
 
 
 sys.path.append("..")
@@ -17,6 +18,45 @@ OBJECT_LEVELS = {db: value["object_type"] for db, value in APP_CONFIG["philoDBs"
 DB_FILE = DB_CONFIG["federated_search_index"]
 
 STEMMER = Stemmer("french")
+
+
+def query_parser(query_params: Dict[str, str]) -> Tuple[str, str, str, str, str, str, str, str, bool, int]:
+    author = ""
+    title = ""
+    head = ""
+    start_date = ""
+    end_date = ""
+    collections = ""
+    periods = ""
+    opbind = ""
+    stemmed = False
+    limit = 100
+    if "author" in query_params:
+        author = query_params["author"]
+    if "title" in query_params:
+        title = query_params["title"]
+    if "head" in query_params:
+        head = query_params["head"]
+    if "collections" in query_params:
+        collections = query_params["collections"]
+    if "periods" in query_params:
+        periods = query_params["periods"]
+    if "date" in query_params:
+        date = query_params["date"]
+        dates = date.split("<=>")
+        start_date = dates[0]
+        try:
+            end_date = dates[1]
+        except IndexError:
+            pass
+    if "limit" in query_params:
+        limit = int(query_params["limit"])
+    if "binding" in query_params:
+        opbind = query_params["binding"]
+    if "stemmed" in query_params:
+        if query_params["stemmed"]:
+            stemmed = True
+    return author, title, head, start_date, end_date, collections, periods, opbind, stemmed, limit
 
 
 def de_accent(searchwords):
@@ -39,41 +79,27 @@ def build_where_likes(start_date, end_date, collectionlimit):
     return where_stmt_parts
 
 
-def build_match(searchwords, author, title, period):
-    ## much formatting required to get column filtering syntax to work ##
+def build_match(searchwords, author, title, head, period):
     match_stmt_parts = []
     if searchwords:
         match_stmt_parts.append("(content:{0})".format(searchwords))
-    if author:
-        author = re.sub(r"[-,'.:;]", " ", author)
-        if re.search(" OR ", author):
+    for field_name, field in [("author", author), ("title", title), ("head", head)]:
+        if not field:
+            continue
+        field = re.sub(r"[-,'.:;]", " ", field)
+        if re.search(" OR ", field):
             OR_stmt_parts = []
-            OR_authors = author.split(" OR ")
-            for OR_author in OR_authors:
-                if re.search(" ", OR_author):
-                    OR_stmt_parts.append("author:NEAR({0})".format(OR_author))
+            OR_fields = field.split(" OR ")
+            for OR_field in OR_fields:
+                if re.search(" ", OR_field):
+                    OR_stmt_parts.append(f"{field_name}:NEAR({OR_field})")
                 else:
-                    OR_stmt_parts.append("author:{0}".format(OR_author))
-            match_stmt_parts.append("({0})".format(" OR ".join(OR_stmt_parts)))
-        elif re.search(" ", author):
-            match_stmt_parts.append("(author:NEAR({0}))".format(author))
+                    OR_stmt_parts.append(f"{field_name}:{OR_field}")
+            match_stmt_parts.append(f"({' OR '.join(OR_stmt_parts)})")
+        elif re.search(" ", field):
+            match_stmt_parts.append(f"({field_name}:NEAR({field}))")
         else:
-            match_stmt_parts.append("(author:{0})".format(author))
-    if title:
-        title = re.sub(r"[-,'.:;]", " ", title)
-        if re.search(" OR ", title):
-            OR_stmt_parts = []
-            OR_titles = title.split(" OR ")
-            for OR_title in OR_titles:
-                if re.search(" ", OR_title):
-                    OR_stmt_parts.append("title:NEAR({0})".format(OR_title))
-                else:
-                    OR_stmt_parts.append("title:{0}".format(OR_title))
-            match_stmt_parts.append("({0})".format(" OR ".join(OR_stmt_parts)))
-        elif re.search(" ", title):
-            match_stmt_parts.append("(title:NEAR({0}))".format(title))
-        else:
-            match_stmt_parts.append("(title:{0})".format(title))
+            match_stmt_parts.append(f"({field_name}:{field})")
     if period:
         match_stmt_parts.append(f"(period:{period})")
     return match_stmt_parts
@@ -90,7 +116,7 @@ def retrieve_section_names(cursor, filename, philo_db):
     return results
 
 
-def word_search(searchwords, author, title, start_date, end_date, collections, periods, opbind, limit, stemmed):
+def word_search(searchwords, author, title, head, start_date, end_date, collections, periods, opbind, limit, stemmed):
     searchwords = searchwords.replace(",", " ")
     if stemmed is True:
         table_name = "intertextual_hub_federated_stemmed"
@@ -111,7 +137,7 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
         order_by = " order by bm25({0}) limit {1}".format(table_name, limit)
         if opbind:
             searchwords = searchwords.replace(" ", " OR ")
-        match_stmt_list = build_match(searchwords, author, title, periods)
+        match_stmt_list = build_match(searchwords, author, title, head, periods)
         match_stmt = " AND ".join(match_stmt_list)
         where_like_list = build_where_likes(start_date, end_date, collections)
         where_likes = " AND ".join(where_like_list)
@@ -153,9 +179,9 @@ def word_search(searchwords, author, title, start_date, end_date, collections, p
     return results_list, doc_count[0]
 
 
-def metadata_search(author, title, start_date, end_date, collections, periods, limit):
+def metadata_search(author, title, head, start_date, end_date, collections, periods, limit):
     select_vals = "filename, author, title, date, philo_id, philo_db"
-    match_stmt_list = build_match("", author, title, periods)
+    match_stmt_list = build_match("", author, title, head, periods)
     match_stmt = " AND ".join(match_stmt_list)
     where_like_list = build_where_likes(start_date, end_date, collections)
     where_likes = " AND ".join(where_like_list)
@@ -168,6 +194,7 @@ def metadata_search(author, title, start_date, end_date, collections, periods, l
         select_stmt = f"SELECT {select_vals} FROM intertextual_hub_federated_standard WHERE "
         query_stmt = select_stmt + where_likes
     query_stmt += f" GROUP BY author, title, filename ORDER BY date, filename LIMIT {limit}"
+    print(query_stmt)
 
     with sqlite3.connect(DB_FILE) as conn:
         conn.text_factory = str

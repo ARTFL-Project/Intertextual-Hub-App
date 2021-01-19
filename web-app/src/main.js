@@ -4,16 +4,12 @@ import router from "./router";
 import vueScrollTo from "vue-scrollto";
 import appConfig from "../../config/appConfig.json";
 
-import {
-    BootstrapVue,
-    BootstrapVueIcons
-} from "bootstrap-vue";
+import BootstrapVue from "bootstrap-vue";
 import axios from "axios";
 
 Vue.config.productionTip = false;
 
 Vue.use(BootstrapVue);
-Vue.use(BootstrapVueIcons);
 
 Vue.prototype.$http = axios;
 Vue.prototype.$scrollTo = vueScrollTo.scrollTo;

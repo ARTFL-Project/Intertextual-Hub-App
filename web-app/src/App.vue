@@ -155,7 +155,7 @@ export default {
             word: "",
             philoDbs: this.$appConfig.philoDBs,
             tabIndex: 0,
-            publicPath: `${this.$appConfig.base}/public/`,
+            publicPath: `${this.$appConfig.apiServer}/${this.$appConfig.base}/public/`,
         };
     },
     watch: {

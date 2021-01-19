@@ -9,12 +9,7 @@
                             placeholder="e.g. conspirateurs aristocrates ennemis royalistes"
                         ></b-form-input>
                         <template v-slot:append>
-                            <b-dropdown
-                                text="Select topic"
-                                right
-                                offset="10"
-                                variant="outline-secondary"
-                            >
+                            <b-dropdown text="Select topic" right offset="10" variant="outline-secondary">
                                 <b-dropdown-item
                                     v-for="topic in topics"
                                     :key="topic.name"
@@ -59,8 +54,7 @@
                         fade
                     >
                         The term
-                        <b>{{ formValues.words }}</b> is not present in the
-                        associated words index
+                        <b>{{ formValues.words }}</b> is not present in the associated words index
                     </b-alert>
                     <b-input-group
                         :prepend="field.label"
@@ -76,16 +70,9 @@
                     <b-input-group class="pb-3">
                         <template v-slot:prepend>
                             <b-input-group-text>Date</b-input-group-text>
-                            <b-dropdown
-                                :text="dateType"
-                                variant="outline-secondary"
-                            >
-                                <b-dropdown-item @click="dropSelect('exact')"
-                                    >exact</b-dropdown-item
-                                >
-                                <b-dropdown-item @click="dropSelect('range')"
-                                    >range</b-dropdown-item
-                                >
+                            <b-dropdown :text="dateType" variant="outline-secondary">
+                                <b-dropdown-item @click="dropSelect('exact')">exact</b-dropdown-item>
+                                <b-dropdown-item @click="dropSelect('range')">range</b-dropdown-item>
                             </b-dropdown>
                         </template>
                         <b-form-input
@@ -119,23 +106,14 @@
                         </b-input-group>
                     </b-input-group>
                     <b-input-group prepend="Collections" class="mb-3">
-                        <b-form-select
-                            v-model="collectionSelected"
-                            :options="collections"
-                        ></b-form-select>
+                        <b-form-select v-model="collectionSelected" :options="collections"></b-form-select>
                     </b-input-group>
                     <b-input-group prepend="Period" class="mb-3">
-                        <b-form-select
-                            v-model="periodSelected"
-                            :options="periods"
-                        ></b-form-select>
+                        <b-form-select v-model="periodSelected" :options="periods"></b-form-select>
                     </b-input-group>
 
                     <b-form-group>
-                        <b-input-group
-                            class="d-inline"
-                            prepend="Max results displayed"
-                        ></b-input-group>
+                        <b-input-group class="d-inline" prepend="Max results displayed"></b-input-group>
                         <b-form-radio-group
                             v-model="formValues.limit"
                             :options="[100, 250, 500]"
@@ -145,37 +123,24 @@
                         ></b-form-radio-group>
                     </b-form-group>
                     <b-button-group class="d-block mt-4">
-                        <b-button variant="primary" type="submit"
-                            >Search</b-button
-                        >
-                        <b-button type="reset" variant="outline-primary"
-                            >Reset</b-button
-                        >
+                        <b-button variant="primary" type="submit">Search</b-button>
+                        <b-button type="reset" variant="outline-primary">Reset</b-button>
                     </b-button-group>
                 </b-form>
             </b-col>
             <b-col class="d-xs-none d-md-none d-lg-block">
+                <p>Term queries run from this form return a list of documents ranked by revelance.</p>
                 <p>
-                    Term queries run from this form return a list of documents
-                    ranked by revelance.
+                    Queries can be executed just with search terms or can be delimited using bibliographic criteria.
+                    Simple bibliographic queries work, as well. Author and Title fields accept boolean ORs.
                 </p>
                 <p>
-                    Queries can be executed just with search terms or can be
-                    delimited using bibliographic criteria. Simple bibliographic
-                    queries work, as well. Author and Title fields accept
-                    boolean ORs.
-                </p>
-                <p>
-                    Metadata permitting, queries can be delimited by date down
-                    to the day. The format for dates is "YYYY-MM-DD", "YYYY-MM",
-                    or just "YYYY". End dates support date-range searching.
+                    Metadata permitting, queries can be delimited by date down to the day. The format for dates is
+                    "YYYY-MM-DD", "YYYY-MM", or just "YYYY". End dates support date-range searching.
                 </p>
             </b-col>
         </b-row>
-        <b-button
-            variant="outline-primary"
-            style="position: absolute; right: 1.25rem; bottom: 1rem"
-            @click="hideForm()"
+        <b-button variant="outline-primary" style="position: absolute; right: 1.25rem; bottom: 1rem" @click="hideForm()"
             >Close</b-button
         >
     </b-card>
@@ -211,10 +176,7 @@ export default {
                 }),
             ],
             collectionSelected: null,
-            periods: [
-                { text: "All periods", value: null },
-                ...this.$appConfig.periods,
-            ],
+            periods: [{ text: "All periods", value: null }, ...this.$appConfig.periods],
             periodSelected: null,
             formValues: { limit: 100, stemmed: "yes" },
             topics: this.$topicModelData.topics_words,
@@ -225,10 +187,7 @@ export default {
     created() {
         if (Object.keys(this.$route.query).length > 0) {
             this.formValues = this.copyObject(this.$route.query);
-            if (
-                "date" in this.$route.query &&
-                this.$route.query["date"].match("<=>")
-            ) {
+            if ("date" in this.$route.query && this.$route.query["date"].match("<=>")) {
                 this.dateType = "range";
                 let splitDates = this.$route.query["date"].split("<=>");
                 this.dateRange.from = splitDates[0];
@@ -246,10 +205,7 @@ export default {
         search() {
             let formValues = {};
             for (let value in this.formValues) {
-                if (
-                    !value.startsWith("source") ||
-                    !value.startsWith("target")
-                ) {
+                if (!value.startsWith("source") || !value.startsWith("target")) {
                     formValues[value] = this.formValues[value];
                 }
             }
@@ -303,25 +259,19 @@ export default {
         },
         addAssociatedWords() {
             if (this.formValues.words.split(" ").length > 1) {
-                alert(
-                    "This feature only works with one word in the search box"
-                );
+                alert("This feature only works with one word in the search box");
             } else {
                 this.$http
                     .get(
                         `${this.$appConfig.apiServer}/intertextual-hub-api/get_associated_words/${this.formValues.words}`
                     )
                     .then((response) => {
-                        this.formValues.words = `${
-                            this.formValues.words
-                        } ${response.data
+                        this.formValues.words = `${this.formValues.words} ${response.data
                             .map((word) => {
                                 return word.word;
                             })
                             .join(" ")}`;
-                        document.querySelector(
-                            "#words input"
-                        ).value = this.formValues.words;
+                        document.querySelector("#words input").value = this.formValues.words;
                         this.formValues.binding = "OR";
                     })
                     .catch(() => {
