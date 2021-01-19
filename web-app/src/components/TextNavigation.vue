@@ -474,7 +474,10 @@ export default {
             this.similarDocs = [];
             this.$bvModal.hide("text-reuse");
             let philoId;
-            if (this.objectLevel != this.objectLevels[this.$route.params.philoDb]) {
+            if (
+                this.objectLevel != this.objectLevels[this.$route.params.philoDb] &&
+                this.$route.params.doc.split("/").length < 7
+            ) {
                 //catching cases where a philo_virtual is the object we want
                 philoId = `${this.$route.params.doc.split("/").join(" ").trim()} 1`;
             } else {
