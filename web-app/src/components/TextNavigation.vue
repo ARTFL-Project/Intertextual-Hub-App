@@ -410,7 +410,6 @@ export default {
             let philoId = this.getPhiloId().split(" ");
             let objectLevels = { 1: "doc", 2: "div1", 3: "div2", 4: "div3", 9: "page" };
             let objectLevel = objectLevels[philoId.length];
-            console.log(objectLevel);
             return objectLevel;
         },
     },
@@ -418,7 +417,6 @@ export default {
         $route: "fetchData",
     },
     created() {
-        console.log(this.getPhiloId());
         this.fetchData();
     },
     mounted() {
@@ -475,7 +473,7 @@ export default {
             this.$bvModal.hide("text-reuse");
             let philoId;
             if (
-                this.objectLevel != this.objectLevels[this.$route.params.philoDb] &&
+                this.philoObjectType != this.objectLevels[this.$route.params.philoDb] &&
                 this.$route.params.doc.split("/").length < 7
             ) {
                 //catching cases where a philo_virtual is the object we want
@@ -483,7 +481,6 @@ export default {
             } else {
                 philoId = this.getPhiloId();
             }
-            console.log(philoId);
             this.lastDocId = philoId;
             this.pairid = this.$route.query.pairid;
             this.$http

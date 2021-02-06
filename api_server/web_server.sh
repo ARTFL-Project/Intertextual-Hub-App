@@ -8,7 +8,7 @@ WORKERS=4
 PORT=8444
 
 # If using an https connection (you should), define your SSL keys and certificate locations here
-KEYFILE=/etc/letsencrypt/live/marat.uchicago.edu/privkey.pem
-CERTFILE=/etc/letsencrypt/live/marat.uchicago.edu/fullchain.pem
+KEYFILE=/etc/letsencrypt/live/anomander.uchicago.edu/privkey.pem
+CERTFILE=/etc/letsencrypt/live/anomander.uchicago.edu/fullchain.pem
 
 gunicorn --keyfile=$KEYFILE --certfile=$CERTFILE -k uvicorn.workers.UvicornWorker -b :$PORT -w 4 --access-logfile=/var/www/html/intertextual_hub/Intertextual-Hub-App/api_server/access.log --error-logfile=/var/www/html/intertextual_hub/Intertextual-Hub-App/api_server/error.log --chdir /var/www/html/intertextual_hub/Intertextual-Hub-App/api/ main:app
