@@ -24,6 +24,14 @@
                 @click="goToHome()"
                 >Intertextual Hub</b-navbar-brand
             >
+            <div>
+                <a
+                    href="https://forms.gle/SZUV6AzRk31fw1ky8"
+                    target="_blank"
+                    style="text-decoration: none !important; font-variant: small-caps; font-size: 1.2rem"
+                    >User feedback</a
+                >
+            </div>
         </b-navbar>
         <b-tabs fill no-fade v-model="tabIndex" id="main-tabs" class="shadow">
             <b-tab class="position-absolute shadow module-tab" title="Collections" @click="selectModule('home')">
