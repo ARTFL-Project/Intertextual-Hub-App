@@ -40,14 +40,11 @@ def get_word_evolution(
             try:
                 vectors.append(MODELS[year].wv.get_vector(word))
             except KeyError:
-                print("\n\nNOT FOUND\n\n")
-                return None
-        # if len(tokens) > 1:
-        vector = np.mean(np.array(vectors), axis=0)
-        # else:
-        #     vector = vectors[0]
-        matches = MODELS[year].wv.similar_by_vector(vector, topn=50 + len(tokens))
-        periods[year] = [{"word": word, "weight": score} for word, score in matches if word not in tokens]
+                pass
+        if vectors:
+            vector = np.mean(np.array(vectors), axis=0)
+            matches = MODELS[year].wv.similar_by_vector(vector, topn=50 + len(tokens))
+            periods[year] = [{"word": word, "weight": score} for word, score in matches if word not in tokens]
 
     word_map: Dict[str, int] = {}
     index_map: Dict[int, str] = {}
