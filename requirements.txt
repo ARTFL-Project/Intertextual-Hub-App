@@ -1,0 +1,93 @@
+# intertextual-hub — the application dependency set.
+#
+# Verified end to end by T1 on 2026-09-22 in a throwaway ubuntu:26.04 container against
+# uv-managed CPython 3.8.20, including that the three version-coupled data artifacts load
+# and that the spaCy lemmatiser produces byte-identical output to the running container.
+# See ../docker_containers_update/intertextual-hub/MIGRATION.md 3.6.
+#
+# CPython 3.8 is deliberate and it is an EOL interpreter. 3.9 is reachable but not as a
+# packaging change: it needs gensim 4, which removes the .wv.vocab API explore_words.py
+# calls and does not cleanly migrate the deployed word2vec models. The base OS, Apache,
+# OpenSSL and the system libraries all move to a supported 26.04 regardless, which is
+# where the security argument for this migration actually lives.
+#
+# This is the FULL resolved set, not only the direct pins. spaCy's helper libraries
+# (catalogue, cymem, murmurhash, preshed, srsly, wasabi, thinc) are tightly coupled and
+# version skew between them is exactly where this stack breaks. Pin what was tested.
+#
+# THREE THINGS THIS FILE CANNOT EXPRESS, all handled in the Dockerfile:
+#   1. fr_core_news_lg==2.3.0 comes from a spacy-models GitHub release, not PyPI.
+#   2. spacy/data/fr must be symlinked to the model package. text_preprocessing maps
+#      "french" -> "fr" and calls spacy.load("fr"), which is a spaCy 2.x shortcut and not
+#      a package name. Without the link the Hub app dies at import with OSError E050.
+#   3. text_preprocessing is an ARTFL package and is not on PyPI at all.
+#
+# Deliberate departures from what is deployed, and why:
+#   smart-open       4.0.1  -> 4.1.2   4.0.1 declares python_requires ">=3.6.*", which is
+#                                      not a valid specifier; modern setuptools refuses to
+#                                      build it. gensim 3.8.3 asks only for >=1.8.1.
+#   python-Levenshtein 0.12.0 -> 0.12.1  0.12.0 is yanked from PyPI as insecure.
+
+aiofiles==0.5.0
+annoy==1.17.0
+blis==0.4.1
+catalogue==1.0.2
+certifi==2026.7.22
+chardet==3.0.4
+click==7.1.2
+cycler==0.12.1
+cymem==2.0.11
+dill==0.3.2
+ecdsa==0.14.1
+fastapi==0.61.1
+gensim==3.8.3
+gunicorn==20.0.4
+h11==0.11.0
+httptools==0.1.1
+idna==2.8
+joblib==0.17.0
+kiwisolver==1.4.7
+lxml==4.5.2
+matplotlib==3.3.2
+mmh3==2.5.1
+multiprocess==0.70.10
+murmurhash==1.0.15
+natsort==7.0.1
+nltk==3.5
+numpy==1.19.2
+pandas==1.1.3
+philologic==4.6
+pillow==10.4.0
+plac==1.1.3
+preshed==3.0.12
+psycopg2==2.8.6
+pyasn1==0.6.4
+pydantic==1.6.1
+pyjwt==1.7.1
+pyparsing==3.1.4
+pystemmer==2.0.1
+python-dateutil==2.9.0.post0
+python-jose==3.2.0
+python-Levenshtein==0.12.1
+python-rapidjson==0.9.1
+pytz==2026.3.post1
+regex==2020.9.27
+requests==2.22.0
+rsa==4.9.1
+scikit-learn==0.23.2
+scipy==1.5.2
+setuptools==75.3.4
+simplejson==3.16.0
+six==1.17.0
+smart-open==4.1.2
+spacy==2.3.2
+srsly==1.0.7
+starlette==0.13.6
+thinc==7.4.1
+threadpoolctl==2.1.0
+tqdm==4.50.2
+unidecode==1.1.1
+urllib3==1.25.11
+uvicorn==0.12.1
+uvloop==0.14.0
+wasabi==0.10.1

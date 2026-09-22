@@ -1,0 +1,18 @@
+# Secrets must never enter the build context.
+config/db_config.json
+config/logins.txt
+
+# Data: ~16 GB of word2vec models, the Annoy index and the federated SQLite index. They
+# live on the host and are bind-mounted.
+data/
+
+# Build output and dependencies — the bundle is built in its own stage, from source.
+web-app/dist/
+web-app/node_modules/
+
+# Pre-migration runtime state
+api_server/*.log
+**/__pycache__/
+*.pyc
+.git/
+.vscode/
