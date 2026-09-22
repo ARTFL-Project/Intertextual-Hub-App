@@ -1,0 +1,27 @@
+# Secrets. These live on the host at /data/local/intertextual-hub/config/, owned 483:483,
+# mode 0640, and are bind-mounted read-only into the container. They have never belonged in
+# this repository and must not be added to it.
+#
+#   config/db_config.json   database credentials, and the cookie_secret that signs the
+#                           hub_session JWT guarding the licensed corpora
+#   config/logins.txt       usernames and passwords for those corpora
+#
+# config/appConfig.json is NOT secret and IS tracked: web-app/src/main.js imports it at
+# build time, so the bundle cannot be built without it.
+config/db_config.json
+config/logins.txt
+
+# Build output and dependencies
+web-app/dist/
+web-app/node_modules/
+web-app/package-lock.json
+
+# Runtime state — logs go to stdout in the container; these are the pre-migration files
+api_server/access.log
+api_server/error.log
+__pycache__/
+*.pyc
+
+# Data artifacts: the word2vec models, the Annoy index, the federated SQLite index and the
+# id mappings. ~16 GB, on the host at /data/local/intertextual-hub/www/ and bind-mounted.
+data/

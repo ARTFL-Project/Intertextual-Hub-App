@@ -1,0 +1,2 @@
+# One "username password" pair per line. Real file lives on the host, mode 0640.
+# username password

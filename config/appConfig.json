@@ -1,0 +1,99 @@
+{
+    "base": "/",
+    "apiServer": "https://intertextual-hub.uchicago.edu",
+    "philoDBs": {
+        "frc": {
+            "name": "French Revolutionary Pamphlets",
+            "path": "/var/www/html/philologic/frc/",
+            "url": "https://intertextual-hub.uchicago.edu/philologic/frc",
+            "description": "25,935 pamphlets from the French Revolutionary period",
+            "object_type": "doc",
+            "citation_fields": ["author", "title", "date"]
+        },
+        "ap": {
+            "name": "Archives Parlementaires",
+            "path": "/var/www/html/philologic/ap/",
+            "url": "https://intertextual-hub.uchicago.edu/philologic/ap",
+            "description": "Parliamentary debates during the first years of the French Revolution (1789-1792)",
+            "object_type": "div2",
+            "citation_fields": ["title", "idno", "pub_date", "head", "date"],
+            "page_images_url_root": "https://artflsrv03.uchicago.edu/images/archivesparlementaires/"
+        },
+        "revlawallhub": {
+            "name": "Revolutionary Laws",
+            "path": "/var/www/html/philologic/revlawallhub/",
+            "url": "https://intertextual-hub.uchicago.edu/philologic/revlawallhub",
+            "description": "Laws enacted during the French Revolution",
+            "object_type": "div1",
+            "citation_fields": [
+                "author",
+                "title",
+                "period",
+                "head",
+                "div_date",
+                "date"
+            ],
+	    "page_images_url_root": "https://artflsrv03.uchicago.edu/images/"
+        },
+        "hub18thcfrench": {
+            "name": "18th Century French Literature",
+            "path": "/var/www/html/philologic/hub18thcfrench/",
+            "url": "https://intertextual-hub.uchicago.edu/philologic/hub18thcfrench",
+            "description": "Literary and Philosophical works from the French 18th century",
+            "object_type": "div2",
+            "citation_fields": ["author", "head", "title", "date"]
+        },
+        "Gldsmth18cfr": {
+            "name": "Goldsmith-Kress 18th Century",
+            "path": "/var/www/html/philologic/Gldsmth18cfr/",
+            "url": "https://intertextual-hub.uchicago.edu/philologic/Gldsmth18cfr",
+            "description": "Political Economy works from the French 18th century",
+            "object_type": "div2",
+            "citation_fields": ["author", "head", "title", "date"]
+        },
+        "marat": {
+            "name": "Journaux de Marat",
+            "path": "/var/www/html/philologic/marat/",
+            "url": "https://intertextual-hub.uchicago.edu/philologic/marat/",
+            "description": "Marat's newspapers which include <i>L'Ami du peuple</i> and <i>Le Journal de la République française</i>",
+            "object_type": "div1",
+            "citation_fields": ["author", "head", "title", "idno", "date"]
+        },
+        "hubeccofr": {
+            "name": "French ECCO",
+            "path": "/var/www/html/philologic/hubeccofr/",
+            "url": "https://intertextual-hub.uchicago.edu/philologic/hubeccofr",
+            "description": "Literary and Philosophical works from the French 18th century published in the UK",
+            "object_type": "div2",
+            "citation_fields": ["author", "head", "title", "date"]
+        }
+    },
+    "styles": {
+        "author": {
+            "font-variant": "small-caps",
+            "color": "#000"
+        },
+        "title": {
+            "font-style": "italic"
+        },
+        "head": {
+            "font-variant": "small-caps"
+        },
+        "date": {
+            "color": "#000"
+        }
+    },
+    "periods": [{
+            "text": "Pre-1789",
+            "value": "pre"
+        },
+        {
+            "text": "1789-1799",
+            "value": "rev"
+        }
+    ],
+    "topologic": {
+        "dbname": "combo150",
+        "api": "https://intertextual-hub.uchicago.edu/topologic-api/"
+    }
+}

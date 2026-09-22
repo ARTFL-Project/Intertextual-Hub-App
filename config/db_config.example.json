@@ -1,0 +1,22 @@
+{
+    "database_user": "i_hub_user",
+    "database_password": "CHANGE-ME",
+    "database_name": "intertextual_hub",
+    "alignments_table": "alignments",
+    "passages_table": "alignments_passages",
+    "annoy_index": "/var/www/html/intertextual_hub/Intertextual-Hub-App/data/tf_idf_index.annoy",
+    "tfidf_model": "/var/www/html/intertextual_hub/Intertextual-Hub-App/data/tf_idf_vectorizer.pickle",
+    "federated_search_index": "/var/www/html/intertextual_hub/Intertextual-Hub-App/data/intertextual_hub_federated.db",
+    "doc_id_mapping": "/var/www/html/intertextual_hub/Intertextual-Hub-App/data/",
+    "word2vec": {
+        "1700": ".../data/1700_window_2.w2v",
+        "1725": ".../data/1725_window_2.w2v",
+        "1750": ".../data/1750_window_2.w2v",
+        "1775": ".../data/1775_window_2.w2v"
+    },
+    "group_by_doc": ["hubeccofr", "Gldsmth18cfr", "hub18thcfrench"],
+    "topologic": { "dbname": "combo150", "api": "https://<host>/topologic-api/" },
+    "philo_dbs": { "<db>": { "path": "/var/www/html/philologic/<db>/", "url": "https://<host>/philologic/<db>", "object_type": "doc" } },
+    "access_control": { "<db>": false },
+    "cookie_secret": "CHANGE-ME — signs the hub_session JWT; the deployed value is guessable"
+}
