@@ -11,7 +11,23 @@ mkdir -p "$APACHE_RUN_DIR" "$APACHE_LOCK_DIR" "$APACHE_LOG_DIR"
 # TCP listener at all, so a compromise of any of the three web tiers cannot reach it over
 # the network — and every psycopg2.connect() in this application must therefore find it
 # through PGHOST rather than an explicit host="localhost".
-pg_ctl -D "$PGDATA" -o "-c unix_socket_directories=/tmp -c listen_addresses=''" -w start
+# Production's tuning, carried across rather than inherited from initdb's defaults. Not a
+# tuning exercise: the old cluster runs shared_buffers=8GB and work_mem=24MB, and a fresh
+# initdb gives 128MB and 4MB. Leaving those at the defaults made staging 19% slower with a
+# p95 1.4x production's - a regression introduced by omission, which T6 is what catches.
+#
+#   shared_buffers        8GB    64x the default. Counted against mem_limit (shared memory).
+#   effective_cache_size  8GB    planner hint only, no allocation.
+#   work_mem             24MB    6x the default; the alignment queries sort.
+#   maintenance_work_mem 64MB    as deployed.
+#   max_wal_size          1GB / min_wal_size 80MB   as deployed.
+pg_ctl -D "$PGDATA" -w start -o "-c unix_socket_directories=/tmp -c listen_addresses='' \
+  -c shared_buffers=8GB \
+  -c effective_cache_size=8GB \
+  -c work_mem=24MB \
+  -c maintenance_work_mem=64MB \
+  -c max_wal_size=1GB \
+  -c min_wal_size=80MB"
 
 hub_pid=""; topo_pid=""; httpd_pid=""
 

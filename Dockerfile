@@ -189,6 +189,12 @@ ARG REBUILD_DATE=unset
 RUN echo "rebuild: $REBUILD_DATE" \
  && apt-get update && apt-get install -y --no-install-recommends \
       apache2 postgresql postgresql-contrib locales ca-certificates libgdbm6t64 \
+      # PhiloLogic's loader shells out to lz4 and lz4cat to sort and merge the word
+      # index; without them philoload4 gets as far as "sorting words" and dies with
+      # "command not found". Production has them; the upstream PhiloLogic Dockerfile
+      # installs liblz4-tool for exactly this. Found by T7, and it would have made the
+      # tools profile useless the first time anyone tried to load a corpus.
+      lz4 \
  && locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8 \
  && rm -rf /var/lib/apt/lists/* \
  # The Debian package runs initdb at install time and leaves a cluster this image never
@@ -244,7 +250,17 @@ COPY --from=sources /philologic-www /var/lib/philologic4/web_app
 ARG API_SERVER=https://intertextual-hub.uchicago.edu
 COPY deploy/site-config/philologic/ /etc/philologic/
 RUN sed -i "s#https://intertextual-hub\.uchicago\.edu#${API_SERVER}#g" /etc/philologic/intertext_hub_philo.cfg \
- && grep -q "${API_SERVER}" /etc/philologic/intertext_hub_philo.cfg
+ && grep -q "${API_SERVER}" /etc/philologic/intertext_hub_philo.cfg \
+ # philologic4.cfg is a SEPARATE file read by a SEPARATE program. The web app reads
+ # intertext_hub_philo.cfg, named in all seven databases' web_config.cfg; philoload4 reads
+ # only philologic4.cfg, and production ships it with database_root and url_root unset -
+ # so loading a corpus fails in the old container too, with "url_root variable is not set".
+ # Found by T7. Filling it in changes nothing about serving and makes the tools profile
+ # actually able to load, which is the whole point of having it.
+ && sed -i "s#^database_root = None#database_root = \"/var/www/html/philologic/\"#; \
+            s#^url_root = None#url_root = \"${API_SERVER}/philologic/\"#" /etc/philologic/philologic4.cfg \
+ && grep -qE "^database_root = \"/var" /etc/philologic/philologic4.cfg \
+ && grep -qE "^url_root = \"http" /etc/philologic/philologic4.cfg
 
 # The embedded TopoLogic. Two different commits, deliberately: the deployed library is
 # b4d3b446 (2020-10-09) and the deployed API server is the later 91e2e210 (2020-11-03) —
