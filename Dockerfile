@@ -23,11 +23,24 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-# PhiloLogic 4.6 — the version these seven corpora were loaded with. NOT 4.7: moving there
-# would mean reloading 102 GB, and no reload is planned.
-ARG PHILOLOGIC_REF=f7f8cfc1044dd4a35d6d953c9344c5d0568bdfcc
+# PhiloLogic 4.6, at TWO commits — because that is what production is. Established by
+# hashing the installed files against every commit on the branch: the Python package is
+# byte-identical to 4eb8d842 (2021-02-19) and the www/ tree to af1e72aa (2020-10-23).
+# Somebody upgraded the library later without re-copying www, exactly as happened with the
+# embedded TopoLogic.
+#
+# Building both from the branch tip is what an earlier version of this file did, and it was
+# wrong in a way no smoke test would catch: ObjectFormatter.py had moved, and PhiloLogic
+# returned 428 characters MORE text for the same request. The route sweep is what found it.
+# NOT 4.7 either: moving there would mean reloading 102 GB, and no reload is planned.
+ARG PHILOLOGIC_LIB_REF=4eb8d842f1afb1363119cef6b45c06018d631e8e
+ARG PHILOLOGIC_WWW_REF=af1e72aa9dbf726f1b3e45551cf70858be8ba881
 RUN git clone --quiet https://github.com/ARTFL-Project/PhiloLogic4.git /philologic \
- && git -C /philologic checkout --quiet "$PHILOLOGIC_REF" \
+ && git -C /philologic checkout --quiet "$PHILOLOGIC_LIB_REF" \
+ && cp -a /philologic/libphilo /libphilo-src \
+ && git -C /philologic checkout --quiet "$PHILOLOGIC_WWW_REF" \
+ && cp -a /philologic/www /philologic-www \
+ && git -C /philologic checkout --quiet "$PHILOLOGIC_LIB_REF" \
  && rm -rf /philologic/.git
 
 # The embedded TopoLogic, at TWO different commits, deliberately. The deployed library is
@@ -75,13 +88,27 @@ RUN cd /philologic/libphilo \
 FROM node:14 AS bundle
 ARG API_SERVER=https://intertextual-hub.uchicago.edu
 WORKDIR /build
-COPY web-app/package.json ./web-app/
-RUN cd web-app && npm install --no-audit --no-fund
+# The lockfile, and `npm ci` rather than `npm install`: ci installs exactly what the lock
+# pins and fails if package.json disagrees, where install is free to resolve newer patch
+# versions. That difference is not cosmetic - building without the 2020 lockfile produced a
+# bundle whose chunk hashes were all different and whose HTML was minified differently
+# (quoted vs unquoted attributes), because html-webpack-plugin had moved underneath it.
+COPY web-app/package.json web-app/package-lock.json ./web-app/
+RUN cd web-app && npm ci --no-audit --no-fund
 COPY config ./config
 COPY web-app ./web-app
+# Rewrite the ORIGIN, not just apiServer. appConfig.json carries NINE production URLs -
+# apiServer, the seven philoDBs[*].url entries, and topologic.api - and every one of them
+# is compiled into the bundle. An earlier version of this line rewrote only apiServer, and
+# the resulting staging bundle sent eight of nine calls to production while looking
+# perfect: exactly the trap ../docker_containers_update/intertextual-hub/MIGRATION.md 3.7
+# inherits from the dvlf pilot. Fail loudly if the substitution matches nothing.
 RUN cd config \
- && python3 -c "import json,os,sys; p='appConfig.json'; d=json.load(open(p)); d['apiServer']=os.environ['API_SERVER']; json.dump(d,open(p,'w'),indent=4)" \
-    2>/dev/null || sed -i "s#\"apiServer\":[^,]*,#\"apiServer\": \"${API_SERVER}\",#" appConfig.json
+ && grep -q 'https://intertextual-hub\.uchicago\.edu' appConfig.json \
+ && sed -i "s#https://intertextual-hub\.uchicago\.edu#${API_SERVER}#g" appConfig.json \
+ && echo "appConfig.json origins now: $(grep -c "${API_SERVER}" appConfig.json)" \
+ && ! grep -q 'https://intertextual-hub\.uchicago\.edu/' appConfig.json || \
+    [ "${API_SERVER}" = "https://intertextual-hub.uchicago.edu" ]
 RUN cd web-app && npm run build && test -f dist/index.html
 
 # ---------------------------------------------------------------------------------------
@@ -172,6 +199,24 @@ RUN echo "rebuild: $REBUILD_DATE" \
  # PhiloLogic needs cgid and rewrite; the vhost needs proxy_http, headers and remoteip.
  && a2enmod rewrite cgid proxy proxy_http deflate headers remoteip \
  && a2dissite 000-default \
+ # Debian's /etc/apache2/envvars is sourced by apache2ctl and overrides the process
+ # environment unconditionally. Left alone it does three harmful things here: it points
+ # APACHE_RUN_DIR and APACHE_LOG_DIR at /run and /var/log, which a read-only root
+ # filesystem cannot create (apache2ctl then dies with "mkdir: Read-only file system" and
+ # the entrypoint's watchdog correctly shuts everything down); it runs `unset HOME`, which
+ # gunicorn needs; and it exports LANG=C.UTF-8, silently overriding the en_US.UTF-8 this
+ # image is careful to set — which would put PhiloLogic's CGI on a different collation
+ # from the database it queries.
+ && printf '%s\n' \
+      'export APACHE_RUN_USER=intertextual-hub' \
+      'export APACHE_RUN_GROUP=intertextual-hub' \
+      'export APACHE_PID_FILE=/tmp/apache-run/apache2.pid' \
+      'export APACHE_RUN_DIR=/tmp/apache-run' \
+      'export APACHE_LOCK_DIR=/tmp/apache-lock' \
+      'export APACHE_LOG_DIR=/tmp/apache-log' \
+      'export LANG=en_US.UTF-8' \
+      'export LC_ALL=en_US.UTF-8' \
+    > /etc/apache2/envvars \
  # Apache's packaged logs are symlinks to files in the image. Everything goes to the
  # container runtime instead; the old image reached 9.9 GB here because logrotate is driven
  # by cron and nothing starts cron in a container.
@@ -187,10 +232,19 @@ COPY --from=pyenv /opt/python /opt/python
 COPY --from=pyenv /opt/venv   /opt/venv
 COPY --from=philo-core /philologic/libphilo/db/corpus_search /bin/corpus_search
 COPY --from=philo-core /philologic/libphilo/db/pack4         /bin/pack4
-COPY --from=sources /philologic/www /var/lib/philologic4/web_app
-RUN mkdir -p /etc/philologic \
- && printf "database_root = '/var/www/html/philologic/'\nurl_root = 'https://intertextual-hub.uchicago.edu/philologic/'\nweb_app_dir = '/var/lib/philologic4/web_app/'\ntheme = '/var/lib/philologic4/web_app/app/assets/css/split/default_theme.css'\n" \
-    > /etc/philologic/philologic4.cfg
+COPY --from=sources /philologic-www /var/lib/philologic4/web_app
+# PhiloLogic's global config, recovered from the old container. All seven databases name
+# intertext_hub_philo.cfg explicitly in their own web_config.cfg, so the stock
+# philologic4.cfg is NOT enough - without this file every /philologic/<db>/ landing page
+# dies with FileNotFoundError and only the deep report URLs keep working. philologic4.cfg
+# ships too, unconfigured, exactly as production has it.
+#
+# url_root in it is a FOURTH place the production origin is compiled in, after the Vue
+# bundle, appConfig.json and db_config.json, so it is rewritten with API_SERVER here.
+ARG API_SERVER=https://intertextual-hub.uchicago.edu
+COPY deploy/site-config/philologic/ /etc/philologic/
+RUN sed -i "s#https://intertextual-hub\.uchicago\.edu#${API_SERVER}#g" /etc/philologic/intertext_hub_philo.cfg \
+ && grep -q "${API_SERVER}" /etc/philologic/intertext_hub_philo.cfg
 
 # The embedded TopoLogic. Two different commits, deliberately: the deployed library is
 # b4d3b446 (2020-10-09) and the deployed API server is the later 91e2e210 (2020-11-03) —
@@ -211,7 +265,11 @@ RUN a2ensite intertextual-hub
 WORKDIR /var/www/html/intertextual_hub/Intertextual-Hub-App
 COPY api                        ./api
 COPY api_server/web_server.sh   ./api_server/web_server.sh
-COPY config/appConfig.json      ./config/appConfig.json
+# From the BUNDLE stage, not the build context: the bundle stage rewrote the origins in
+# it, and the server reads this same file at runtime (federated_search.py and
+# similar_docs.py both read APP_CONFIG["philoDBs"]). Copying the un-rewritten original
+# here would ship a config that disagrees with the bundle built beside it.
+COPY --from=bundle /build/config/appConfig.json ./config/appConfig.json
 COPY --from=bundle /build/web-app/dist ./web-app/dist
 # Read at import time by similar_docs.py, via an absolute path. Site-local: it is in no
 # upstream repository and existed only inside the old container until this migration.

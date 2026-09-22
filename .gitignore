@@ -11,10 +11,11 @@
 config/db_config.json
 config/logins.txt
 
-# Build output and dependencies
+# Build output and dependencies. package-lock.json is NOT ignored: it is what makes the
+# bundle reproducible, and leaving it out made a rebuilt bundle differ from the deployed
+# one in every chunk hash and in its HTML minification.
 web-app/dist/
 web-app/node_modules/
-web-app/package-lock.json
 
 # Runtime state — logs go to stdout in the container; these are the pre-migration files
 api_server/access.log
