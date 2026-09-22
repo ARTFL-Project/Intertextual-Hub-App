@@ -1,19 +1,14 @@
-const fs = require("fs");
 const path = require("path");
 const vueSrc = "./src";
 
 module.exports = {
+    // The dev server speaks plain HTTP. It used to read the host's live Let's Encrypt key
+    // and certificate directly, for a hostname (anomander) this application has not run on
+    // for years. Put a proxy in front of it if you need TLS while developing.
     devServer: {
-        https: true,
-        key: fs.readFileSync(
-            "/etc/letsencrypt/live/anomander.uchicago.edu/privkey.pem"
-        ),
-        cert: fs.readFileSync(
-            "/etc/letsencrypt/live/anomander.uchicago.edu/fullchain.pem"
-        ),
+        https: false,
         compress: true,
         disableHostCheck: true,
-        host: "anomander.uchicago.edu",
         headers: {
             "Access-Control-Allow-Origin": "*",
         },
