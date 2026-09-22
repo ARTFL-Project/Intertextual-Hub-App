@@ -27,6 +27,20 @@
 #                                      not a valid specifier; modern setuptools refuses to
 #                                      build it. gensim 3.8.3 asks only for >=1.8.1.
 #   python-Levenshtein 0.12.0 -> 0.12.1  0.12.0 is yanked from PyPI as insecure.
+#   nltk 3.5         DROPPED. Production installs it, and nothing imports it: it enters only
+#                    through the embedded topologic's install_requires, which is written for
+#                    its MODELLING side (topic_num_evaluator and the `topologic` CLI). This
+#                    container only serves. Verified by grepping every .py in the venv - the
+#                    one hit is a docstring example inside gensim's deprecated keyedvectors -
+#                    and by loading a real .w2v model and the sklearn pickle and confirming
+#                    nltk never enters sys.modules. It was 28 of the image's 65 HIGH/CRITICAL
+#                    findings, 4 of them CRITICAL, for code that never runs. topologic is
+#                    therefore installed with --no-deps; every other entry in its
+#                    install_requires is pinned in this file already.
+#
+#   philologic 4.6   NOT listed below: it is not on PyPI either. The Dockerfile builds
+#                    its C core and installs its Python package from
+#                    ARTFL-Project/PhiloLogic4 at the PhiloLogic-4.6 branch tip.
 
 aiofiles==0.5.0
 annoy==1.17.0
@@ -53,10 +67,8 @@ mmh3==2.5.1
 multiprocess==0.70.10
 murmurhash==1.0.15
 natsort==7.0.1
-nltk==3.5
 numpy==1.19.2
 pandas==1.1.3
-philologic==4.6
 pillow==10.4.0
 plac==1.1.3
 preshed==3.0.12

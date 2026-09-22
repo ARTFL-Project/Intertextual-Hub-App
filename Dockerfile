@@ -95,7 +95,7 @@ RUN cd web-app && npm run build && test -f dist/index.html
 FROM ubuntu:26.04 AS pyenv
 ENV DEBIAN_FRONTEND=noninteractive UV_PYTHON_INSTALL_DIR=/opt/python UV_LINK_MODE=copy
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      build-essential libpq-dev libicu-dev git ca-certificates \
+      build-essential libpq-dev git ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 COPY requirements.txt /tmp/requirements.txt
@@ -117,12 +117,37 @@ RUN uv venv /opt/venv --python 3.8 --managed-python \
  && rm -rf /root/.cache
 # PhiloLogic's own Python package, from the same source the C core was built from.
 COPY --from=sources /philologic /philologic
-RUN cd /philologic/python && VIRTUAL_ENV=/opt/venv /opt/venv/bin/python -m pip install --no-cache-dir . \
+# uv creates venvs without pip, so this installs with uv too. philologic 4.6's setup.py
+# still does `from distutils.core import setup`, which is fine on 3.8 and would not be on
+# 3.12+ — one more small thing anchoring this image to the interpreter it has.
+RUN cd /philologic/python && VIRTUAL_ENV=/opt/venv uv pip install --no-cache . \
  && /opt/venv/bin/python -c "from philologic.runtime.DB import DB; from philologic.runtime.get_text import get_text"
-# uv's CPython ships pip, which vendors setuptools; both show up in the weekly scan and
-# neither is used at runtime, because the venv is built here, once.
+
+# The embedded TopoLogic library, at the commit the deployed copy is byte-identical to.
+# It belongs here rather than in the final stage because that stage has no uv and uv
+# creates venvs without pip.
+COPY --from=sources /topologic-lib /tmp/topologic-lib
+# --no-deps: its install_requires names nltk, which this container never uses (it is for
+# the modelling side), and an older text_preprocessing pin than the one installed above.
+# Everything else it needs is already pinned in requirements.txt.
+RUN cd /tmp/topologic-lib && VIRTUAL_ENV=/opt/venv uv pip install --no-cache --no-deps . \
+ && /opt/venv/bin/python -c "import topologic" \
+ && rm -rf /tmp/topologic-lib
+# uv's CPython ships its own pip and setuptools, and the venv has its own copies. The
+# interpreter-level ones are never used — the venv is built here, once — and they are two
+# more findings in the weekly scan that could never be actioned.
+#
+# The venv's setuptools STAYS: scikit-learn 0.23.2 imports pkg_resources at runtime, which
+# comes from it. Its vendored setuptools/_vendor/{wheel,jaraco.*} are reported by Trivy
+# because they carry dist-info directories, but they are not installed packages and are
+# unreachable unless setuptools imports them. They are left alone rather than deleted:
+# removing a dist-info to quiet a scanner is not a fix, and a report people learn to game
+# is worse than a report with an explained finding in it.
 RUN rm -rf /opt/python/cpython-*/lib/python3.8/site-packages/pip \
-           /opt/python/cpython-*/lib/python3.8/site-packages/pip-*.dist-info
+           /opt/python/cpython-*/lib/python3.8/site-packages/pip-*.dist-info \
+           /opt/python/cpython-*/lib/python3.8/site-packages/setuptools \
+           /opt/python/cpython-*/lib/python3.8/site-packages/setuptools-*.dist-info \
+           /opt/python/cpython-*/lib/python3.8/site-packages/pkg_resources
 
 # ---------------------------------------------------------------------------------------
 # 4. The image that ships.
@@ -136,7 +161,7 @@ ENV DEBIAN_FRONTEND=noninteractive LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 ARG REBUILD_DATE=unset
 RUN echo "rebuild: $REBUILD_DATE" \
  && apt-get update && apt-get install -y --no-install-recommends \
-      apache2 postgresql postgresql-contrib locales ca-certificates libgdbm6 libicu76 \
+      apache2 postgresql postgresql-contrib locales ca-certificates libgdbm6t64 \
  && locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8 \
  && rm -rf /var/lib/apt/lists/* \
  # The Debian package runs initdb at install time and leaves a cluster this image never
@@ -171,8 +196,6 @@ RUN mkdir -p /etc/philologic \
 # b4d3b446 (2020-10-09) and the deployed API server is the later 91e2e210 (2020-11-03) —
 # the library was never reinstalled after it. Building both from the later ref would
 # change behaviour.
-COPY --from=sources /topologic-lib /opt/topologic-lib
-RUN /opt/venv/bin/python -m pip install --no-cache-dir /opt/topologic-lib && rm -rf /opt/topologic-lib
 COPY --from=sources /topologic-api     /var/lib/topologic/api
 COPY --from=sources /topologic-config  /var/lib/topologic/config
 COPY --from=sources /topologic-webapp  /var/lib/topologic/web-app
