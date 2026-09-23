@@ -58,6 +58,11 @@
 #                    importer was topologic's topic_num_evaluator (model building), which the
 #                    Dockerfile removes. pillow carried 17 findings, 13 HIGH, all fixed only in
 #                    Pillow 12, which needs Python 3.10. Nothing served ever opened an image.
+#   gunicorn 20.0.4  -> 23.0.0   CVE-2024-1135, CVE-2024-6827 (request smuggling). Never
+#                    reachable: under UvicornWorker gunicorn only manages processes and its
+#                    parser never runs (counted: 0 calls). Tested with uvicorn 0.12.1's worker:
+#                    start, HUP reload, killed-worker respawn, heartbeat past --timeout, TERM.
+#                    New dependency: packaging (25.0, the last release for Python 3.8).
 #   pyjwt 1.7.1      DROPPED. Nothing requires it and nothing imports it - a leftover in the
 #                    VM's pip freeze, carrying three HIGH findings. The app's JWT library is
 #                    python-jose.
@@ -78,7 +83,7 @@ dill==0.3.2
 ecdsa==0.19.2
 fastapi==0.61.1
 gensim==3.8.3
-gunicorn==20.0.4
+gunicorn==23.0.0
 h11==0.16.0
 httptools==0.1.1
 idna==2.8
@@ -89,6 +94,7 @@ multiprocess==0.70.10
 murmurhash==1.0.15
 natsort==7.0.1
 numpy==1.19.2
+packaging==25.0
 pandas==1.1.3
 plac==1.1.3
 preshed==3.0.12
