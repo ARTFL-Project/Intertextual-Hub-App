@@ -63,6 +63,12 @@
 #                    parser never runs (counted: 0 calls). Tested with uvicorn 0.12.1's worker:
 #                    start, HUP reload, killed-worker respawn, heartbeat past --timeout, TERM.
 #                    New dependency: packaging (25.0, the last release for Python 3.8).
+#   requests 2.22.0 -> 2.32.4, urllib3 1.25.11 -> 1.26.20, idna 2.8 -> 3.10; chardet DROPPED
+#                    for charset-normalizer, which requests now uses. Clears urllib3's
+#                    CVE-2021-33503 and CVE-2023-43804; its four later HIGHs need urllib3 2.6,
+#                    which needs Python 3.9. Not reachable: the app only ever calls its own
+#                    PhiloLogic and TopoLogic URLs, and reads every response with .json().
+#                    1.26.20 over 2.2.3: the same HIGHs cleared, one MEDIUM fewer, same 1.x API.
 #   pyjwt 1.7.1      DROPPED. Nothing requires it and nothing imports it - a leftover in the
 #                    VM's pip freeze, carrying three HIGH findings. The app's JWT library is
 #                    python-jose.
@@ -76,7 +82,7 @@ annoy==1.17.0
 blis==0.4.1
 catalogue==1.0.2
 certifi==2026.7.22
-chardet==3.0.4
+charset-normalizer==3.4.4
 click==7.1.2
 cymem==2.0.11
 dill==0.3.2
@@ -86,7 +92,7 @@ gensim==3.8.3
 gunicorn==23.0.0
 h11==0.16.0
 httptools==0.1.1
-idna==2.8
+idna==3.10
 joblib==1.4.2
 lxml==4.5.2
 mmh3==2.5.1
@@ -108,7 +114,7 @@ python-Levenshtein==0.12.1
 python-rapidjson==0.9.1
 pytz==2026.3.post1
 regex==2020.9.27
-requests==2.22.0
+requests==2.32.4
 rsa==4.9.1
 scikit-learn==0.23.2
 scipy==1.5.2
@@ -123,7 +129,7 @@ thinc==7.4.1
 threadpoolctl==2.1.0
 tqdm==4.50.2
 unidecode==1.1.1
-urllib3==1.25.11
+urllib3==1.26.20
 uvicorn==0.12.1
 uvloop==0.14.0
 wasabi==0.10.1
