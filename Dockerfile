@@ -125,9 +125,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       build-essential libpq-dev git ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-COPY requirements.txt /tmp/requirements.txt
+COPY requirements.txt overrides.txt /tmp/
 RUN uv venv /opt/venv --python 3.8 --managed-python \
  && VIRTUAL_ENV=/opt/venv uv pip install --no-cache -r /tmp/requirements.txt \
+      --overrides /tmp/overrides.txt \
  # Not on PyPI: an ARTFL package. Pinned to the commit the deployed 0.8.2 is byte-identical
  # to. similar_docs.py imports PreProcessor from it at module scope.
  && VIRTUAL_ENV=/opt/venv uv pip install --no-cache \

@@ -78,7 +78,7 @@ def get_text(
 ):
     if ACCESS_CONTROL[philo_db] is True:
         try:
-            username = jwt.decode(request.cookies.get("hub_session"), SECRET_KEY)["user"]
+            username = jwt.decode(request.cookies.get("hub_session"), SECRET_KEY, algorithms=["HS256"])["user"]
             _ = LOGINS[username]
         except Exception:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid authentication")
@@ -258,7 +258,7 @@ def get_similar_words(word: str):
 @app.post("/login")
 def access_request(response: Response, credentials: Dict[str, str]):
     if credentials["username"] in LOGINS and LOGINS[credentials["username"]] == credentials["password"]:
-        token = jwt.encode({"user": credentials["username"]}, SECRET_KEY)
+        token = jwt.encode({"user": credentials["username"]}, SECRET_KEY, algorithm="HS256")
         response.set_cookie("hub_session", token, expires=2592000)
         return True
     else:

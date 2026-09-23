@@ -1,0 +1,8 @@
+# uv --overrides: versions installed regardless of what other packages declare.
+#
+# python-jose 3.4.0 declares pyasn1<0.5.0. Honouring that means pyasn1 0.4.8, which carries
+# four HIGH findings fixed in 0.6.3-0.6.4. The cap has no functional basis here: this app
+# only signs and verifies HS256 (api/main.py), which never touches pyasn1, and python-jose's
+# RSA backend was tested working on 0.6.4 anyway. python-jose 3.5.0 lifts the cap, but it
+# requires Python 3.9. Remove this file when the interpreter moves.
+pyasn1==0.6.4
