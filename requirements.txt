@@ -1,153 +1,113 @@
-# intertextual-hub — the application dependency set.
-#
-# Verified end to end by T1 on 2026-09-22 in a throwaway ubuntu:26.04 container against
-# uv-managed CPython 3.8.20, including that the three version-coupled data artifacts load
-# and that the spaCy lemmatiser produces byte-identical output to the running container.
-# See ../docker_containers_update/intertextual-hub/MIGRATION.md 3.6.
-#
-# CPython 3.8 is deliberate and it is an EOL interpreter. 3.9 is reachable but not as a
-# packaging change: it needs gensim 4, which removes the .wv.vocab API explore_words.py
-# calls and does not cleanly migrate the deployed word2vec models. The base OS, Apache,
-# OpenSSL and the system libraries all move to a supported 26.04 regardless, which is
-# where the security argument for this migration actually lives.
+# intertextual-hub — the application dependency set, for uv-managed CPython 3.11.
 #
 # This is the FULL resolved set, not only the direct pins. spaCy's helper libraries
-# (catalogue, cymem, murmurhash, preshed, srsly, wasabi, thinc) are tightly coupled and
+# (catalogue, cymem, murmurhash, preshed, srsly, wasabi, thinc, blis) are tightly coupled and
 # version skew between them is exactly where this stack breaks. Pin what was tested.
 #
-# THREE THINGS THIS FILE CANNOT EXPRESS, all handled in the Dockerfile:
+# WHY 3.11 AND NOT HIGHER. spaCy 2.3.9 is the ceiling: it and its compiled helpers ship wheels
+# up to cp311, never cp312, and spaCy 2 cannot be traded for 3 - the 2020 French model and the
+# lemmas the tf-idf index was built from are spaCy 2's. spaCy 2 also needs numpy < 2.
+#
+# WHAT MUST NOT MOVE, and the pin that holds it. Each was verified against the Python 3.8
+# production container on 2026-09-23; raising one of these means re-running that check.
+#   spacy 2.3.9, thinc 7.4.6   lemmatiser output byte-identical (T1's 105-token French sample),
+#                              with fr_core_news_lg 2.3.0 (Dockerfile).
+#   scikit-learn 1.4.2         the Hub's 2020 TfidfVectorizer pickle: transform output and idf_
+#                              byte-identical. 1.5 changed how TfidfTransformer stores idf and
+#                              the pickle then raises NotFittedError. 1.4.2 is the last before.
+#   pystemmer 2.2.0.3          French stems identical over 5,000 TopoLogic words. 3.x's newer
+#                              Snowball stems differently, which would change federated search.
+#   gensim 4.3.3               loads the 2020 word2vec models through load_vectors() in
+#                              api/words/explore_words.py: vocabulary, order and vectors
+#                              identical; similarity scores within 5e-7 (float32), so words
+#                              tied to that precision can swap places. Accepted.
+#   annoy 1.17.0               the on-disk format of tf_idf_index.annoy.
+#   numpy 1.26.4               < 2 for spaCy 2 and gensim 4.3; the last 1.x.
+#   lxml 6.1.0                 PhiloLogic's rendering. 4.5.2 silently truncated passages.
+#   mmh3 5.3.0                 text_preprocessing hashes tokens with it: values identical to 2.5.1.
+#
+# THINGS THIS FILE CANNOT EXPRESS, all handled in the Dockerfile:
 #   1. fr_core_news_lg==2.3.0 comes from a spacy-models GitHub release, not PyPI.
 #   2. spacy/data/fr must be symlinked to the model package. text_preprocessing maps
 #      "french" -> "fr" and calls spacy.load("fr"), which is a spaCy 2.x shortcut and not
 #      a package name. Without the link the Hub app dies at import with OSError E050.
 #   3. text_preprocessing is an ARTFL package and is not on PyPI at all.
+#   4. philologic 4.6 is not on PyPI either: its C core and Python package are built from
+#      ARTFL-Project/PhiloLogic4 at the pinned commits.
+#   5. topologic is installed --no-deps, without topic_num_evaluator. Its install_requires
+#      names nltk, matplotlib and pandas, all for model building, which this container never
+#      does. Everything it imports when serving is pinned here.
 #
-# Deliberate departures from what is deployed, and why:
-#   smart-open       4.0.1  -> 4.1.2   4.0.1 declares python_requires ">=3.6.*", which is
-#                                      not a valid specifier; modern setuptools refuses to
-#                                      build it. gensim 3.8.3 asks only for >=1.8.1.
-#   python-Levenshtein 0.12.0 -> 0.12.1  0.12.0 is yanked from PyPI as insecure.
-#   nltk 3.5         DROPPED. Production installs it, and nothing imports it: it enters only
-#                    through the embedded topologic's install_requires, which is written for
-#                    its MODELLING side (topic_num_evaluator and the `topologic` CLI). This
-#                    container only serves. Verified by grepping every .py in the venv - the
-#                    one hit is a docstring example inside gensim's deprecated keyedvectors -
-#                    and by loading a real .w2v model and the sklearn pickle and confirming
-#                    nltk never enters sys.modules. It was 28 of the image's 65 HIGH/CRITICAL
-#                    findings, 4 of them CRITICAL, for code that never runs. topologic is
-#                    therefore installed with --no-deps; every other entry in its
-#                    install_requires is pinned in this file already.
-#   python-jose 3.2.0 -> 3.4.0   CVE-2024-33663 (CRITICAL, algorithm confusion) and
-#                    CVE-2024-33664. 3.4.0 is the last release for Python 3.8, and it caps
-#                    pyasn1 <0.5.0 - see overrides.txt, which keeps pyasn1 at 0.6.4 anyway.
-#   ecdsa 0.14.1     -> 0.19.2   CVE-2026-33936. Needed only because python-jose imports it;
-#                    this app signs nothing with ECDSA. CVE-2024-23342 remains: it has no
-#                    upstream fix, and it is a timing attack on ECDSA signing, which never
-#                    happens here.
-#   h11 0.11.0       -> 0.16.0   CVE-2025-43859 (CRITICAL, lenient chunked bodies). Not
-#                    reachable as deployed: UvicornWorker forces http=httptools, and h11 is
-#                    never imported. Upgraded so that choosing the h11 worker stays safe;
-#                    tested with uvicorn 0.12.1, and it rejects the CVE's request.
-#   joblib 0.17.0    -> 1.4.2    CVE-2022-21797 (CRITICAL, eval in Parallel(pre_dispatch)),
-#                    never called with user input here. 1.4.2 is the last release for Python
-#                    3.8. Only scikit-learn uses it at runtime (the tf-idf pickle is plain
-#                    pickle.load). Tested against the real artifacts under 0.17.0, 1.2.0 and
-#                    1.4.2: identical vectorizer output and idf_ hashes, all 415 sklearn
-#                    modules import, sklearn's n_jobs path agrees, T1 checks 8/8.
-#   matplotlib 3.3.2, pillow 10.4.0, cycler, kiwisolver, pyparsing   DROPPED. Their only
-#                    importer was topologic's topic_num_evaluator (model building), which the
-#                    Dockerfile removes. pillow carried 17 findings, 13 HIGH, all fixed only in
-#                    Pillow 12, which needs Python 3.10. Nothing served ever opened an image.
-#   gunicorn 20.0.4  -> 23.0.0   CVE-2024-1135, CVE-2024-6827 (request smuggling). Never
-#                    reachable: under UvicornWorker gunicorn only manages processes and its
-#                    parser never runs (counted: 0 calls). Tested with uvicorn 0.12.1's worker:
-#                    start, HUP reload, killed-worker respawn, heartbeat past --timeout, TERM.
-#                    New dependency: packaging (25.0, the last release for Python 3.8).
-#   requests 2.22.0 -> 2.32.4, urllib3 1.25.11 -> 1.26.20, idna 2.8 -> 3.10; chardet DROPPED
-#                    for charset-normalizer, which requests now uses. Clears urllib3's
-#                    CVE-2021-33503 and CVE-2023-43804; its four later HIGHs need urllib3 2.6,
-#                    which needs Python 3.9. Not reachable: the app only ever calls its own
-#                    PhiloLogic and TopoLogic URLs, and reads every response with .json().
-#                    1.26.20 over 2.2.3: the same HIGHs cleared, one MEDIUM fewer, same 1.x API.
-#   scikit-learn 0.23.2 -> 1.0.2   CVE-2020-28975 (DoS in the SVM code, never used here).
-#                    1.0.x is the last line with Python 3.8 wheels that numpy 1.19 satisfies.
-#                    The one scikit-learn artifact loaded at runtime is the Hub's 2020 tf-idf
-#                    pickle: under 1.0.2 its transform output and idf_ are byte-identical.
-#                    TopoLogic's API reads only PostgreSQL; its sklearn use is model building.
-#                    Unpickling across versions logs a UserWarning at worker start; harmless.
-#   lxml 4.5.2       -> 6.1.0    CVE-2026-41066. Not reachable (it parses only our own corpora),
-#                    but upgrading FIXES CONTENT: under 4.5.2 PhiloLogic's text rendering
-#                    silently truncated passages - cut mid-word, resuming later - in 16 of 245
-#                    sampled text objects. 6.1.0 renders them in full: every restored span is
-#                    verbatim in the source XML, no element or class is lost, and searches
-#                    (concordance, KWIC) are byte-identical. 6.1.0 has Python 3.8 wheels.
-#   fastapi 0.61.1 -> 0.65.2, starlette 0.13.6 -> 0.14.2, pydantic 1.6.1 -> 1.6.2
-#                    CVE-2021-32677 (CSRF): before 0.65.2 FastAPI parsed JSON from any
-#                    content type, so a cross-site text/plain or form POST was accepted. Now
-#                    only application/json (and +json). The frontend's three POSTs use axios
-#                    with object bodies, which send application/json. Smallest versions that
-#                    close it: 0.65.2 pins starlette 0.14.2 and needs pydantic >= 1.6.2.
-#   pyjwt 1.7.1      DROPPED. Nothing requires it and nothing imports it - a leftover in the
-#                    VM's pip freeze, carrying three HIGH findings. The app's JWT library is
-#                    python-jose.
+# DROPPED from the 2020 VM's freeze - nothing served imports them: nltk, pyjwt, matplotlib,
+#   pillow, cycler, kiwisolver, pyparsing, pandas, python-dateutil, pytz, regex and chardet.
+#   setuptools stays only because spaCy 2 declares it; at 84 it has no pkg_resources, and
+#   nothing served needs one (spaCy, click and thinc import it lazily, on paths never taken).
 #
-#   philologic 4.6   NOT listed below: it is not on PyPI either. The Dockerfile builds
-#                    its C core and installs its Python package from
-#                    ARTFL-Project/PhiloLogic4 at the PhiloLogic-4.6 branch tip.
+# The security reasoning behind individual pins (python-jose, ecdsa, h11, joblib, gunicorn,
+# requests/urllib3, lxml, fastapi/starlette/pydantic) is in this file's git history for
+# 2026-09-23. Four worth keeping in view:
+#   fastapi 0.65.2 / starlette 0.14.2   the smallest pair with the CSRF fix. pydantic is 1.10
+#                              because 1.6 predates Python 3.11.
+#   gunicorn 23.0.0            its lifecycle (start, HUP, respawn, heartbeat, TERM) was tested
+#                              with uvicorn 0.12.1's worker. uvicorn is 0.12.1 still.
+#   uvloop 0.21.0              0.22 no longer creates an event loop implicitly, and uvicorn
+#                              0.12.1's worker relies on that: every worker dies at start with
+#                              "There is no current event loop". Moving uvloop means moving uvicorn.
+#   ecdsa 0.19.2               CVE-2024-23342 has no upstream fix; a timing attack on ECDSA
+#                              signing, which this app never does. python-jose needs ecdsa.
 
-aiofiles==0.5.0
+aiofiles==25.1.0
 annoy==1.17.0
-blis==0.4.1
+blis==0.7.11
 catalogue==1.0.2
 certifi==2026.7.22
-charset-normalizer==3.4.4
+charset-normalizer==3.5.1
 click==7.1.2
-cymem==2.0.11
-dill==0.3.2
+cloudpickle==3.1.2
+cymem==2.0.13
+dill==0.4.1
 ecdsa==0.19.2
 fastapi==0.65.2
-gensim==3.8.3
+gensim==4.3.3
 gunicorn==23.0.0
 h11==0.16.0
-httptools==0.1.1
-idna==3.10
-joblib==1.4.2
+httptools==0.8.0
+idna==3.20
+joblib==1.6.0
 lxml==6.1.0
-mmh3==2.5.1
-multiprocess==0.70.10
+mmh3==5.3.0
+multiprocess==0.70.19
 murmurhash==1.0.15
-natsort==7.0.1
-numpy==1.19.2
-packaging==25.0
-pandas==1.1.3
+natsort==8.4.0
+numpy==1.26.4
+packaging==26.3
 plac==1.1.3
-preshed==3.0.12
-psycopg2==2.8.6
+preshed==3.0.13
+psycopg2==2.9.13
 pyasn1==0.6.4
-pydantic==1.6.2
-pystemmer==2.0.1
-python-dateutil==2.9.0.post0
-python-jose==3.4.0
-python-Levenshtein==0.12.1
-python-rapidjson==0.9.1
-pytz==2026.3.post1
-regex==2020.9.27
-requests==2.32.4
+pydantic==1.10.26
+pystemmer==2.2.0.3
+python-jose==3.5.0
+python-levenshtein==0.12.2
+python-rapidjson==1.25
+requests==2.34.2
 rsa==4.9.1
-scikit-learn==1.0.2
-scipy==1.5.2
-setuptools==75.3.4
-simplejson==3.16.0
+scikit-learn==1.4.2
+scipy==1.13.1
+setuptools==84.0.0
+simplejson==4.1.2
 six==1.17.0
-smart-open==4.1.2
-spacy==2.3.2
+smart-open==8.0.1
+spacy==2.3.9
 srsly==1.0.7
 starlette==0.14.2
-thinc==7.4.1
-threadpoolctl==2.1.0
-tqdm==4.50.2
-unidecode==1.1.1
-urllib3==1.26.20
+thinc==7.4.6
+threadpoolctl==3.7.0
+tqdm==4.70.1
+typing-extensions==4.16.0
+unidecode==1.4.0
+urllib3==2.8.0
 uvicorn==0.12.1
-uvloop==0.14.0
+uvloop==0.21.0
 wasabi==0.10.1
+wrapt==2.4.1

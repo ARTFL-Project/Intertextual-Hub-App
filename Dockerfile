@@ -113,11 +113,10 @@ RUN cd web-app && npm run build && test -f dist/index.html
 
 # ---------------------------------------------------------------------------------------
 # 3. The Python environment.
-#    CPython 3.8 from uv, not the distro. It is EOL, and that is a deliberate, recorded
-#    trade: the artifacts this application loads are pinned to scikit-learn 0.23.2,
-#    gensim 3.8.3 and spaCy 2.3.2, and 3.9 needs gensim 4, which breaks the API
-#    explore_words.py calls. The security argument for this migration is the base OS,
-#    Apache, OpenSSL and the system libraries — all of which are current here.
+#    CPython 3.11 from uv, not the distro. 3.11 is the ceiling, set by spaCy 2.3.9: it and
+#    its compiled helpers ship wheels up to cp311 and never cp312, and spaCy 2 is not
+#    optional - the 2020 French model and the lemmas the tf-idf index was built from are
+#    spaCy 2's. requirements.txt records which pins hold which invariant.
 # ---------------------------------------------------------------------------------------
 FROM ubuntu:26.04 AS pyenv
 ENV DEBIAN_FRONTEND=noninteractive UV_PYTHON_INSTALL_DIR=/opt/python UV_LINK_MODE=copy
@@ -125,10 +124,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       build-essential libpq-dev git ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-COPY requirements.txt overrides.txt /tmp/
-RUN uv venv /opt/venv --python 3.8 --managed-python \
+COPY requirements.txt /tmp/requirements.txt
+RUN uv venv /opt/venv --python 3.11 --managed-python \
  && VIRTUAL_ENV=/opt/venv uv pip install --no-cache -r /tmp/requirements.txt \
-      --overrides /tmp/overrides.txt \
  # Not on PyPI: an ARTFL package. Pinned to the commit the deployed 0.8.2 is byte-identical
  # to. similar_docs.py imports PreProcessor from it at module scope.
  && VIRTUAL_ENV=/opt/venv uv pip install --no-cache \
@@ -140,14 +138,14 @@ RUN uv venv /opt/venv --python 3.8 --managed-python \
  # spacy.load("fr"), which is a spaCy 2.x SHORTCUT, not a package name. Installing the
  # model is not enough; without this the app dies at import with OSError E050. The old
  # image had it because someone ran `spacy link` in 2020.
- && ln -sfn /opt/venv/lib/python3.8/site-packages/fr_core_news_lg \
-            /opt/venv/lib/python3.8/site-packages/spacy/data/fr \
+ && SP=$(/opt/venv/bin/python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])') \
+ && ln -sfn "$SP/fr_core_news_lg" "$SP/spacy/data/fr" \
  && rm -rf /root/.cache
 # PhiloLogic's own Python package, from the same source the C core was built from.
 COPY --from=sources /philologic /philologic
 # uv creates venvs without pip, so this installs with uv too. philologic 4.6's setup.py
-# still does `from distutils.core import setup`, which is fine on 3.8 and would not be on
-# 3.12+ — one more small thing anchoring this image to the interpreter it has.
+# still does `from distutils.core import setup`: distutils is deprecated in 3.11 and gone
+# in 3.12, one more reason 3.11 is the ceiling here.
 RUN cd /philologic/python && VIRTUAL_ENV=/opt/venv uv pip install --no-cache . \
  && /opt/venv/bin/python -c "from philologic.runtime.DB import DB; from philologic.runtime.get_text import get_text"
 
@@ -172,21 +170,19 @@ RUN cd /tmp/topologic-lib \
  && VIRTUAL_ENV=/opt/venv uv pip install --no-cache --no-deps . \
  && /opt/venv/bin/python -c "import sys, topologic; assert 'matplotlib' not in sys.modules" \
  && rm -rf /tmp/topologic-lib
-# uv's CPython ships its own pip and setuptools, and the venv has its own copies. The
-# interpreter-level ones are never used — the venv is built here, once — and they are two
-# more findings in the weekly scan that could never be actioned.
+# uv's CPython ships its own pip and setuptools. They are never used - the venv is built
+# here, once - and they are findings in the weekly scan that could never be actioned.
 #
-# The venv's setuptools STAYS: scikit-learn 0.23.2 imports pkg_resources at runtime, which
-# comes from it. Its vendored setuptools/_vendor/{wheel,jaraco.*} are reported by Trivy
-# because they carry dist-info directories, but they are not installed packages and are
-# unreachable unless setuptools imports them. They are left alone rather than deleted:
-# removing a dist-info to quiet a scanner is not a fix, and a report people learn to game
-# is worse than a report with an explained finding in it.
-RUN rm -rf /opt/python/cpython-*/lib/python3.8/site-packages/pip \
-           /opt/python/cpython-*/lib/python3.8/site-packages/pip-*.dist-info \
-           /opt/python/cpython-*/lib/python3.8/site-packages/setuptools \
-           /opt/python/cpython-*/lib/python3.8/site-packages/setuptools-*.dist-info \
-           /opt/python/cpython-*/lib/python3.8/site-packages/pkg_resources
+# The venv's setuptools is spaCy 2's declared dependency, pinned to a current release, which
+# no longer ships pkg_resources. Nothing served needs it: spaCy, click and thinc import
+# pkg_resources lazily, and spaCy resolves "fr" through its link before it would.
+RUN rm -rf /opt/python/cpython-*/lib/python3.*/site-packages/pip \
+           /opt/python/cpython-*/lib/python3.*/site-packages/pip-*.dist-info \
+           /opt/python/cpython-*/lib/python3.*/site-packages/setuptools \
+           /opt/python/cpython-*/lib/python3.*/site-packages/setuptools-*.dist-info \
+           /opt/python/cpython-*/lib/python3.*/site-packages/pkg_resources \
+           /opt/python/cpython-*/lib/python3.*/site-packages/_distutils_hack
+
 
 # ---------------------------------------------------------------------------------------
 # 4. The image that ships.
