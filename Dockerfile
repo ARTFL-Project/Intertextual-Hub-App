@@ -296,7 +296,12 @@ COPY deploy/site-config/stopwords.txt /var/www/html/intertextual_hub/config/stop
 
 COPY entrypoint.sh /entrypoint.sh
 
+# OPENBLAS_NUM_THREADS=1: numpy and scipy each bundle an OpenBLAS that starts one thread per
+# CPU, so on a 64-core host every gunicorn worker idled with ~127 threads and 100-180 MB of
+# their buffers, eight workers competing for the same cores. The served numpy work is small
+# (300-dimension word vectors); parallelism here comes from the workers, not from BLAS.
 ENV PATH=/opt/venv/bin:/usr/lib/postgresql/18/bin:$PATH \
+    OPENBLAS_NUM_THREADS=1 \
     PGDATA=/data/psql/18 \
     PGHOST=/tmp \
     PYTHONUNBUFFERED=1 \
