@@ -155,11 +155,22 @@ RUN cd /philologic/python && VIRTUAL_ENV=/opt/venv uv pip install --no-cache . \
 # It belongs here rather than in the final stage because that stage has no uv and uv
 # creates venvs without pip.
 COPY --from=sources /topologic-lib /tmp/topologic-lib
-# --no-deps: its install_requires names nltk, which this container never uses (it is for
-# the modelling side), and an older text_preprocessing pin than the one installed above.
-# Everything else it needs is already pinned in requirements.txt.
-RUN cd /tmp/topologic-lib && VIRTUAL_ENV=/opt/venv uv pip install --no-cache --no-deps . \
- && /opt/venv/bin/python -c "import topologic" \
+# --no-deps: its install_requires names nltk and matplotlib, which this container never
+# uses (they are for the modelling side), and an older text_preprocessing pin than the one
+# installed above. Everything else it needs is already pinned in requirements.txt.
+#
+# The ONE change to the pinned source: topic_num_evaluator is removed, with the line in
+# __init__.py that imports it unconditionally. It picks a topic count when BUILDING a
+# model - this container only serves - and it was the only importer of matplotlib, which
+# loaded Pillow into every TopoLogic worker: 17 findings, fixable only on Python 3.10+.
+# The greps fail the build if upstream ever moves either piece.
+RUN cd /tmp/topologic-lib \
+ && grep -qx 'from .topic_num_evaluator import topic_num_evaluator' topologic/__init__.py \
+ && sed -i '/^from \.topic_num_evaluator import topic_num_evaluator$/d' topologic/__init__.py \
+ && rm topologic/topic_num_evaluator.py \
+ && ! grep -rq topic_num_evaluator topologic/ \
+ && VIRTUAL_ENV=/opt/venv uv pip install --no-cache --no-deps . \
+ && /opt/venv/bin/python -c "import sys, topologic; assert 'matplotlib' not in sys.modules" \
  && rm -rf /tmp/topologic-lib
 # uv's CPython ships its own pip and setuptools, and the venv has its own copies. The
 # interpreter-level ones are never used — the venv is built here, once — and they are two
