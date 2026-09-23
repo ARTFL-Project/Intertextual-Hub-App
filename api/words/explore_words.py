@@ -8,7 +8,7 @@ import requests
 from Levenshtein import jaro_winkler
 from psycopg2.extras import DictCursor
 from unidecode import unidecode
-from gensim.models import word2vec
+from gensim.models import KeyedVectors, word2vec
 
 sys.path.append("..")
 from config import DB_CONFIG
@@ -19,12 +19,24 @@ DB_NAME = DB_CONFIG["database_name"]
 DB_PWD = DB_CONFIG["database_password"]
 TOPOLOGIC = DB_CONFIG["topologic"]
 
-MODELS = {
-    "1700": word2vec.Word2Vec.load(DB_CONFIG["word2vec"]["1700"]),
-    "1725": word2vec.Word2Vec.load(DB_CONFIG["word2vec"]["1725"]),
-    "1750": word2vec.Word2Vec.load(DB_CONFIG["word2vec"]["1750"]),
-    "1775": word2vec.Word2Vec.load(DB_CONFIG["word2vec"]["1775"]),
-}
+
+
+def load_vectors(path: str) -> KeyedVectors:
+    """The word vectors of a Word2Vec model saved by gensim 3.8.
+
+    gensim 3 returns them as loaded. gensim 4 loads these 2020 models but leaves their vectors
+    half-converted - no index_to_key - so they are rebuilt, same words in the same order with
+    the same vectors. Only get_vector and similar_by_vector are used below; both exist in both.
+    """
+    vectors = word2vec.Word2Vec.load(path).wv
+    if hasattr(vectors, "index_to_key") or not hasattr(KeyedVectors, "add_vectors"):
+        return vectors
+    rebuilt = KeyedVectors(vectors.vector_size, dtype=vectors.vectors.dtype)
+    rebuilt.add_vectors(vectors.__dict__["index2word"], vectors.vectors)  # gensim 4 hides index2word
+    return rebuilt
+
+
+MODELS = {year: load_vectors(DB_CONFIG["word2vec"][year]) for year in ("1700", "1725", "1750", "1775")}
 
 
 def get_word_evolution(
@@ -38,12 +50,12 @@ def get_word_evolution(
         for word in tokens:
             word = unidecode(word)
             try:
-                vectors.append(MODELS[year].wv.get_vector(word))
+                vectors.append(MODELS[year].get_vector(word))
             except KeyError:
                 pass
         if vectors:
             vector = np.mean(np.array(vectors), axis=0)
-            matches = MODELS[year].wv.similar_by_vector(vector, topn=50 + len(tokens))
+            matches = MODELS[year].similar_by_vector(vector, topn=50 + len(tokens))
             periods[year] = [{"word": word, "weight": score} for word, score in matches if word not in tokens]
 
     word_map: Dict[str, int] = {}
