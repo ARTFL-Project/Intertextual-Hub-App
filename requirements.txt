@@ -39,25 +39,32 @@
 #      does. Everything it imports when serving is pinned here.
 #
 # DROPPED from the 2020 VM's freeze - nothing served imports them: nltk, pyjwt, matplotlib,
-#   pillow, cycler, kiwisolver, pyparsing, pandas, python-dateutil, pytz, regex and chardet.
+#   pillow, cycler, kiwisolver, pyparsing, pandas, python-dateutil, pytz, regex, chardet,
+#   aiofiles (only Starlette < 1 used it), and python-jose with ecdsa, rsa and pyasn1.
 #   setuptools stays only because spaCy 2 declares it; at 84 it has no pkg_resources, and
 #   nothing served needs one (spaCy, click and thinc import it lazily, on paths never taken).
 #
-# The security reasoning behind individual pins (python-jose, ecdsa, h11, joblib, gunicorn,
-# requests/urllib3, lxml, fastapi/starlette/pydantic) is in this file's git history for
-# 2026-09-23. Four worth keeping in view:
-#   fastapi 0.65.2 / starlette 0.14.2   the smallest pair with the CSRF fix. pydantic is 1.10
-#                              because 1.6 predates Python 3.11.
+# The security reasoning behind individual pins (h11, joblib, gunicorn, requests/urllib3, lxml,
+# and the web framework's path here) is in this file's git history for 2026-09-23. Worth
+# keeping in view:
+#   fastapi 0.141.1, starlette 1.7.0, pydantic 2.13.5   every Starlette HIGH is fixed only in
+#                              Starlette >= 1.3.1, which needs FastAPI >= 0.133, which needs
+#                              pydantic 2. Neither app defines a pydantic model, so v2 is
+#                              visible only in the wording of 422 error bodies. Missing static
+#                              files now 404 as JSON {"detail":"Not Found"} instead of text.
+#   pyjwt 2.15.0               replaces python-jose, whose ecdsa dependency carried a HIGH with
+#                              no fix. Same encode/decode signatures; tokens are standard HS256
+#                              JWTs either way, so sessions issued before the switch stay valid.
 #   gunicorn 23.0.0            its lifecycle (start, HUP, respawn, heartbeat, TERM) was tested
 #                              with uvicorn 0.12.1's worker. uvicorn is 0.12.1 still.
 #   uvloop 0.21.0              0.22 no longer creates an event loop implicitly, and uvicorn
 #                              0.12.1's worker relies on that: every worker dies at start with
 #                              "There is no current event loop". Moving uvloop means moving uvicorn.
-#   ecdsa 0.19.2               CVE-2024-23342 has no upstream fix; a timing attack on ECDSA
-#                              signing, which this app never does. python-jose needs ecdsa.
 
-aiofiles==25.1.0
+annotated-doc==0.0.5
+annotated-types==0.8.0
 annoy==1.17.0
+anyio==4.15.1
 blis==0.7.11
 catalogue==1.0.2
 certifi==2026.7.22
@@ -66,8 +73,7 @@ click==7.1.2
 cloudpickle==3.1.2
 cymem==2.0.13
 dill==0.4.1
-ecdsa==0.19.2
-fastapi==0.65.2
+fastapi==0.141.1
 gensim==4.3.3
 gunicorn==23.0.0
 h11==0.16.0
@@ -84,14 +90,13 @@ packaging==26.3
 plac==1.1.3
 preshed==3.0.13
 psycopg2==2.9.13
-pyasn1==0.6.4
-pydantic==1.10.26
+pydantic==2.13.5
+pydantic-core==2.46.5
+pyjwt==2.15.0
 pystemmer==2.2.0.3
-python-jose==3.5.0
 python-levenshtein==0.12.2
 python-rapidjson==1.25
 requests==2.34.2
-rsa==4.9.1
 scikit-learn==1.4.2
 scipy==1.13.1
 setuptools==84.0.0
@@ -100,11 +105,12 @@ six==1.17.0
 smart-open==8.0.1
 spacy==2.3.9
 srsly==1.0.7
-starlette==0.14.2
+starlette==1.7.0
 thinc==7.4.6
 threadpoolctl==3.7.0
 tqdm==4.70.1
 typing-extensions==4.16.0
+typing-inspection==0.4.4
 unidecode==1.4.0
 urllib3==2.8.0
 uvicorn==0.12.1
