@@ -48,6 +48,12 @@
 #                    reachable as deployed: UvicornWorker forces http=httptools, and h11 is
 #                    never imported. Upgraded so that choosing the h11 worker stays safe;
 #                    tested with uvicorn 0.12.1, and it rejects the CVE's request.
+#   joblib 0.17.0    -> 1.4.2    CVE-2022-21797 (CRITICAL, eval in Parallel(pre_dispatch)),
+#                    never called with user input here. 1.4.2 is the last release for Python
+#                    3.8. Only scikit-learn uses it at runtime (the tf-idf pickle is plain
+#                    pickle.load). Tested against the real artifacts under 0.17.0, 1.2.0 and
+#                    1.4.2: identical vectorizer output and idf_ hashes, all 415 sklearn
+#                    modules import, sklearn's n_jobs path agrees, T1 checks 8/8.
 #   pyjwt 1.7.1      DROPPED. Nothing requires it and nothing imports it - a leftover in the
 #                    VM's pip freeze, carrying three HIGH findings. The app's JWT library is
 #                    python-jose.
@@ -73,7 +79,7 @@ gunicorn==20.0.4
 h11==0.16.0
 httptools==0.1.1
 idna==2.8
-joblib==0.17.0
+joblib==1.4.2
 kiwisolver==1.4.7
 lxml==4.5.2
 matplotlib==3.3.2
