@@ -75,6 +75,12 @@
 #                    pickle: under 1.0.2 its transform output and idf_ are byte-identical.
 #                    TopoLogic's API reads only PostgreSQL; its sklearn use is model building.
 #                    Unpickling across versions logs a UserWarning at worker start; harmless.
+#   lxml 4.5.2       -> 6.1.0    CVE-2026-41066. Not reachable (it parses only our own corpora),
+#                    but upgrading FIXES CONTENT: under 4.5.2 PhiloLogic's text rendering
+#                    silently truncated passages - cut mid-word, resuming later - in 16 of 245
+#                    sampled text objects. 6.1.0 renders them in full: every restored span is
+#                    verbatim in the source XML, no element or class is lost, and searches
+#                    (concordance, KWIC) are byte-identical. 6.1.0 has Python 3.8 wheels.
 #   pyjwt 1.7.1      DROPPED. Nothing requires it and nothing imports it - a leftover in the
 #                    VM's pip freeze, carrying three HIGH findings. The app's JWT library is
 #                    python-jose.
@@ -100,7 +106,7 @@ h11==0.16.0
 httptools==0.1.1
 idna==3.10
 joblib==1.4.2
-lxml==4.5.2
+lxml==6.1.0
 mmh3==2.5.1
 multiprocess==0.70.10
 murmurhash==1.0.15
