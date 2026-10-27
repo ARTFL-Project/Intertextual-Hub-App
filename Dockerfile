@@ -193,9 +193,14 @@ FROM ubuntu:26.04
 # initdb must be told explicitly and the locale must exist. ubuntu:26.04 does not ship it.
 ENV DEBIAN_FRONTEND=noninteractive LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 
+# apt-get upgrade sits in this same layer, never a later one: a separate layer would keep every
+# replaced file in the image twice. Without it, base-image packages that nothing reinstalls
+# move only when Canonical rebuilds ubuntu:26.04.
 ARG REBUILD_DATE=unset
 RUN echo "rebuild: $REBUILD_DATE" \
- && apt-get update && apt-get install -y --no-install-recommends \
+ && apt-get update \
+ && apt-get upgrade -y \
+ && apt-get install -y --no-install-recommends \
       apache2 postgresql postgresql-contrib locales ca-certificates libgdbm6t64 \
       # No lz4, and deliberately. PhiloLogic shells out to lz4/lz4cat only from
       # loadtime/Loader.py - nothing in runtime/, nothing in the served CGI, and
