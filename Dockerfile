@@ -20,7 +20,18 @@
 # ---------------------------------------------------------------------------------------
 FROM ubuntu:26.04 AS sources
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates \
+# apt spreads its downloads over these mirrors and moves on when one fails. On 2026-11-11
+# Canonical's DNS went down and every Ubuntu build failed at apt-get update. All mirrors
+# serve the same archive, checked against Canonical's signature.
+RUN mkdir -p /etc/apt/mirrors \
+ && printf '%s\n' http://archive.ubuntu.com/ubuntu http://mirrors.edge.kernel.org/ubuntu http://mirrors.mit.edu/ubuntu \
+      > /etc/apt/mirrors/ubuntu.list \
+ && printf '%s\n' http://security.ubuntu.com/ubuntu http://mirrors.edge.kernel.org/ubuntu http://mirrors.mit.edu/ubuntu \
+      > /etc/apt/mirrors/ubuntu-security.list \
+ && sed -i -e 's|^URIs: http://archive.ubuntu.com/ubuntu/$|URIs: mirror+file:/etc/apt/mirrors/ubuntu.list|' \
+           -e 's|^URIs: http://security.ubuntu.com/ubuntu/$|URIs: mirror+file:/etc/apt/mirrors/ubuntu-security.list|' \
+      /etc/apt/sources.list.d/ubuntu.sources \
+ && apt-get update && apt-get install -y --no-install-recommends git ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
 # PhiloLogic 4.6, at TWO commits — because that is what production is. Established by
@@ -66,7 +77,16 @@ RUN git clone --quiet https://github.com/ARTFL-Project/TopoLogic.git /topologic-
 # ---------------------------------------------------------------------------------------
 FROM ubuntu:26.04 AS philo-core
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# The same apt mirror lists as above.
+RUN mkdir -p /etc/apt/mirrors \
+ && printf '%s\n' http://archive.ubuntu.com/ubuntu http://mirrors.edge.kernel.org/ubuntu http://mirrors.mit.edu/ubuntu \
+      > /etc/apt/mirrors/ubuntu.list \
+ && printf '%s\n' http://security.ubuntu.com/ubuntu http://mirrors.edge.kernel.org/ubuntu http://mirrors.mit.edu/ubuntu \
+      > /etc/apt/mirrors/ubuntu-security.list \
+ && sed -i -e 's|^URIs: http://archive.ubuntu.com/ubuntu/$|URIs: mirror+file:/etc/apt/mirrors/ubuntu.list|' \
+           -e 's|^URIs: http://security.ubuntu.com/ubuntu/$|URIs: mirror+file:/etc/apt/mirrors/ubuntu-security.list|' \
+      /etc/apt/sources.list.d/ubuntu.sources \
+ && apt-get update && apt-get install -y --no-install-recommends \
       build-essential make libgdbm-dev libdb-dev \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=sources /philologic /philologic
@@ -120,7 +140,16 @@ RUN cd web-app && npm run build && test -f dist/index.html
 # ---------------------------------------------------------------------------------------
 FROM ubuntu:26.04 AS pyenv
 ENV DEBIAN_FRONTEND=noninteractive UV_PYTHON_INSTALL_DIR=/opt/python UV_LINK_MODE=copy
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# The same apt mirror lists as above.
+RUN mkdir -p /etc/apt/mirrors \
+ && printf '%s\n' http://archive.ubuntu.com/ubuntu http://mirrors.edge.kernel.org/ubuntu http://mirrors.mit.edu/ubuntu \
+      > /etc/apt/mirrors/ubuntu.list \
+ && printf '%s\n' http://security.ubuntu.com/ubuntu http://mirrors.edge.kernel.org/ubuntu http://mirrors.mit.edu/ubuntu \
+      > /etc/apt/mirrors/ubuntu-security.list \
+ && sed -i -e 's|^URIs: http://archive.ubuntu.com/ubuntu/$|URIs: mirror+file:/etc/apt/mirrors/ubuntu.list|' \
+           -e 's|^URIs: http://security.ubuntu.com/ubuntu/$|URIs: mirror+file:/etc/apt/mirrors/ubuntu-security.list|' \
+      /etc/apt/sources.list.d/ubuntu.sources \
+ && apt-get update && apt-get install -y --no-install-recommends \
       build-essential libpq-dev git ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
@@ -196,8 +225,17 @@ ENV DEBIAN_FRONTEND=noninteractive LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 # apt-get upgrade sits in this same layer, never a later one: a separate layer would keep every
 # replaced file in the image twice. Without it, base-image packages that nothing reinstalls
 # move only when Canonical rebuilds ubuntu:26.04.
+# The same apt mirror lists as above.
 ARG REBUILD_DATE=unset
 RUN echo "rebuild: $REBUILD_DATE" \
+ && mkdir -p /etc/apt/mirrors \
+ && printf '%s\n' http://archive.ubuntu.com/ubuntu http://mirrors.edge.kernel.org/ubuntu http://mirrors.mit.edu/ubuntu \
+      > /etc/apt/mirrors/ubuntu.list \
+ && printf '%s\n' http://security.ubuntu.com/ubuntu http://mirrors.edge.kernel.org/ubuntu http://mirrors.mit.edu/ubuntu \
+      > /etc/apt/mirrors/ubuntu-security.list \
+ && sed -i -e 's|^URIs: http://archive.ubuntu.com/ubuntu/$|URIs: mirror+file:/etc/apt/mirrors/ubuntu.list|' \
+           -e 's|^URIs: http://security.ubuntu.com/ubuntu/$|URIs: mirror+file:/etc/apt/mirrors/ubuntu-security.list|' \
+      /etc/apt/sources.list.d/ubuntu.sources \
  && apt-get update \
  && apt-get upgrade -y \
  && apt-get install -y --no-install-recommends \
